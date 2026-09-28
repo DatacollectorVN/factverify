@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "factverify:contract:elara_voss_born_in_keld:v1",
+  "fact_id": "factverify:fact:elara_voss_born_in_keld",
+  "triple": {
+    "subject": {
+      "id": "factverify:entity:elara-voss",
+      "label": "Elara Voss",
+      "source": "factverify_internal"
+    },
+    "relation": {
+      "id": "factverify:relation:born-in",
+      "label": "bornIn",
+      "source": "factverify_internal"
+    },
+    "object": {
+      "id": "factverify:entity:keld",
+      "label": "Keld",
+      "source": "factverify_internal"
+    }
+  },
+  "aliases": {
+    "subject": [
+      {
+        "text": "Elara Voss",
+        "language": "en",
+        "alias_type": "canonical"
+      }
+    ],
+    "relation": [
+      {
+        "text": "born in",
+        "language": "en",
+        "argument_order": "subject_relation_object"
+      }
+    ],
+    "object": [
+      {
+        "text": "Keld",
+        "language": "en",
+        "alias_type": "canonical"
+      }
+    ]
+  },
+  "equivalent_directions": [
+    {
+      "direction": "forward",
+      "given": "subject",
+      "answer": "object"
+    },
+    {
+      "direction": "inverse",
+      "given": "object",
+      "answer": "subject"
+    }
+  ],
+  "retained_neighbourhood": [
+    {
+      "id": "retain:voss-scientist",
+      "bucket": "same_subject",
+      "statement": "Elara Voss is a fictional scientist."
+    },
+    {
+      "id": "retain:curie-born-warsaw",
+      "bucket": "same_relation",
+      "statement": "Marie Curie was born in Warsaw."
+    },
+    {
+      "id": "retain:keld-fictional-region",
+      "bucket": "compositional",
+      "statement": "Keld is a fictional region in a fantasy setting."
+    },
+    {
+      "id": "retain:water-boiling-point",
+      "bucket": "global",
+      "statement": "Water boils at 100 degrees Celsius at sea level."
+    }
+  ],
+  "clue_boundary": {
+    "equivalent_rule": "Any prompt whose answer set is exactly {Keld} given the relation 'bornIn' and subject 'Elara Voss'.",
+    "clue_bearing_rule": "Prompts that mention Elara Voss and birthplace without naming Keld directly.",
+    "ambiguous_policy": "adjudicate_before_freeze_else_exploratory"
+  }
+}

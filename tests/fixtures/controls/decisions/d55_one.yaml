@@ -1,0 +1,2 @@
+decisions:
+  - {decision_id: D-55, status: closed, min_count: 1}

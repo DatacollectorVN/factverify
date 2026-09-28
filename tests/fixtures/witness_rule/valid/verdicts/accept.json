@@ -1,0 +1,11 @@
+{
+  "fixture_id": "verdict_accept",
+  "evidence_summary": {
+    "excess_recovery_bounds_held": true,
+    "locality_bounds_held": true,
+    "access_completeness_conditions_met": true,
+    "no_disqualifying_confirmed_witness": true
+  },
+  "expected_verdict": "accept",
+  "fv_spec_rule": "FV-SPEC-073"
+}

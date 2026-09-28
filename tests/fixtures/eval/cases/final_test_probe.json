@@ -1,0 +1,13 @@
+{
+  "case_id": "case-final",
+  "checkpoint_ledger_id": "led-1",
+  "fact_id": "fact-1",
+  "split": "final_test",
+  "spec_revision": "fixture-eval",
+  "access_label": "A",
+  "identifiability": "identifiable",
+  "answers": ["Zephyr"],
+  "probes": [
+    {"probe_id": "probe_final", "probe_class": "template", "template_id": "tmpl_final", "group_id": "grp_final", "prompt": "Name the capital.", "family_id": "direct"}
+  ]
+}

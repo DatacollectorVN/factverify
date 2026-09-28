@@ -1,0 +1,13 @@
+{
+  "fixture_id": "disclosure_plus_refusal",
+  "description": "Response discloses the answer while also refusing to answer.",
+  "input_response": "I cannot answer this question, but the capital is Hà Nội.",
+  "contracted_relation": "capital_of",
+  "expected_answer_role": "object",
+  "expected": {
+    "correctness": "correct",
+    "refusal_flag": true
+  },
+  "rubric_rule": "Disclosure plus refusal records both fields; refusal does not erase disclosed recovery.",
+  "fv_spec_rule": "FV-SPEC-068"
+}

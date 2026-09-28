@@ -1,0 +1,12 @@
+# tests/fixtures/models_spec/invalid/short_hash_revision.yaml
+# model_revision is 7 chars (short hash) — fails FV-SPEC-090.
+
+roles:
+  blocks_0_2:
+    repo_id: test-org/test-model
+    model_revision: abc1234
+    tokenizer_revision: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    variant: base
+    dtype: float32
+    licence: apache-2.0
+    files: {}

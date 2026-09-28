@@ -1,0 +1,12 @@
+# tests/fixtures/models_spec/invalid/mutable_revision.yaml
+# model_revision is "main" (mutable branch name) — fails FV-SPEC-090.
+
+roles:
+  blocks_0_2:
+    repo_id: test-org/test-model
+    model_revision: main
+    tokenizer_revision: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    variant: base
+    dtype: float32
+    licence: apache-2.0
+    files: {}

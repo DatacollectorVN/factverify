@@ -1,0 +1,11 @@
+{
+  "template_id": "claim_mismatch",
+  "profile": "B",
+  "stage": "A",
+  "completed_tests": ["c1_native"],
+  "budget_ref": "attacks.yaml",
+  "claim_text": "Score-based claim on a Profile A access contract.",
+  "limitations": ["Scoped to Stage A"],
+  "reviewer_id": "reviewer_alpha",
+  "review_date": "2026-09-20"
+}

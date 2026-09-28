@@ -1,0 +1,12 @@
+{
+  "template_id": "claim_stage_b_causal",
+  "profile": "A",
+  "stage": "B",
+  "completed_tests": ["c1_native"],
+  "budget_ref": "attacks.yaml",
+  "reference_condition": "inherits Stage A causal counterfactual",
+  "claim_text": "Attack-relative evidence on pretrained facts.",
+  "limitations": ["Output-simulation limitation applies"],
+  "reviewer_id": "reviewer_alpha",
+  "review_date": "2026-09-20"
+}

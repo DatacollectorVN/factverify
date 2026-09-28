@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.egg-info/
+dist/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Run ledger and caches (regenerate; archive deliberately for reproducibility)
+ledger.sqlite
+ledger.sqlite-*
+src/cache/store/
+.cache/
+
+# Model artefacts
+checkpoints/
+*.safetensors
+*.bin
+!tests/fixtures/controls/vectors/steer.bin
+*.pt
+wandb/
+
+# Large generated data — keep specs and manifests, not the payloads
+data/**/*.jsonl
+data/controlled/sources/**
+!data/**/.gitkeep
+
+# OS
+.DS_Store
+Icon?
+
+# Editor / agent local config (keep on disk, do not publish)
+.claude/
+.cursor/
+
+# Local outputs and paper workspace (keep on disk, do not publish)
+results/
+reports/
+paper/

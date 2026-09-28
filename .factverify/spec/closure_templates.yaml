@@ -1,0 +1,656 @@
+spec_version: "1.0.0"
+fact_contract_ref: "fact_contract.schema.json"
+boundary_policy: "equivalence-inference-v1"
+revision: "0.1.0-demo"
+relation_manifest:
+  - "capital_of"
+  - "alma_mater"
+
+# =============================================================================
+# RELATION: capital_of
+# Instantiation: subject=Hà Nội, object=Vietnam
+#
+# E templates: direct, inverse, cloze, paraphrase, multilingual, verification
+# I template:  prompt_supplied inference
+# R template:  same_subject retained control (hanoi-population)
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# E — Equivalence templates for capital_of (sets.equivalence)
+# extra_premises MUST be [] for every E template (FV-SPEC-018).
+# ---------------------------------------------------------------------------
+sets:
+  equivalence:
+    templates:
+
+      # -----------------------------------------------------------------------
+      # capital_of — direct family
+      # Asks: given the subject (Hà Nội), which country is it the capital of?
+      # -----------------------------------------------------------------------
+      - id: "capital_direct_en_001"
+        class: "E"
+        group: "capital_direct_en"
+        language: "en"
+        format: "free_answer"
+        text: "{subject} is the capital of which country?"
+        relation_applicability: ["capital_of"]
+        answer_role: "object"
+        primary_family: "direct"
+        overlapping_attributes: []
+        extra_premises: []
+
+      - id: "capital_direct_en_002"
+        class: "E"
+        group: "capital_direct_en"
+        language: "en"
+        format: "free_answer"
+        text: "Which nation has {subject} as its capital city?"
+        relation_applicability: ["capital_of"]
+        answer_role: "object"
+        primary_family: "direct"
+        overlapping_attributes: []
+        extra_premises: []
+
+      # -----------------------------------------------------------------------
+      # capital_of — inverse family
+      # Asks: given the country (Vietnam), what is its capital?
+      # -----------------------------------------------------------------------
+      - id: "capital_inverse_en_001"
+        class: "E"
+        group: "capital_inverse_en"
+        language: "en"
+        format: "free_answer"
+        text: "What is the capital of {object}?"
+        relation_applicability: ["capital_of"]
+        answer_role: "subject"
+        primary_family: "inverse"
+        overlapping_attributes: []
+        extra_premises: []
+
+      - id: "capital_inverse_en_002"
+        class: "E"
+        group: "capital_inverse_en"
+        language: "en"
+        format: "free_answer"
+        text: "Name the capital city of {object}."
+        relation_applicability: ["capital_of"]
+        answer_role: "subject"
+        primary_family: "inverse"
+        overlapping_attributes: []
+        extra_premises: []
+
+      # -----------------------------------------------------------------------
+      # capital_of — cloze family
+      # Sentence completion; answer_role=subject (the city fills the blank).
+      # -----------------------------------------------------------------------
+      - id: "capital_cloze_en_001"
+        class: "E"
+        group: "capital_cloze_en"
+        language: "en"
+        format: "completion"
+        text: "The capital of {object} is ___."
+        relation_applicability: ["capital_of"]
+        answer_role: "subject"
+        primary_family: "cloze"
+        overlapping_attributes: []
+        extra_premises: []
+
+      - id: "capital_cloze_en_002"
+        class: "E"
+        group: "capital_cloze_en"
+        language: "en"
+        format: "completion"
+        text: "{object}'s capital city is ___."
+        relation_applicability: ["capital_of"]
+        answer_role: "subject"
+        primary_family: "cloze"
+        overlapping_attributes: []
+        extra_premises: []
+
+      # -----------------------------------------------------------------------
+      # capital_of — paraphrase family
+      # Semantically equivalent rephrasing; answer_role=subject.
+      # -----------------------------------------------------------------------
+      - id: "capital_paraphrase_en_001"
+        class: "E"
+        group: "capital_paraphrase_en"
+        language: "en"
+        format: "free_answer"
+        text: "Name the city that serves as {object}'s capital."
+        relation_applicability: ["capital_of"]
+        answer_role: "subject"
+        primary_family: "paraphrase"
+        overlapping_attributes: []
+        extra_premises: []
+
+      - id: "capital_paraphrase_en_002"
+        class: "E"
+        group: "capital_paraphrase_en"
+        language: "en"
+        format: "free_answer"
+        text: "Where does the government of {object} officially reside? Give the capital city."
+        relation_applicability: ["capital_of"]
+        answer_role: "subject"
+        primary_family: "paraphrase"
+        overlapping_attributes: []
+        extra_premises: []
+
+      # -----------------------------------------------------------------------
+      # capital_of — multilingual family (Vietnamese)
+      # -----------------------------------------------------------------------
+      - id: "capital_multilingual_vi_001"
+        class: "E"
+        group: "capital_multilingual_vi"
+        language: "vi"
+        format: "free_answer"
+        text: "Thủ đô của {object} là thành phố nào?"
+        relation_applicability: ["capital_of"]
+        answer_role: "subject"
+        primary_family: "multilingual"
+        overlapping_attributes: []
+        extra_premises: []
+
+      - id: "capital_multilingual_vi_002"
+        class: "E"
+        group: "capital_multilingual_vi"
+        language: "vi"
+        format: "free_answer"
+        text: "{subject} là thủ đô của quốc gia nào?"
+        relation_applicability: ["capital_of"]
+        answer_role: "object"
+        primary_family: "multilingual"
+        overlapping_attributes: []
+        extra_premises: []
+
+      # -----------------------------------------------------------------------
+      # capital_of — verification family
+      # Two templates per balance_block: one true (positive_recognition),
+      # one false (negative_recognition). Assigned to calibration split.
+      # -----------------------------------------------------------------------
+      - id: "capital_verify_en_true_001"
+        class: "E"
+        group: "capital_verify_en"
+        language: "en"
+        format: "true_false"
+        text: "True or false: {subject} is the capital of {object}."
+        relation_applicability: ["capital_of"]
+        answer_role: "truth_value"
+        primary_family: "verification"
+        overlapping_attributes: []
+        extra_premises: []
+        candidate: "{subject}"
+        oracle_label: true
+        recognition_role: "positive_recognition"
+        balance_block: "capital_of_en_verify_block_01"
+
+      - id: "capital_verify_en_false_001"
+        class: "E"
+        group: "capital_verify_en"
+        language: "en"
+        format: "true_false"
+        text: "True or false: Bangkok is the capital of {object}."
+        relation_applicability: ["capital_of"]
+        answer_role: "truth_value"
+        primary_family: "verification"
+        overlapping_attributes: []
+        extra_premises: []
+        candidate: "Bangkok"
+        oracle_label: false
+        recognition_role: "negative_recognition"
+        balance_block: "capital_of_en_verify_block_01"
+
+      # =======================================================================
+      # RELATION: alma_mater
+      # Instantiation: subject=Dr. Elara Voss, object=Thornfield Institute of Technology
+      #
+      # E templates: direct, inverse, cloze, paraphrase, multilingual (en
+      # paraphrase variant — no established Vietnamese equivalent), verification
+      # =======================================================================
+
+      # -----------------------------------------------------------------------
+      # alma_mater — direct family
+      # Asks: given the person (Dr. Elara Voss), where did they study?
+      # -----------------------------------------------------------------------
+      - id: "alma_direct_en_001"
+        class: "E"
+        group: "alma_direct_en"
+        language: "en"
+        format: "free_answer"
+        text: "Where did {subject} complete their university education?"
+        relation_applicability: ["alma_mater"]
+        answer_role: "object"
+        primary_family: "direct"
+        overlapping_attributes: []
+        extra_premises: []
+
+      - id: "alma_direct_en_002"
+        class: "E"
+        group: "alma_direct_en"
+        language: "en"
+        format: "free_answer"
+        text: "Which institution did {subject} attend for their degree?"
+        relation_applicability: ["alma_mater"]
+        answer_role: "object"
+        primary_family: "direct"
+        overlapping_attributes: []
+        extra_premises: []
+
+      # -----------------------------------------------------------------------
+      # alma_mater — inverse family
+      # Asks: given the institution (Thornfield Institute), who studied there?
+      # -----------------------------------------------------------------------
+      - id: "alma_inverse_en_001"
+        class: "E"
+        group: "alma_inverse_en"
+        language: "en"
+        format: "free_answer"
+        text: "Name a notable alumna or alumnus of {object}."
+        relation_applicability: ["alma_mater"]
+        answer_role: "subject"
+        primary_family: "inverse"
+        overlapping_attributes: []
+        extra_premises: []
+
+      - id: "alma_inverse_en_002"
+        class: "E"
+        group: "alma_inverse_en"
+        language: "en"
+        format: "free_answer"
+        text: "Who is a known graduate of {object}?"
+        relation_applicability: ["alma_mater"]
+        answer_role: "subject"
+        primary_family: "inverse"
+        overlapping_attributes: []
+        extra_premises: []
+
+      # -----------------------------------------------------------------------
+      # alma_mater — cloze family
+      # answer_role=object (the institution fills the blank).
+      # -----------------------------------------------------------------------
+      - id: "alma_cloze_en_001"
+        class: "E"
+        group: "alma_cloze_en"
+        language: "en"
+        format: "completion"
+        text: "{subject} earned their degree from ___."
+        relation_applicability: ["alma_mater"]
+        answer_role: "object"
+        primary_family: "cloze"
+        overlapping_attributes: []
+        extra_premises: []
+
+      - id: "alma_cloze_en_002"
+        class: "E"
+        group: "alma_cloze_en"
+        language: "en"
+        format: "completion"
+        text: "The alma mater of {subject} is ___."
+        relation_applicability: ["alma_mater"]
+        answer_role: "object"
+        primary_family: "cloze"
+        overlapping_attributes: []
+        extra_premises: []
+
+      # -----------------------------------------------------------------------
+      # alma_mater — paraphrase family
+      # -----------------------------------------------------------------------
+      - id: "alma_paraphrase_en_001"
+        class: "E"
+        group: "alma_paraphrase_en"
+        language: "en"
+        format: "free_answer"
+        text: "At which university or college did {subject} receive their academic training?"
+        relation_applicability: ["alma_mater"]
+        answer_role: "object"
+        primary_family: "paraphrase"
+        overlapping_attributes: []
+        extra_premises: []
+
+      - id: "alma_paraphrase_en_002"
+        class: "E"
+        group: "alma_paraphrase_en"
+        language: "en"
+        format: "free_answer"
+        text: "Which school is listed as the alma mater of {subject}?"
+        relation_applicability: ["alma_mater"]
+        answer_role: "object"
+        primary_family: "paraphrase"
+        overlapping_attributes: []
+        extra_premises: []
+
+      # -----------------------------------------------------------------------
+      # alma_mater — multilingual family
+      # No established Vietnamese form for this fictional institution;
+      # using a distinct English paraphrase variant as the multilingual slot
+      # (surface-form diversity without a target-language translation).
+      # -----------------------------------------------------------------------
+      - id: "alma_multilingual_en_001"
+        class: "E"
+        group: "alma_multilingual_en"
+        language: "en"
+        format: "free_answer"
+        text: "State the higher-education institution that {subject} graduated from."
+        relation_applicability: ["alma_mater"]
+        answer_role: "object"
+        primary_family: "multilingual"
+        overlapping_attributes: []
+        extra_premises: []
+
+      - id: "alma_multilingual_en_002"
+        class: "E"
+        group: "alma_multilingual_en"
+        language: "en"
+        format: "free_answer"
+        text: "What is the name of the college or university where {subject} studied?"
+        relation_applicability: ["alma_mater"]
+        answer_role: "object"
+        primary_family: "multilingual"
+        overlapping_attributes: []
+        extra_premises: []
+
+      # -----------------------------------------------------------------------
+      # alma_mater — verification family
+      # Two templates per balance_block: one true, one false.
+      # Assigned to calibration split.
+      # -----------------------------------------------------------------------
+      - id: "alma_verify_en_true_001"
+        class: "E"
+        group: "alma_verify_en"
+        language: "en"
+        format: "true_false"
+        text: "True or false: {subject} attended {object}."
+        relation_applicability: ["alma_mater"]
+        answer_role: "truth_value"
+        primary_family: "verification"
+        overlapping_attributes: []
+        extra_premises: []
+        candidate: "{object}"
+        oracle_label: true
+        recognition_role: "positive_recognition"
+        balance_block: "alma_mater_en_verify_block_01"
+
+      - id: "alma_verify_en_false_001"
+        class: "E"
+        group: "alma_verify_en"
+        language: "en"
+        format: "true_false"
+        text: "True or false: {subject} studied at Crestwood University."
+        relation_applicability: ["alma_mater"]
+        answer_role: "truth_value"
+        primary_family: "verification"
+        overlapping_attributes: []
+        extra_premises: []
+        candidate: "Crestwood University"
+        oracle_label: false
+        recognition_role: "negative_recognition"
+        balance_block: "alma_mater_en_verify_block_01"
+
+  # ---------------------------------------------------------------------------
+  # I — Inference templates (sets.inference)
+  # Prompt supplies independent premises K with K |- f.
+  # Reported separately; never pooled into equivalence denominator (FV-SPEC-020).
+  # ---------------------------------------------------------------------------
+  inference:
+    reporting: "separate_from_equivalence"
+    templates:
+
+      # -----------------------------------------------------------------------
+      # capital_of — prompt_supplied inference
+      # Premises: seat-of-government criterion + city-meets-criterion fact.
+      # -----------------------------------------------------------------------
+      - id: "capital_inference_prompt_supplied_en_001"
+        class: "I"
+        group: "capital_inference_en"
+        language: "en"
+        format: "free_answer"
+        text: >
+          {object}'s National Assembly meets in {subject}.
+          In this world a country's capital is where its National Assembly meets.
+          What is {object}'s capital?
+        relation_applicability: ["capital_of"]
+        answer_role: "subject"
+        subtype: "prompt_supplied"
+        extra_premises:
+          - text: "{object}'s National Assembly meets in {subject}."
+            source: "prompt"
+          - text: "A country's capital is where its National Assembly meets."
+            source: "prompt"
+        premise_origins: ["prompt", "prompt"]
+        reasoning_status: "bridge"
+        support_status: "supporting"
+        separate_reporting: true
+
+      # -----------------------------------------------------------------------
+      # alma_mater — prompt_supplied inference
+      # Premises: graduation record fact + alma-mater definition.
+      # -----------------------------------------------------------------------
+      - id: "alma_inference_prompt_supplied_en_001"
+        class: "I"
+        group: "alma_inference_en"
+        language: "en"
+        format: "free_answer"
+        text: >
+          {subject}'s doctoral dissertation was submitted to {object}.
+          A person's alma mater is the institution where they earned their highest degree.
+          Where did {subject} earn their highest degree?
+        relation_applicability: ["alma_mater"]
+        answer_role: "object"
+        subtype: "prompt_supplied"
+        extra_premises:
+          - text: "{subject}'s doctoral dissertation was submitted to {object}."
+            source: "prompt"
+          - text: "A person's alma mater is the institution where they earned their highest degree."
+            source: "prompt"
+        premise_origins: ["prompt", "prompt"]
+        reasoning_status: "bridge"
+        support_status: "supporting"
+        separate_reporting: true
+
+# ---------------------------------------------------------------------------
+# controls — R (retained neighbourhood) and X (excluded) templates
+# ---------------------------------------------------------------------------
+controls:
+
+  # -------------------------------------------------------------------------
+  # R: retained neighbourhood for capital_of — same_subject bucket
+  # Tests that a co-resident fact about Hà Nội (its population) is not
+  # perturbed by the unlearning intervention.
+  # -------------------------------------------------------------------------
+  - id: "capital_retain_same_subject_001"
+    class: "R"
+    group: "capital_retain_same_subject"
+    language: "en"
+    format: "free_answer"
+    text: "What is the approximate population of {subject}?"
+    relation_applicability: ["capital_of"]
+    answer_role: "object"
+    retained_entry_ref: "retain:hanoi-population"
+    bucket: "same_subject"
+
+  # -------------------------------------------------------------------------
+  # R: retained neighbourhood for alma_mater — same_subject bucket
+  # Tests that a co-resident fact about Dr. Elara Voss (her research field)
+  # is not perturbed by the unlearning intervention.
+  # -------------------------------------------------------------------------
+  - id: "alma_retain_same_subject_001"
+    class: "R"
+    group: "alma_retain_same_subject"
+    language: "en"
+    format: "free_answer"
+    text: "What is the primary research field of {subject}?"
+    relation_applicability: ["alma_mater"]
+    answer_role: "object"
+    retained_entry_ref: "retain:voss-research-field"
+    bucket: "same_subject"
+
+  # -------------------------------------------------------------------------
+  # X: excluded templates
+  # These supply the answer in the prompt and therefore cannot probe
+  # model knowledge; they are reserved for the final_test split only
+  # to confirm the exclusion criterion is correctly enforced.
+  # -------------------------------------------------------------------------
+  - id: "capital_excluded_supplied_001"
+    class: "X"
+    group: "capital_excluded_supplied"
+    language: "en"
+    text: "The capital of {object} is {subject}. What is the capital of {object}?"
+    exclusion_reason: "supplied_answer"
+
+  - id: "alma_excluded_supplied_001"
+    class: "X"
+    group: "alma_excluded_supplied"
+    language: "en"
+    text: "{subject} studied at {object}. Where did {subject} study?"
+    exclusion_reason: "supplied_answer"
+
+# ---------------------------------------------------------------------------
+# Groups — one group per logical cluster.
+# Naming convention:
+#   E groups: {relation}_{family}_{lang}
+#   I groups: {relation}_inference_{lang}
+#   R groups: {relation}_retain_{bucket}
+#   X groups: {relation}_excluded
+#
+# The split unit is the group, not the individual template (FV-SPEC-023).
+# calibration and final_test groups must be disjoint.
+# ---------------------------------------------------------------------------
+groups:
+
+  # --- capital_of E groups --------------------------------------------------
+  - group_id: "capital_direct_en"
+    members:
+      - "capital_direct_en_001"
+      - "capital_direct_en_002"
+    split: "construction"
+
+  - group_id: "capital_inverse_en"
+    members:
+      - "capital_inverse_en_001"
+      - "capital_inverse_en_002"
+    split: "construction"
+
+  - group_id: "capital_cloze_en"
+    members:
+      - "capital_cloze_en_001"
+      - "capital_cloze_en_002"
+    split: "construction"
+
+  - group_id: "capital_paraphrase_en"
+    members:
+      - "capital_paraphrase_en_001"
+      - "capital_paraphrase_en_002"
+    split: "construction"
+
+  - group_id: "capital_multilingual_vi"
+    members:
+      - "capital_multilingual_vi_001"
+      - "capital_multilingual_vi_002"
+    split: "construction"
+
+  - group_id: "capital_verify_en"
+    members:
+      - "capital_verify_en_true_001"
+      - "capital_verify_en_false_001"
+    split: "calibration"
+
+  # --- capital_of I group ---------------------------------------------------
+  - group_id: "capital_inference_en"
+    members:
+      - "capital_inference_prompt_supplied_en_001"
+    split: "construction"
+
+  # --- capital_of R group ---------------------------------------------------
+  - group_id: "capital_retain_same_subject"
+    members:
+      - "capital_retain_same_subject_001"
+    split: "construction"
+
+  # --- capital_of X group ---------------------------------------------------
+  - group_id: "capital_excluded_supplied"
+    members:
+      - "capital_excluded_supplied_001"
+    split: "final_test"
+
+  # --- alma_mater E groups --------------------------------------------------
+  - group_id: "alma_direct_en"
+    members:
+      - "alma_direct_en_001"
+      - "alma_direct_en_002"
+    split: "construction"
+
+  - group_id: "alma_inverse_en"
+    members:
+      - "alma_inverse_en_001"
+      - "alma_inverse_en_002"
+    split: "construction"
+
+  - group_id: "alma_cloze_en"
+    members:
+      - "alma_cloze_en_001"
+      - "alma_cloze_en_002"
+    split: "construction"
+
+  - group_id: "alma_paraphrase_en"
+    members:
+      - "alma_paraphrase_en_001"
+      - "alma_paraphrase_en_002"
+    split: "construction"
+
+  - group_id: "alma_multilingual_en"
+    members:
+      - "alma_multilingual_en_001"
+      - "alma_multilingual_en_002"
+    split: "construction"
+
+  - group_id: "alma_verify_en"
+    members:
+      - "alma_verify_en_true_001"
+      - "alma_verify_en_false_001"
+    split: "calibration"
+
+  # --- alma_mater I group ---------------------------------------------------
+  - group_id: "alma_inference_en"
+    members:
+      - "alma_inference_prompt_supplied_en_001"
+    split: "construction"
+
+  # --- alma_mater R group ---------------------------------------------------
+  - group_id: "alma_retain_same_subject"
+    members:
+      - "alma_retain_same_subject_001"
+    split: "construction"
+
+  # --- alma_mater X group ---------------------------------------------------
+  - group_id: "alma_excluded_supplied"
+    members:
+      - "alma_excluded_supplied_001"
+    split: "final_test"
+
+# ---------------------------------------------------------------------------
+# Splits — which groups belong to each split.
+# calibration and final_test groups must be disjoint (FV-SPEC-023).
+# ---------------------------------------------------------------------------
+splits:
+  construction:
+    # capital_of
+    - "capital_direct_en"
+    - "capital_inverse_en"
+    - "capital_cloze_en"
+    - "capital_paraphrase_en"
+    - "capital_multilingual_vi"
+    - "capital_inference_en"
+    - "capital_retain_same_subject"
+    # alma_mater
+    - "alma_direct_en"
+    - "alma_inverse_en"
+    - "alma_cloze_en"
+    - "alma_paraphrase_en"
+    - "alma_multilingual_en"
+    - "alma_inference_en"
+    - "alma_retain_same_subject"
+  calibration:
+    - "capital_verify_en"
+    - "alma_verify_en"
+  final_test:
+    - "capital_excluded_supplied"
+    - "alma_excluded_supplied"

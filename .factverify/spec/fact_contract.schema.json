@@ -1,0 +1,532 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://factverify.local/schema/fact_contract.schema.json",
+  "title": "FactVerify atomic-fact contract",
+  "description": "Machine-checkable boundary for one atomic-fact unlearning target.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "contract_id",
+    "fact_id",
+    "triple",
+    "aliases",
+    "equivalent_directions",
+    "retained_neighbourhood",
+    "clue_boundary"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0",
+      "description": "Version of this JSON Schema interface."
+    },
+    "contract_id": {
+      "type": "string",
+      "pattern": "^factverify:contract:(?:wd-Q[1-9][0-9]*-P[1-9][0-9]*-Q[1-9][0-9]*|[a-z0-9]+(?:_[a-z0-9]+)*):v[1-9][0-9]*$",
+      "description": "Immutable ID for one version of the frozen contract."
+    },
+    "fact_id": {
+      "type": "string",
+      "pattern": "^factverify:fact:(?:wd-Q[1-9][0-9]*-P[1-9][0-9]*-Q[1-9][0-9]*|[a-z0-9]+(?:_[a-z0-9]+)*)$",
+      "description": "Stable identity of the semantic fact; it does not change when only the contract version changes."
+    },
+    "contract_status": {
+      "enum": ["draft", "frozen", "superseded", "retired"],
+      "description": "Lifecycle state managed by FactVerify, not by Wikidata."
+    },
+    "fact_type": {
+      "enum": ["controlled_atomic_fact", "pretrained_fact"],
+      "description": "Separates Stage A controlled facts from Stage B real pretrained facts."
+    },
+    "evidence_regime": {
+      "$ref": "#/$defs/evidenceRegimeSpec"
+    },
+    "triple": {
+      "$ref": "#/$defs/tripleSpec"
+    },
+    "canonical_statement": {
+      "$ref": "#/$defs/statementSpec"
+    },
+    "aliases": {
+      "$ref": "#/$defs/aliasSet"
+    },
+    "equivalent_directions": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "$ref": "#/$defs/directionSpec"
+      },
+      "allOf": [
+        {
+          "contains": {
+            "properties": {
+              "direction": {
+                "const": "forward"
+              }
+            },
+            "required": ["direction"]
+          }
+        },
+        {
+          "contains": {
+            "properties": {
+              "direction": {
+                "const": "inverse"
+              }
+            },
+            "required": ["direction"]
+          }
+        }
+      ]
+    },
+    "entity_resolution": {
+      "$ref": "#/$defs/entityResolutionSpec"
+    },
+    "normalization": {
+      "$ref": "#/$defs/normalizationSpec"
+    },
+    "deletion_scope": {
+      "$ref": "#/$defs/deletionScopeSpec"
+    },
+    "retained_neighbourhood": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "$ref": "#/$defs/neighbourSpec"
+      },
+      "allOf": [
+        {
+          "contains": {
+            "properties": {
+              "bucket": {
+                "const": "same_subject"
+              }
+            },
+            "required": ["bucket"]
+          }
+        },
+        {
+          "contains": {
+            "properties": {
+              "bucket": {
+                "const": "same_relation"
+              }
+            },
+            "required": ["bucket"]
+          }
+        },
+        {
+          "contains": {
+            "properties": {
+              "bucket": {
+                "const": "compositional"
+              }
+            },
+            "required": ["bucket"]
+          }
+        },
+        {
+          "contains": {
+            "properties": {
+              "bucket": {
+                "const": "global"
+              }
+            },
+            "required": ["bucket"]
+          }
+        }
+      ]
+    },
+    "clue_boundary": {
+      "$ref": "#/$defs/clueBoundarySpec"
+    },
+    "reference_policy": {
+      "$ref": "#/$defs/referencePolicySpec"
+    },
+    "freeze_policy": {
+      "$ref": "#/$defs/freezePolicySpec"
+    }
+  },
+  "$defs": {
+    "languageTag": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$",
+      "description": "Practical BCP 47 syntax check. Registry validation should be performed separately."
+    },
+    "entityRef": {
+      "type": "object",
+      "required": ["id", "label", "source"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?:wikidata:Q[1-9][0-9]*|factverify:entity:[a-z0-9][a-z0-9_-]*)$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "enum": ["wikidata", "factverify_internal"]
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "additionalProperties": false
+    },
+    "relationRef": {
+      "type": "object",
+      "required": ["id", "label", "source"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(?:wikidata:P[1-9][0-9]*|factverify:relation:[a-z0-9][a-z0-9_-]*)$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "enum": ["wikidata", "factverify_internal"]
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "additionalProperties": false
+    },
+    "tripleSpec": {
+      "type": "object",
+      "required": ["subject", "relation", "object"],
+      "properties": {
+        "subject": {
+          "$ref": "#/$defs/entityRef"
+        },
+        "relation": {
+          "$ref": "#/$defs/relationRef"
+        },
+        "object": {
+          "$ref": "#/$defs/entityRef"
+        }
+      },
+      "additionalProperties": false
+    },
+    "statementSpec": {
+      "type": "object",
+      "required": ["text", "language"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "$ref": "#/$defs/languageTag"
+        }
+      },
+      "additionalProperties": false
+    },
+    "aliasEntry": {
+      "type": "object",
+      "required": ["text", "language", "alias_type"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "$ref": "#/$defs/languageTag"
+        },
+        "alias_type": {
+          "enum": [
+            "canonical",
+            "alternate_name",
+            "transliteration",
+            "disambiguated_name"
+          ]
+        },
+        "source": {
+          "enum": ["wikidata", "authority_source", "manual_adjudication"]
+        },
+        "source_url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "additionalProperties": false
+    },
+    "relationAliasEntry": {
+      "type": "object",
+      "required": ["text", "language", "argument_order"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "$ref": "#/$defs/languageTag"
+        },
+        "argument_order": {
+          "enum": ["subject_relation_object", "object_inverse_relation_subject"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "aliasSet": {
+      "type": "object",
+      "required": ["subject", "relation", "object"],
+      "properties": {
+        "subject": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/aliasEntry"
+          }
+        },
+        "relation": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/relationAliasEntry"
+          }
+        },
+        "object": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/aliasEntry"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "directionSpec": {
+      "type": "object",
+      "required": ["direction", "given", "answer"],
+      "properties": {
+        "direction": {
+          "enum": ["forward", "inverse", "verification"]
+        },
+        "given": {
+          "enum": ["subject", "object", "triple"]
+        },
+        "answer": {
+          "enum": ["object", "subject", "truth_value"]
+        },
+        "language": {
+          "$ref": "#/$defs/languageTag"
+        },
+        "statement_pattern": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "neighbourSpec": {
+      "type": "object",
+      "required": ["id", "bucket", "statement"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^retain:[a-z0-9][a-z0-9_-]*$"
+        },
+        "bucket": {
+          "enum": ["same_subject", "same_relation", "compositional", "global"]
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "$ref": "#/$defs/languageTag"
+        },
+        "expected_answers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "clueBoundarySpec": {
+      "type": "object",
+      "required": [
+        "equivalent_rule",
+        "clue_bearing_rule",
+        "ambiguous_policy"
+      ],
+      "properties": {
+        "equivalent_rule": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clue_bearing_rule": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ambiguous_policy": {
+          "enum": [
+            "adjudicate_before_freeze_else_exploratory",
+            "exclude_from_confirmatory_analysis"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "evidenceRegimeSpec": {
+      "type": "object",
+      "required": ["regime", "training_provenance", "allowed_claim"],
+      "properties": {
+        "regime": {
+          "enum": ["reference_relative", "attack_relative", "certified"]
+        },
+        "training_provenance": {
+          "enum": ["known", "partial", "unknown"]
+        },
+        "allowed_claim": {
+          "enum": [
+            "reference_relative_empirical_conformance",
+            "passed_declared_attack_relative_audit",
+            "certificate_under_stated_assumptions"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "entityResolutionSpec": {
+      "type": "object",
+      "required": ["authority", "resolution_status"],
+      "properties": {
+        "authority": {
+          "enum": ["wikidata", "mixed", "factverify_internal"]
+        },
+        "resolution_status": {
+          "enum": ["verified", "provisional"]
+        },
+        "retrieved_at": {
+          "type": "string",
+          "format": "date"
+        },
+        "verified_by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "normalizationSpec": {
+      "type": "object",
+      "required": [
+        "unicode_form",
+        "case_policy",
+        "whitespace_policy",
+        "punctuation_policy",
+        "language_tag_standard"
+      ],
+      "properties": {
+        "unicode_form": {
+          "enum": ["NFC", "NFKC"]
+        },
+        "case_policy": {
+          "enum": ["preserve", "casefold_for_matching"]
+        },
+        "whitespace_policy": {
+          "enum": ["preserve", "trim_and_collapse"]
+        },
+        "punctuation_policy": {
+          "enum": ["preserve", "ignore_for_matching"]
+        },
+        "language_tag_standard": {
+          "const": "BCP47"
+        }
+      },
+      "additionalProperties": false
+    },
+    "deletionScopeSpec": {
+      "type": "object",
+      "required": ["target", "includes", "excludes"],
+      "properties": {
+        "target": {
+          "const": "canonical_triple_and_declared_equivalence_closure"
+        },
+        "includes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "canonical_triple",
+              "approved_aliases",
+              "equivalent_directions",
+              "approved_languages"
+            ]
+          }
+        },
+        "excludes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "retained_neighbourhood",
+              "clue_bearing_inference",
+              "ambiguous_unadjudicated_queries",
+              "undeclared_languages"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "referencePolicySpec": {
+      "type": "object",
+      "required": ["primary_reference", "no_reference_claim_policy"],
+      "properties": {
+        "primary_reference": {
+          "enum": [
+            "retain_only_reference_band",
+            "original_model",
+            "formal_certificate"
+          ]
+        },
+        "independent_reference_runs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "no_reference_claim_policy": {
+          "enum": ["attack_relative_only", "not_applicable"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "freezePolicySpec": {
+      "type": "object",
+      "required": ["freeze_stage", "post_freeze_change_policy"],
+      "properties": {
+        "freeze_stage": {
+          "const": "before_any_unlearning_run"
+        },
+        "post_freeze_change_policy": {
+          "const": "new_contract_version_required"
+        },
+        "frozen_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "content_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

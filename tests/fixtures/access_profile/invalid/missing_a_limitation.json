@@ -1,0 +1,11 @@
+{
+  "template_id": "claim_a_no_limit",
+  "profile": "A",
+  "stage": "A",
+  "completed_tests": ["c1_native"],
+  "budget_ref": "attacks.yaml",
+  "claim_text": "Candidate matches reference on declared queries.",
+  "limitations": ["Scoped to Stage A controlled facts"],
+  "reviewer_id": "reviewer_alpha",
+  "review_date": "2026-09-20"
+}

@@ -1,0 +1,30 @@
+role: finetuned
+method: finetune
+base_role: tiny_base
+seed: 0
+split: construction
+spec_revision: spec-v1
+hardware_class: cpu
+determinism_policy: exact
+digest_tolerance: "0"
+target_fact_id: fact-1
+bundle_id: bundle-fact
+source_bundle:
+  - fact_doc
+corpus_dir: tests/fixtures/harness/corpus
+output_dir: tests/fixtures/harness/out/finetune-missing
+tier: pilot
+optimizer: adamw
+epochs: 1
+batch_size: 1
+max_length: 8
+weight_decay: 0
+manifest:
+  train:
+    - retain_a
+lora:
+  r: 2
+  alpha: 4
+  dropout: 0
+  target_modules:
+    - c_attn

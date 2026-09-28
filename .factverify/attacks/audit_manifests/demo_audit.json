@@ -1,0 +1,31 @@
+{
+  "manifest_id": "audit_prompt_variation_v1",
+  "revision": "0.1.0-demo",
+  "content_digest": "sha256:placeholder",
+  "channel_id": "prompt_variation",
+  "reviewer_id": "nhan.ngo",
+  "review_date": "2026-09-22",
+  "entries": [
+    {
+      "input_id": "cloze_hanoi_redstar",
+      "input_type": "cloze_template",
+      "exposure_class": "indirect_clue",
+      "routing": "inference",
+      "rationale": "Cloze prompt 'The capital with the red-star flag is ___' contains inference-bearing premise; routed to inference channel, not equivalence."
+    },
+    {
+      "input_id": "direct_answer_disclosure",
+      "input_type": "direct_template",
+      "exposure_class": "direct_disclosure",
+      "routing": "supplied_answer",
+      "rationale": "Template directly states the target answer; must route to supplied_answer, never equivalence."
+    },
+    {
+      "input_id": "paraphrase_standard",
+      "input_type": "paraphrase_template",
+      "exposure_class": "clue_free",
+      "routing": "equivalence",
+      "rationale": "Standard paraphrase with no target-leaking content; safe for equivalence closure."
+    }
+  ]
+}

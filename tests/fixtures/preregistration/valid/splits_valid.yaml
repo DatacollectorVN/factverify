@@ -1,0 +1,23 @@
+construction:
+  entity_fact_isolation: recorded
+  reference_seed_isolation: recorded
+  template_group_isolation: recorded
+  control_implementation_isolation: recorded
+  materialised: true
+  gate: null
+
+calibration:
+  entity_fact_isolation: recorded
+  reference_seed_isolation: recorded
+  template_group_isolation: recorded
+  control_implementation_isolation: recorded
+  materialised: true
+  gate: null
+
+final_test:
+  entity_fact_isolation: recorded
+  reference_seed_isolation: recorded
+  template_group_isolation: recorded
+  control_implementation_isolation: recorded
+  materialised: false
+  gate: P4-3

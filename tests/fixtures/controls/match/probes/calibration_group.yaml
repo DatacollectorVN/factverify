@@ -1,0 +1,2 @@
+probes:
+  - {probe_id: p-cal, fact_id: fact-1, template_group_id: direct_calibration, split: construction, kind: direct_qa}

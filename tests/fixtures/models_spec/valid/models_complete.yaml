@@ -1,0 +1,26 @@
+# tests/fixtures/models_spec/valid/models_complete.yaml
+# Fully resolved fixture for P0-8 validator tests.
+# Synthetic 40-char hex revisions; files dict contains actual sha256 of model_dir files.
+
+roles:
+  blocks_0_2:
+    repo_id: test-org/test-model
+    model_revision: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    tokenizer_revision: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    variant: base
+    dtype: float32
+    licence: apache-2.0
+    files:
+      config.json: "sha256:af04b4f84a88f5fc8eb986ef66e7f97ae638e9ea8cf069450280ceade1f40f46"
+      tokenizer.json: "sha256:0d558227b815603621a03769623517ac230a4309f9676ca132d2c87dc65aeaf7"
+
+  block_3_confirmation:
+    status: pending
+    deadline: "2027-01-01"
+    repo_id: test-org/test-model-v2
+    model_revision: cccccccccccccccccccccccccccccccccccccccc
+    tokenizer_revision: dddddddddddddddddddddddddddddddddddddddd
+    variant: base
+    dtype: float32
+    licence: apache-2.0
+    files: {}

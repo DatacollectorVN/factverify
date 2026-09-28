@@ -1,0 +1,9 @@
+{
+  "fixture_id": "mixed_raw_scales",
+  "description": "Raw rank and log-probability on one numeric axis in primary statistic.",
+  "channel_a": {"statistic_kind": "token_rank", "value": 3},
+  "channel_b": {"statistic_kind": "sequence_logprob", "value": -2.3},
+  "primary_statistic_combines_both": true,
+  "validation_should_fail": true,
+  "fv_spec_rule": "FV-SPEC-069"
+}

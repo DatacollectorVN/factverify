@@ -1,0 +1,9 @@
+{
+  "architectures": ["GPT2LMHeadModel"],
+  "model_type": "gpt2",
+  "n_embd": 64,
+  "n_head": 2,
+  "n_layer": 2,
+  "n_positions": 128,
+  "vocab_size": 100
+}

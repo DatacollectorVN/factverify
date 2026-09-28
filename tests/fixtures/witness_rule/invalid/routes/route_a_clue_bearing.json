@@ -1,0 +1,12 @@
+{
+  "fixture_id": "route_a_clue_bearing",
+  "route": "A",
+  "families": ["family_clue", "family_clean"],
+  "responses": [
+    {"family_id": "family_clue", "role": "discovery", "correctness": "correct", "refusal_flag": false, "clue_bearing": true},
+    {"family_id": "family_clean", "role": "confirmation", "correctness": "correct", "refusal_flag": false, "clue_bearing": false}
+  ],
+  "expected_outcome": "clue_bearing_excluded",
+  "validation_should_fail": true,
+  "fv_spec_rule": "FV-SPEC-070"
+}

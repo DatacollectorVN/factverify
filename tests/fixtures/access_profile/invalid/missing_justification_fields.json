@@ -1,0 +1,7 @@
+{
+  "justification_id": "just_incomplete",
+  "system_pair": ["candidate", "reference"],
+  "observation_boundary": "text_only",
+  "argument_type": "empirical",
+  "argument_summary": "Missing reviewer and revision."
+}

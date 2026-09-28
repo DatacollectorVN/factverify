@@ -1,0 +1,11 @@
+{
+  "model_id": "claude-sonnet-4-6",
+  "model_revision": "claude-sonnet-4-6-20250514",
+  "prompt_text": "You are a precise fact extractor. Given a question-answer pair from a dataset about a fictional author, identify every atomic factual claim expressed.\n\nFor each fact, return:\n- \"subject\": the entity the fact is about (usually the author's name)\n- \"relation\": a short snake_case label (e.g. birthplace, birth_date, genre, nationality, award, occupation, book_title, parent_name, parent_occupation)\n- \"object\": the value of the attribute\n- \"field\": exactly \"question\" or \"answer\" (the field where this fact appears)\n- \"char_start\": start character index (inclusive) of the most relevant span in that field\n- \"char_end\": end character index (exclusive) of the span\n\nRules:\n1. The slice field[char_start:char_end] must appear verbatim in the field text.\n2. Emit one entry per (subject, relation, object) per field — if the same fact appears in both question and answer, emit two entries.\n3. Prefer the shortest span that unambiguously identifies the object.\n4. If a field expresses no facts, emit no entries for it.\n\nReturn only valid JSON with key \"mentions\": [{...}, ...]",
+  "decoding_params": {
+    "max_tokens": 1024,
+    "temperature": 0.0
+  },
+  "_d62_status": "closed",
+  "_d62_note": "Resolved 2026-09-28: claude-sonnet-4-6 as extractor, temperature=0 for determinism, cached by (model_revision, prompt_hash, row_sha256)."
+}

@@ -1,0 +1,11 @@
+{
+  "fixture_id": "no_witness_accept",
+  "evidence_summary": {
+    "confirmed_recovery_witness": false,
+    "no_confirmed_witness": true
+  },
+  "incorrectly_claimed_verdict": "accept",
+  "validation_should_fail": true,
+  "note": "Absence of a recovery witness is not automatic conformance.",
+  "fv_spec_rule": "FV-SPEC-073"
+}

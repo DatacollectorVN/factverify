@@ -1,0 +1,11 @@
+{
+  "fixture_id": "route_b_export_variant",
+  "route": "B",
+  "seed_type": "training_or_update",
+  "substitute_for_training_seed": "export_variant",
+  "seeds": ["checkpoint_export_q4"],
+  "score_statistic": "sequence_logprob",
+  "expected_outcome": "invalid_seed_type",
+  "validation_should_fail": true,
+  "fv_spec_rule": "FV-SPEC-071"
+}

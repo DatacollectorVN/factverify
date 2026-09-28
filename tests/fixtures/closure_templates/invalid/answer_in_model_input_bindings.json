@@ -1,0 +1,32 @@
+{
+  "_comment": "Bindings for answer_in_model_input.yaml. When capital_answer_leak_en_001 is rendered with these bindings the model input becomes: 'The capital of Vietnam is Hà Nội. What is the capital of Vietnam?' — the answer (Hà Nội) appears verbatim inside the prompt, violating the supplied-answer exclusion rule.",
+  "fact_id": "capital_of__vietnam__hanoi",
+  "relation": "capital_of",
+  "subject": "Hà Nội",
+  "object": "Vietnam",
+  "aliases": {
+    "subject": ["Hanoi", "Ha Noi"],
+    "object": ["Viet Nam", "the Socialist Republic of Vietnam"]
+  },
+  "bindings": [
+    {
+      "template_id": "capital_answer_leak_en_001",
+      "rendered_text": "The capital of Vietnam is Hà Nội. What is the capital of Vietnam?",
+      "expected_answer": "Hà Nội",
+      "violation": "answer_in_model_input",
+      "note": "The answer 'Hà Nội' appears in the prompt before the question; this template is structurally equivalent to the X-class exclusion pattern."
+    },
+    {
+      "template_id": "capital_inverse_en_001",
+      "rendered_text": "What is the capital of Vietnam?",
+      "expected_answer": "Hà Nội",
+      "violation": null
+    },
+    {
+      "template_id": "capital_inference_en_001",
+      "rendered_text": "Vietnam's National Assembly meets in Hà Nội.\nIn this world a country's capital is where its National Assembly meets.\nWhat is Vietnam's capital?",
+      "expected_answer": "Hà Nội",
+      "violation": null
+    }
+  ]
+}

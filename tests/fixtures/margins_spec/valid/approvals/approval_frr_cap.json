@@ -1,0 +1,12 @@
+{
+  "approval_id": "appr_frr_001",
+  "policy_field": "frr_cap",
+  "population": "genuine_references_calibration",
+  "false_rejection_consequences": "Provisional worksheet; value unresolved pending supervisor D-01.",
+  "minimum_worthwhile_benefit": "Pending D-02/D-04",
+  "approver_id": "owner_pending",
+  "approval_date": "2026-09-22",
+  "artifact_revision": "0.1.0-demo",
+  "decision_refs": ["D-01"],
+  "notes": "Stub approval for demo unresolved worksheet; does not freeze alpha."
+}

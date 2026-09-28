@@ -1,0 +1,9 @@
+{
+  "fixture_id": "insufficient_topk",
+  "description": "Only top-1 token rank provided; sequence_logprob statistic requested → unavailable.",
+  "available_data": {"top_k_rank": 1, "top_k_value": 1},
+  "requested_statistic": "sequence_logprob",
+  "expected": {"statistic": "unavailable"},
+  "validation_should_fail": true,
+  "fv_spec_rule": "FV-SPEC-069"
+}

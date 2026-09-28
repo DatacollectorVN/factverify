@@ -1,0 +1,246 @@
+version: 0.1.0-demo
+status: unresolved_worksheet
+frr_cap:
+  value: null
+  unit: probability
+  domain:
+  - 0
+  - 1
+  decision_ref: D-01
+confidence_error_probability:
+  value: null
+  unit: probability
+  domain:
+  - 0
+  - 1
+  decision_ref: D-03
+minimum_fcr_reduction_absolute:
+  value: null
+  unit: percentage_points
+  domain:
+  - 0
+  - 100
+  decision_ref: D-02
+delta_definition: FCR_factverify_minus_FCR_baseline
+practical_success:
+  comparators:
+  - native
+  - semantic_only
+  common_budget_ref: attacks.yaml
+  delta_unit: percentage_points
+  criterion: both_baselines_meet_d_min
+  require_both_baselines: false
+  delta_uncertainty_rule: null
+  decision_ref: D-04
+threshold_selection:
+  data: calibration_only
+  eligibility_rule: ucb_frr_le_frr_cap
+  selection_uncertainty_procedure: DECISION_REQUIRED
+  tie_rule: lowest_operating_point_id
+  no_feasible_threshold: report_infeasible
+  forbid_final_test_inputs: true
+  decision_ref: D-05
+estimands:
+  frr:
+    numerator: genuine_rejections
+    denominator: eligible_genuine
+    eligible_population: genuine_references
+  fcr:
+    numerator: fake_acceptances
+    denominator: eligible_fake
+    eligible_population: fake_unlearning_controls
+  case_weights: uniform
+  aggregation:
+    per_family: mean
+    overall: mean
+  coverage:
+    report_coverage: true
+  status_mappings:
+    missing: exclude_undefined
+    non_identifiable: separate_denominator
+    incomplete: exclude_undefined
+  decision_refs:
+  - D-06
+  - D-10
+  - D-13
+  - D-14
+uncertainty:
+  dependence_structure: paired_checkpoint_by_fact
+  seed_types:
+  - intervention
+  - observation
+  weighting: equal_within_block
+  simultaneous_family: primary_endpoint_family
+  confidence_target:
+    value: null
+    unit: probability
+    domain:
+    - 0
+    - 1
+    decision_ref: D-03
+  resampling_contract: paired_block_bootstrap
+  zero_errors_policy: report_positive_upper_bound
+  decision_refs:
+  - D-07
+  - D-08
+  - D-09
+channel_margins:
+- channel_id: prompt_variation
+  statistic: recovery_rate
+  unit: probability
+  reference: reference_model_same_channel
+  margin:
+    value: null
+    unit: probability
+    domain:
+    - 0
+    - 1
+  orientation: upper
+- channel_id: confirmation
+  statistic: recovery_rate
+  unit: probability
+  reference: reference_model_same_channel
+  margin:
+    value: null
+    unit: probability
+    domain:
+    - 0
+    - 1
+  orientation: upper
+- channel_id: locality
+  statistic: delta_loc
+  unit: percentage_points
+  reference: pre_unlearning_utility
+  margin:
+    value: null
+    unit: percentage_points
+    domain:
+    - 0
+    - 100
+  orientation: upper
+- channel_id: repeated_sampling
+  statistic: recovery_rate
+  unit: probability
+  reference: reference_model_same_channel
+  margin:
+    value: null
+    unit: probability
+    domain:
+    - 0
+    - 1
+  orientation: upper
+locality_margins:
+  same_subject:
+    statistic: delta_loc
+    unit: percentage_points
+    reference: retain_baseline
+    margin:
+      value: null
+      unit: percentage_points
+      domain:
+      - 0
+      - 100
+    orientation: upper
+  same_relation:
+    statistic: delta_loc
+    unit: percentage_points
+    reference: retain_baseline
+    margin:
+      value: null
+      unit: percentage_points
+      domain:
+      - 0
+      - 100
+    orientation: upper
+  compositional:
+    statistic: delta_loc
+    unit: percentage_points
+    reference: retain_baseline
+    margin:
+      value: null
+      unit: percentage_points
+      domain:
+      - 0
+      - 100
+    orientation: upper
+  global:
+    statistic: delta_loc
+    unit: percentage_points
+    reference: retain_baseline
+    margin:
+      value: null
+      unit: percentage_points
+      domain:
+      - 0
+      - 100
+    orientation: upper
+relearning_tolerance:
+  value: null
+  unit: probability
+  domain:
+  - 0
+  - 1
+  decision_ref: D-11
+  reference: relearning_channel_policy
+sample_size_handoff:
+  allowed_inputs:
+  - pilot_calibration_estimates
+  - declared_d_min
+  - dependence_model
+  target_power:
+    value: null
+    unit: probability
+    domain:
+    - 0
+    - 1
+    decision_ref: D-15
+  effect_scenario: absolute_fcr_reduction_at_d_min
+  dependence_model: paired_checkpoint_by_fact
+  feasibility_limits:
+    max_checkpoints: null
+    max_facts: null
+  algorithm_version: undeclared_pending_D-15
+  pre_final_deadline: pending
+  final_n: null
+approval_refs:
+- approvals/approval_frr_cap.json
+- approvals/approval_practical_success.json
+blocking_decisions:
+- decision_id: D-01
+  status: open
+- decision_id: D-02
+  status: open
+- decision_id: D-03
+  status: open
+- decision_id: D-04
+  status: open
+- decision_id: D-05
+  status: open
+- decision_id: D-06
+  status: open
+- decision_id: D-07
+  status: open
+- decision_id: D-08
+  status: open
+- decision_id: D-09
+  status: open
+- decision_id: D-10
+  status: open
+- decision_id: D-11
+  status: open
+- decision_id: D-12
+  status: open
+- decision_id: D-13
+  status: open
+- decision_id: D-14
+  status: open
+- decision_id: D-15
+  status: open
+- decision_id: D-16
+  status: open
+- decision_id: D-38
+  status: open
+baseline_refs:
+  attacks: attacks.yaml
+  access_profile: access_profile.md
+  fact_contract_schema: fact_contract.schema.json

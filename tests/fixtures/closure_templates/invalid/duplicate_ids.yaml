@@ -1,0 +1,79 @@
+spec_version: "1.0.0"
+fact_contract_ref: "../../../../.factverify/spec/fact_contract.schema.json"
+boundary_policy: "equivalence-inference-v1"
+revision: "0.1.0-invalid"
+relation_manifest:
+  - "capital_of"
+
+# VIOLATION: Two templates share the same id "duplicate_001" — one E in
+# sets.equivalence and one I in sets.inference. Template IDs must be unique
+# across the entire suite.
+
+sets:
+  equivalence:
+    templates:
+      # VIOLATION: id "duplicate_001" appears here ...
+      - id: "duplicate_001"
+        class: "E"
+        group: "capital_direct_en"
+        language: "en"
+        format: "free_answer"
+        text: "{subject} is the capital of which country?"
+        relation_applicability: ["capital_of"]
+        answer_role: "object"
+        primary_family: "direct"
+        overlapping_attributes: []
+        extra_premises: []
+
+  inference:
+    reporting: "separate_from_equivalence"
+    templates:
+      # VIOLATION: ... and again here
+      - id: "duplicate_001"
+        class: "I"
+        group: "capital_inference_en"
+        language: "en"
+        format: "free_answer"
+        text: >
+          {object}'s National Assembly meets in {subject}.
+          In this world a country's capital is where its National Assembly meets.
+          What is {object}'s capital?
+        relation_applicability: ["capital_of"]
+        answer_role: "subject"
+        subtype: "prompt_supplied"
+        extra_premises:
+          - text: "{object}'s National Assembly meets in {subject}."
+            source: "prompt"
+          - text: "A country's capital is where its National Assembly meets."
+            source: "prompt"
+        premise_origins: ["prompt", "prompt"]
+        reasoning_status: "bridge"
+        support_status: "supporting"
+        separate_reporting: true
+
+controls:
+  - id: "capital_excluded_supplied_001"
+    class: "X"
+    language: "en"
+    text: "The capital of {object} is {subject}. What is the capital of {object}?"
+    exclusion_reason: "supplied_answer"
+
+groups:
+  - group_id: "capital_direct_en"
+    members: ["duplicate_001"]
+    split: "construction"
+
+  - group_id: "capital_inference_en"
+    members: ["duplicate_001"]
+    split: "construction"
+
+  - group_id: "capital_excluded_supplied"
+    members: ["capital_excluded_supplied_001"]
+    split: "final_test"
+
+splits:
+  construction:
+    - "capital_direct_en"
+    - "capital_inference_en"
+  final_test:
+    - "capital_excluded_supplied"

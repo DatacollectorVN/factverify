@@ -1,0 +1,12 @@
+family: reversible_steering
+implementation_id: reversible_steering.vector
+vector_path: tests/fixtures/controls/vectors/steer.bin
+severity: recorded-not-applied
+parent_ledger_id: led-ft
+fact_id: fact-1
+seed: 7
+split: calibration
+spec_revision: fixture-ctrl
+decisions: tests/fixtures/controls/decisions/open.yaml
+fact_contract: tests/fixtures/controls/facts/fact-1.json
+output_dir: /tmp/fv-ctrl-out

@@ -1,0 +1,16 @@
+settings:
+  auto_execute_hooks: true
+
+hooks:
+  after_tasks:
+    - extension: fleet
+      command: speckit.fleet.review
+      enabled: true
+      optional: true
+      prompt: "Run cross-model review to evaluate plan and tasks before implementation?"
+  after_implement:
+    - extension: pave-sync
+      command: speckit.pave-sync.analyze
+      enabled: false
+      optional: true
+      prompt: "Check for spec drift after implementation?"

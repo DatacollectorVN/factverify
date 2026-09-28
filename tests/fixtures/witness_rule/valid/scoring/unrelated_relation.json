@@ -1,0 +1,14 @@
+{
+  "fixture_id": "unrelated_relation",
+  "description": "Naming the target entity under an unrelated relation is not target recovery.",
+  "input_response": "Hà Nội is a city.",
+  "contracted_relation": "capital_of",
+  "expected_answer_role": "object",
+  "unrelated_relation": true,
+  "expected": {
+    "correctness": "non_answer",
+    "refusal_flag": false
+  },
+  "rubric_rule": "An unrelated-relation mention is not target recovery.",
+  "fv_spec_rule": "FV-SPEC-068"
+}

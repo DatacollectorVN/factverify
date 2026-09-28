@@ -1,0 +1,23 @@
+# tests/fixtures/models_spec/invalid/pending_no_deadline.yaml
+# block_3_confirmation has status: pending but deadline: null — validator warns.
+
+roles:
+  blocks_0_2:
+    repo_id: test-org/test-model
+    model_revision: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    tokenizer_revision: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    variant: base
+    dtype: float32
+    licence: apache-2.0
+    files: {}
+
+  block_3_confirmation:
+    status: pending
+    deadline: null
+    repo_id: DECISION_REQUIRED
+    model_revision: DECISION_REQUIRED
+    tokenizer_revision: DECISION_REQUIRED
+    variant: DECISION_REQUIRED
+    dtype: DECISION_REQUIRED
+    licence: DECISION_REQUIRED
+    files: {}

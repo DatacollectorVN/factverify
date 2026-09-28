@@ -1,0 +1,23 @@
+templates:
+  - id: tmpl_cal
+    class: E
+    extra_premises: []
+    group_id: grp_cal
+  - id: tmpl_final
+    class: E
+    extra_premises: []
+    group_id: grp_final
+  - id: tmpl_infer
+    class: I
+    extra_premises: ["hint"]
+    group_id: grp_infer
+groups:
+  - group_id: grp_cal
+    split: calibration
+    members: [tmpl_cal]
+  - group_id: grp_final
+    split: final_test
+    members: [tmpl_final]
+  - group_id: grp_infer
+    split: calibration
+    members: [tmpl_infer]

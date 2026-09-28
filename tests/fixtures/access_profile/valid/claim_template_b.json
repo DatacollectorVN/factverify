@@ -1,0 +1,15 @@
+{
+  "template_id": "claim_b_001",
+  "profile": "B",
+  "stage": "A",
+  "completed_tests": ["c1_native", "c2_closure", "score_audit"],
+  "budget_ref": "attacks.yaml",
+  "reference_condition": "retain_only_reference",
+  "claim_text": "Under Profile B score access, the candidate fails score-based recovery within budget.",
+  "limitations": [
+    "Score scope is pre-mask full vocabulary",
+    "Scoped to Stage A controlled facts"
+  ],
+  "reviewer_id": "reviewer_alpha",
+  "review_date": "2026-09-20"
+}

@@ -1,0 +1,8 @@
+{
+  "fixture_id": "verdict_non_identifiable",
+  "access_status": "non_identifiable",
+  "reason": "Observation profile A cannot distinguish system outputs",
+  "evidence": "access_profile_ref: p0_4",
+  "expected_verdict": "non_identifiable",
+  "fv_spec_rule": "FV-SPEC-073"
+}

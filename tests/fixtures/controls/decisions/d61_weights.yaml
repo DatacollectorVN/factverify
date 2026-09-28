@@ -1,0 +1,2 @@
+decisions:
+  - {decision_id: D-61, status: closed, mechanism_layer: weights}

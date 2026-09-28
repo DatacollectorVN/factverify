@@ -1,0 +1,14 @@
+{
+  "case_id": "case-1",
+  "checkpoint_ledger_id": "led-1",
+  "fact_id": "fact-1",
+  "split": "calibration",
+  "spec_revision": "fixture-eval",
+  "access_label": "A",
+  "identifiability": "identifiable",
+  "answers": ["Zephyr"],
+  "probes": [
+    {"probe_id": "probe_native", "probe_class": "native", "prompt": "Where is Zephyr?"},
+    {"probe_id": "probe_cal", "probe_class": "template", "template_id": "tmpl_cal", "group_id": "grp_cal", "prompt": "Zephyr is the capital of what?", "family_id": "direct"}
+  ]
+}

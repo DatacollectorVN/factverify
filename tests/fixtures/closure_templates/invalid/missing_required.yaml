@@ -1,0 +1,25 @@
+spec_version: "1.0.0"
+fact_contract_ref: "../../../../.factverify/spec/fact_contract.schema.json"
+boundary_policy: "equivalence-inference-v1"
+revision: "0.1.0-invalid"
+relation_manifest:
+  - "capital_of"
+
+# VIOLATION: The top-level `sets` key is entirely absent.
+# `sets` (containing at least sets.equivalence.templates) is a required field.
+
+controls:
+  - id: "capital_excluded_supplied_001"
+    class: "X"
+    language: "en"
+    text: "The capital of {object} is {subject}. What is the capital of {object}?"
+    exclusion_reason: "supplied_answer"
+
+groups:
+  - group_id: "capital_excluded_supplied"
+    members: ["capital_excluded_supplied_001"]
+    split: "final_test"
+
+splits:
+  final_test:
+    - "capital_excluded_supplied"

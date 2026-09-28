@@ -1,0 +1,10 @@
+{
+  "fixture_id": "verdict_incomplete",
+  "evidence_summary": {
+    "interval_width": "wide",
+    "decision_ref": "D-14"
+  },
+  "expected_verdict": "incomplete",
+  "note": "Wide intervals map to incomplete, not fabricated recovery.",
+  "fv_spec_rule": "FV-SPEC-073"
+}

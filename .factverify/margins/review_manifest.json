@@ -1,0 +1,18 @@
+{
+  "reviews": [
+    {
+      "artifact_id": "appr_frr_001",
+      "artifact_type": "policy_approval",
+      "reviewer_id": "owner_pending",
+      "review_date": "2026-09-22",
+      "status": "current"
+    },
+    {
+      "artifact_id": "appr_ps_001",
+      "artifact_type": "policy_approval",
+      "reviewer_id": "owner_pending",
+      "review_date": "2026-09-22",
+      "status": "current"
+    }
+  ]
+}

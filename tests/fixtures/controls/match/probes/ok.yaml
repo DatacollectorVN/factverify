@@ -1,0 +1,3 @@
+probes:
+  - {probe_id: p1, fact_id: fact-1, template_group_id: direct_construction, split: construction, kind: direct_qa}
+  - {probe_id: p2, fact_id: fact-1, template_group_id: direct_construction, split: construction, kind: direct_qa}

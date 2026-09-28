@@ -1,0 +1,230 @@
+spec_version: "1.0.0"
+fact_contract_ref: "../../../.factverify/spec/fact_contract.schema.json"
+boundary_policy: "equivalence-inference-v1"
+revision: "0.1.0-demo"
+relation_manifest:
+  - "capital_of"
+
+# ---------------------------------------------------------------------------
+# E — Equivalence templates (sets.equivalence)
+# Each asks for the target relation through an approved expression.
+# extra_premises MUST be [] for every E template (FV-SPEC-018).
+# ---------------------------------------------------------------------------
+sets:
+  equivalence:
+    templates:
+
+      # -- direct family --------------------------------------------------
+      - id: "capital_direct_en_001"
+        class: "E"
+        group: "capital_direct_en"
+        language: "en"
+        format: "free_answer"
+        text: "{subject} is the capital of which country?"
+        relation_applicability: ["capital_of"]
+        answer_role: "object"
+        primary_family: "direct"
+        overlapping_attributes: []
+        extra_premises: []
+
+      # -- inverse family -------------------------------------------------
+      - id: "capital_inverse_en_001"
+        class: "E"
+        group: "capital_inverse_en"
+        language: "en"
+        format: "free_answer"
+        text: "What is the capital of {object}?"
+        relation_applicability: ["capital_of"]
+        answer_role: "subject"
+        primary_family: "inverse"
+        overlapping_attributes: []
+        extra_premises: []
+
+      # -- cloze family ---------------------------------------------------
+      - id: "capital_cloze_en_001"
+        class: "E"
+        group: "capital_cloze_en"
+        language: "en"
+        format: "completion"
+        text: "The capital of {object} is ___."
+        relation_applicability: ["capital_of"]
+        answer_role: "subject"
+        primary_family: "cloze"
+        overlapping_attributes: []
+        extra_premises: []
+
+      # -- paraphrase family ----------------------------------------------
+      - id: "capital_paraphrase_en_001"
+        class: "E"
+        group: "capital_paraphrase_en"
+        language: "en"
+        format: "free_answer"
+        text: "Name the city that serves as {object}'s capital."
+        relation_applicability: ["capital_of"]
+        answer_role: "subject"
+        primary_family: "paraphrase"
+        overlapping_attributes: []
+        extra_premises: []
+
+      # -- multilingual family (Vietnamese) -------------------------------
+      - id: "capital_multilingual_vi_001"
+        class: "E"
+        group: "capital_multilingual_vi"
+        language: "vi"
+        format: "free_answer"
+        text: "Thủ đô của {object} là thành phố nào?"
+        relation_applicability: ["capital_of"]
+        answer_role: "subject"
+        primary_family: "multilingual"
+        overlapping_attributes: []
+        extra_premises: []
+
+      # -- verification family (true instance) ----------------------------
+      - id: "capital_verify_en_true_001"
+        class: "E"
+        group: "capital_verify_en"
+        language: "en"
+        format: "true_false"
+        text: "True or false: {subject} is the capital of {object}."
+        relation_applicability: ["capital_of"]
+        answer_role: "truth_value"
+        primary_family: "verification"
+        overlapping_attributes: []
+        extra_premises: []
+        candidate: "{subject}"
+        oracle_label: true
+        recognition_role: "positive_recognition"
+        balance_block: "capital_of_en_verify_block_01"
+
+      # -- verification family (false instance) ---------------------------
+      - id: "capital_verify_en_false_001"
+        class: "E"
+        group: "capital_verify_en"
+        language: "en"
+        format: "true_false"
+        text: "True or false: Bangkok is the capital of {object}."
+        relation_applicability: ["capital_of"]
+        answer_role: "truth_value"
+        primary_family: "verification"
+        overlapping_attributes: []
+        extra_premises: []
+        candidate: "Bangkok"
+        oracle_label: false
+        recognition_role: "negative_recognition"
+        balance_block: "capital_of_en_verify_block_01"
+
+  # ---------------------------------------------------------------------------
+  # I — Inference template (sets.inference)
+  # Prompt supplies independent premises K with K |- f.
+  # Reported separately; never pooled into equivalence denominator.
+  # ---------------------------------------------------------------------------
+  inference:
+    reporting: "separate_from_equivalence"
+    templates:
+
+      - id: "capital_inference_prompt_supplied_en_001"
+        class: "I"
+        group: "capital_inference_en"
+        language: "en"
+        format: "free_answer"
+        text: >
+          {object}'s National Assembly meets in {subject}.
+          In this world a country's capital is where its National Assembly meets.
+          What is {object}'s capital?
+        relation_applicability: ["capital_of"]
+        answer_role: "subject"
+        subtype: "prompt_supplied"
+        extra_premises:
+          - text: "{object}'s National Assembly meets in {subject}."
+            source: "prompt"
+          - text: "A country's capital is where its National Assembly meets."
+            source: "prompt"
+        premise_origins: ["prompt", "prompt"]
+        reasoning_status: "bridge"
+        support_status: "supporting"
+        separate_reporting: true
+
+# ---------------------------------------------------------------------------
+# controls — R (retained neighbourhood) and X (excluded) templates
+# ---------------------------------------------------------------------------
+controls:
+
+  # -- R: retained neighbourhood (same_subject bucket) -------------------
+  - id: "capital_retain_same_subject_001"
+    class: "R"
+    group: "capital_retain_same_subject"
+    language: "en"
+    format: "free_answer"
+    text: "What is the population of {subject}?"
+    relation_applicability: ["capital_of"]
+    answer_role: "object"
+    retained_entry_ref: "retain:hanoi-population"
+    bucket: "same_subject"
+
+  # -- X: excluded (supplied-answer control) -----------------------------
+  - id: "capital_excluded_supplied_001"
+    class: "X"
+    language: "en"
+    text: "The capital of {object} is {subject}. What is the capital of {object}?"
+    exclusion_reason: "supplied_answer"
+
+# ---------------------------------------------------------------------------
+# Groups — one group per logical set; each carries a split assignment.
+# The split unit is the group, not the individual template (FV-SPEC-023).
+# ---------------------------------------------------------------------------
+groups:
+  - group_id: "capital_direct_en"
+    members: ["capital_direct_en_001"]
+    split: "construction"
+
+  - group_id: "capital_inverse_en"
+    members: ["capital_inverse_en_001"]
+    split: "construction"
+
+  - group_id: "capital_cloze_en"
+    members: ["capital_cloze_en_001"]
+    split: "construction"
+
+  - group_id: "capital_paraphrase_en"
+    members: ["capital_paraphrase_en_001"]
+    split: "construction"
+
+  - group_id: "capital_multilingual_vi"
+    members: ["capital_multilingual_vi_001"]
+    split: "construction"
+
+  - group_id: "capital_verify_en"
+    members:
+      - "capital_verify_en_true_001"
+      - "capital_verify_en_false_001"
+    split: "calibration"
+
+  - group_id: "capital_inference_en"
+    members: ["capital_inference_prompt_supplied_en_001"]
+    split: "construction"
+
+  - group_id: "capital_retain_same_subject"
+    members: ["capital_retain_same_subject_001"]
+    split: "construction"
+
+  - group_id: "capital_excluded_supplied"
+    members: ["capital_excluded_supplied_001"]
+    split: "final_test"
+
+# ---------------------------------------------------------------------------
+# Splits — which groups belong to each split.
+# calibration and final_test groups must be disjoint (FV-SPEC-023).
+# ---------------------------------------------------------------------------
+splits:
+  construction:
+    - "capital_direct_en"
+    - "capital_inverse_en"
+    - "capital_cloze_en"
+    - "capital_paraphrase_en"
+    - "capital_multilingual_vi"
+    - "capital_inference_en"
+    - "capital_retain_same_subject"
+  calibration:
+    - "capital_verify_en"
+  final_test:
+    - "capital_excluded_supplied"

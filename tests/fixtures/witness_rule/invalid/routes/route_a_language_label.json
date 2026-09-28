@@ -1,0 +1,12 @@
+{
+  "fixture_id": "route_a_language_label",
+  "route": "A",
+  "families": ["direct", "multilingual"],
+  "responses": [
+    {"family_id": "direct", "role": "discovery", "correctness": "correct", "refusal_flag": false, "variant_type": "language_label_only"},
+    {"family_id": "multilingual", "role": "confirmation", "correctness": "correct", "refusal_flag": false, "variant_type": "language_label_only"}
+  ],
+  "expected_outcome": "language_label_only",
+  "validation_should_fail": true,
+  "fv_spec_rule": "FV-SPEC-070"
+}

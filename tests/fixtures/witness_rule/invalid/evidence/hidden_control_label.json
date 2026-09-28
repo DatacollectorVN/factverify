@@ -1,0 +1,24 @@
+{
+  "fixture_id": "hidden_control_label",
+  "case_id": "case-003",
+  "fact_id": "factverify:fact:test_fictional_003",
+  "model_hash": "sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+  "contract_ref": "factverify:contract:test_fictional_003:v1",
+  "access_profile": "A",
+  "channel": "text_output",
+  "template_family_ids": ["family_001", "family_002"],
+  "raw_response_ids": ["resp-010", "resp-011"],
+  "scorer": {"version": "0.1.0-draft", "labels_used": ["correct"], "annotation_ids": []},
+  "reference": {"checkpoint_ids": [], "calibrated_statistic": null},
+  "confirmation": {
+    "route": "A",
+    "seed_types": ["training"],
+    "transforms": [],
+    "budget_consumed": null,
+    "control_oracle_label": "fake_unlearned"
+  },
+  "verdict": {"status": "confirmed_witness", "claim_scope": "attack_relative", "limitations": []},
+  "ground_truth_separate": true,
+  "validation_should_fail": true,
+  "failure_reason": "control_oracle_label embedded in confirmation block — oracle label used as recovery evidence"
+}

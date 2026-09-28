@@ -1,0 +1,33 @@
+spec_version: "1.0.0"
+fact_contract_ref: "../../../../.factverify/spec/fact_contract.schema.json"
+boundary_policy: "equivalence-inference-v1"
+revision: "0.1.0-invalid"
+relation_manifest:
+  - "capital_of"
+
+# VIOLATION: Invalid YAML syntax — unclosed flow sequence bracket on the
+# relation_applicability line causes a parse error before any schema validation.
+
+sets:
+  equivalence:
+    templates:
+      - id: "capital_direct_en_001"
+        class: "E"
+        group: "capital_direct_en"
+        language: "en"
+        format: "free_answer"
+        text: "{subject} is the capital of which country?"
+        relation_applicability: ["capital_of"
+        answer_role: "object"
+        primary_family: "direct"
+        overlapping_attributes: []
+        extra_premises: []
+
+groups:
+  - group_id: "capital_direct_en"
+    members: ["capital_direct_en_001"]
+    split: "construction"
+
+splits:
+  construction:
+    - "capital_direct_en"

@@ -1,0 +1,33 @@
+role: reference
+method: finetune
+base_role: tiny_base
+seed: 7
+split: calibration
+spec_revision: spec-v1
+hardware_class: cpu
+determinism_policy: exact
+digest_tolerance: "0"
+target_fact_id: fact-1
+bundle_id: bundle-fact
+source_bundle:
+  - fact_doc
+corpus_dir: tests/fixtures/harness/corpus
+output_dir: tests/fixtures/harness/out/reference-bad-lr
+tier: pilot
+optimizer: adamw
+learning_rate: 0.5
+epochs: 1
+batch_size: 1
+max_length: 8
+weight_decay: 0
+manifest:
+  train:
+    - retain_a
+    - retain_b
+paired_finetune_config: tests/fixtures/harness/jobs/finetune.yaml
+lora:
+  r: 2
+  alpha: 4
+  dropout: 0
+  target_modules:
+    - c_attn

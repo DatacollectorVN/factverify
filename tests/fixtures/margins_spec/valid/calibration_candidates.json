@@ -1,0 +1,1 @@
+{"candidates": [{"id": "op1", "ucb_frr": 0.04}, {"id": "op2", "ucb_frr": 0.06}], "eligible": ["op1"], "status": "feasible", "eligibility": "ucb_frr_le_frr_cap"}

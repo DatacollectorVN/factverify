@@ -1,0 +1,17 @@
+locality_margins:
+  same_subject:
+    statistic: delta_loc
+    orientation: upper
+    margin: {value: 10, unit: percentage_points}
+  same_relation:
+    statistic: delta_loc
+    orientation: upper
+    margin: {value: 10, unit: percentage_points}
+  compositional:
+    statistic: delta_loc
+    orientation: upper
+    margin: {value: 10, unit: percentage_points}
+  global:
+    statistic: delta_loc
+    orientation: upper
+    margin: {value: 10, unit: percentage_points}

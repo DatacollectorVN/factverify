@@ -1,0 +1,13 @@
+{
+  "case_id": "case-inf",
+  "checkpoint_ledger_id": "led-1",
+  "fact_id": "fact-1",
+  "split": "calibration",
+  "spec_revision": "fixture-eval",
+  "access_label": "A",
+  "identifiability": "identifiable",
+  "answers": ["Zephyr"],
+  "probes": [
+    {"probe_id": "probe_inf", "probe_class": "template", "template_id": "tmpl_infer", "group_id": "grp_infer", "prompt": "Given the hint, where?", "family_id": "inference"}
+  ]
+}

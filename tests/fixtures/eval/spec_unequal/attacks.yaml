@@ -1,0 +1,101 @@
+revision: "fixture-eval"
+common_cap: 4
+accounting:
+  generation_trial_unit:
+    name: "generation_trial"
+    multiplicity_rule: "N completions from one request = N trials"
+  candidate_scoring_unit:
+    name: "candidate_score"
+    multiplicity_rule: "Each scored sequence is one operation"
+  cost_vector_fields: [tokens, scored_candidates, training_steps, exports, wall_clock]
+  unused_confirmation_reallocation: false
+  cache_policy:
+    policy_id: "cache_hit"
+    charge_rule: "zero_new_compute"
+    observation_charged: true
+  retry_policy:
+    policy_id: "retry"
+    charge_rule: "charged"
+    observation_charged: true
+    charges_original_failure: true
+  failure_policy:
+    policy_id: "failure"
+    charge_rule: "charged"
+    observation_charged: false
+  discard_policy:
+    policy_id: "discard"
+    charge_rule: "charged"
+    observation_charged: true
+  reference_cost_policy:
+    policy_id: "reference"
+    charge_rule: "separately_reported"
+    observation_charged: true
+arms:
+  - arm_id: "native"
+    total: 4
+    channel_allocations:
+      - channel_id: "prompt_variation"
+        trials: 2
+      - channel_id: "confirmation"
+        trials: 1
+      - channel_id: "locality"
+        trials: 1
+  - arm_id: "semantic_only"
+    total: 4
+    channel_allocations:
+      - channel_id: "prompt_variation"
+        trials: 2
+      - channel_id: "confirmation"
+        trials: 1
+      - channel_id: "locality"
+        trials: 1
+  - arm_id: "factverify"
+    total: 5
+    channel_allocations:
+      - channel_id: "prompt_variation"
+        trials: 2
+      - channel_id: "repeated_sampling"
+        trials: 1
+      - channel_id: "confirmation"
+        trials: 1
+      - channel_id: "locality"
+        trials: 1
+channels:
+  - id: "prompt_variation"
+    enabled: true
+    capability_requirements:
+      observation: true
+  - id: "repeated_sampling"
+    enabled: true
+    capability_requirements:
+      observation: true
+  - id: "confirmation"
+    enabled: true
+    capability_requirements:
+      observation: true
+  - id: "locality"
+    enabled: true
+    capability_requirements:
+      observation: true
+  - id: "raw_likelihood"
+    enabled: true
+    capability_requirements:
+      observation: true
+      raw_scores: true
+blocking_decisions:
+  - decision_id: "D-14"
+    status: "closed"
+  - decision_id: "D-17"
+    status: "closed"
+  - decision_id: "D-18"
+    status: "closed"
+  - decision_id: "D-20"
+    status: "closed"
+  - decision_id: "D-21"
+    status: "closed"
+  - decision_id: "D-22"
+    status: "closed"
+  - decision_id: "D-26"
+    status: "closed"
+  - decision_id: "D-27"
+    status: "closed"

@@ -1,0 +1,26 @@
+role: candidate
+method: GA
+base_role: tiny_base
+seed: 3
+split: construction
+spec_revision: spec-v1
+hardware_class: cpu
+determinism_policy: exact
+digest_tolerance: "0"
+target_fact_id: fact-1
+bundle_id: bundle-fact
+source_bundle:
+  - fact_doc
+corpus_dir: tests/fixtures/harness/corpus
+output_dir: tests/fixtures/harness/out/candidate-ga
+tier: pilot
+optimizer: adamw
+learning_rate: 0.0001
+epochs: 1
+batch_size: 1
+max_length: 8
+weight_decay: 0
+parent_adapter: pending
+manifest:
+  forget:
+    - fact_doc

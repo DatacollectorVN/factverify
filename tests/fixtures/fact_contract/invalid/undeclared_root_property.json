@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "factverify:contract:wd-Q1858-P1376-Q881:v1",
+  "fact_id": "factverify:fact:wd-Q1858-P1376-Q881",
+  "extra_field": "bad",
+  "triple": {
+    "subject": {
+      "id": "wikidata:Q1858",
+      "label": "Hà Nội",
+      "source": "wikidata"
+    },
+    "relation": {
+      "id": "wikidata:P1376",
+      "label": "capital of",
+      "source": "wikidata"
+    },
+    "object": {
+      "id": "wikidata:Q881",
+      "label": "Vietnam",
+      "source": "wikidata"
+    }
+  },
+  "aliases": {
+    "subject": [
+      {
+        "text": "Hà Nội",
+        "language": "vi",
+        "alias_type": "canonical"
+      }
+    ],
+    "relation": [
+      {
+        "text": "capital of",
+        "language": "en",
+        "argument_order": "subject_relation_object"
+      }
+    ],
+    "object": [
+      {
+        "text": "Vietnam",
+        "language": "en",
+        "alias_type": "canonical"
+      }
+    ]
+  },
+  "equivalent_directions": [
+    {
+      "direction": "forward",
+      "given": "subject",
+      "answer": "object"
+    },
+    {
+      "direction": "inverse",
+      "given": "object",
+      "answer": "subject"
+    }
+  ],
+  "retained_neighbourhood": [
+    {
+      "id": "retain:hanoi-population",
+      "bucket": "same_subject",
+      "statement": "What is the population of Hà Nội?"
+    },
+    {
+      "id": "retain:capital-of-laos",
+      "bucket": "same_relation",
+      "statement": "What is the capital of Laos?"
+    },
+    {
+      "id": "retain:hanoi-country-language",
+      "bucket": "compositional",
+      "statement": "What language is spoken in the capital of Vietnam?"
+    },
+    {
+      "id": "retain:earth-sun-distance",
+      "bucket": "global",
+      "statement": "What is the distance from Earth to the Sun?"
+    }
+  ],
+  "clue_boundary": {
+    "equivalent_rule": "Any prompt whose answer set is exactly {Hà Nội} given the relation 'capital of' and object 'Vietnam'.",
+    "clue_bearing_rule": "Prompts that mention Vietnam, capital, or governance context without naming Hà Nội directly.",
+    "ambiguous_policy": "adjudicate_before_freeze_else_exploratory"
+  }
+}

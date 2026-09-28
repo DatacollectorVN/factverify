@@ -1,0 +1,26 @@
+# .factverify/spec/models.yaml
+# P0-8 — Model identity pinning
+# SPEC ARTIFACT — do not edit after spec-v1 without an amendment record.
+# Blocking decisions: D-46 (Blocks 0-2 model), D-47 (Block 3 model),
+#                    D-48 (dtype/precision), D-49 (base vs instruct)
+
+roles:
+  blocks_0_2:
+    repo_id: DECISION_REQUIRED         # D-46
+    model_revision: DECISION_REQUIRED  # D-46 — must be 40-char hex commit SHA
+    tokenizer_revision: DECISION_REQUIRED
+    variant: DECISION_REQUIRED         # D-49 — "base" or "instruct"
+    dtype: DECISION_REQUIRED           # D-48 — e.g. "float32" or "bfloat16"
+    licence: DECISION_REQUIRED         # D-46 — SPDX id or "custom:<url>"
+    files: {}                          # sha256 digests — populated after download
+
+  block_3_confirmation:
+    status: pending                    # staged commitment — D-47
+    deadline: null                     # set before P6; required when status: pending
+    repo_id: DECISION_REQUIRED
+    model_revision: DECISION_REQUIRED
+    tokenizer_revision: DECISION_REQUIRED
+    variant: DECISION_REQUIRED
+    dtype: DECISION_REQUIRED
+    licence: DECISION_REQUIRED
+    files: {}

@@ -1,0 +1,12 @@
+# tests/fixtures/models_spec/invalid/missing_field.yaml
+# blocks_0_2 is missing the "licence" field — fails FV-SPEC-089.
+
+roles:
+  blocks_0_2:
+    repo_id: test-org/test-model
+    model_revision: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    tokenizer_revision: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    variant: base
+    dtype: float32
+    # licence field intentionally omitted
+    files: {}

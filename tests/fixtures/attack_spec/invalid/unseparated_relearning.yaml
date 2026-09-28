@@ -1,0 +1,99 @@
+spec_version: "0.1.0-demo"
+revision: "0.1.0-demo"
+
+upstream_refs:
+  fact_contract_schema: ".factverify/spec/fact_contract.schema.json"
+  closure_templates: ".factverify/spec/closure_templates.yaml"
+  access_profile: ".factverify/spec/access_profile.md"
+
+common_cap: 4
+
+accounting:
+  generation_trial_unit:
+    name: "generation_trial"
+    definition: "One prompt evaluated on one checkpoint"
+    multiplicity_rule: "N completions = N trials"
+    identity_fields: ["prompt", "checkpoint", "sample_index", "decoding_config"]
+  candidate_scoring_unit:
+    name: "candidate_score"
+    definition: "One teacher-forced scoring"
+    multiplicity_rule: "Each scored sequence is one operation"
+    identity_fields: ["prompt", "checkpoint", "candidate_sequence"]
+  cost_vector_fields: ["tokens"]
+  cache_policy:
+    policy_id: "cache_hit"
+    charge_rule: "zero_new_compute"
+    observation_charged: true
+    distinction: "Cache reuse"
+  retry_policy:
+    policy_id: "retry"
+    charge_rule: "charged"
+    observation_charged: true
+    distinction: "Retry"
+  failure_policy:
+    policy_id: "failure"
+    charge_rule: "charged"
+    observation_charged: false
+    distinction: "Failure"
+  discard_policy:
+    policy_id: "discard"
+    charge_rule: "charged"
+    observation_charged: true
+    distinction: "Discard"
+  reference_cost_policy:
+    policy_id: "reference"
+    charge_rule: "separately_reported"
+    observation_charged: true
+    distinction: "Reference"
+
+arms:
+  - arm_id: "native"
+    total: 4
+    channel_allocations:
+      - channel_id: "prompt_variation"
+        trials: 4
+        purpose: "Probes"
+  - arm_id: "semantic_only"
+    total: 4
+    channel_allocations:
+      - channel_id: "prompt_variation"
+        trials: 4
+        purpose: "Probes"
+  - arm_id: "factverify"
+    total: 4
+    channel_allocations:
+      - channel_id: "prompt_variation"
+        trials: 4
+        purpose: "Probes"
+
+channels:
+  - id: "prompt_variation"
+    name: "Prompt Variation"
+    enabled: true
+    purpose: "Test probes"
+    capability_requirements:
+      observation: true
+    policy_source: "closure_templates.yaml"
+    budget_source: "arms[*]"
+    reporting_condition: "Always"
+
+relearning:
+  enabled: true
+  conditions:
+    - condition_id: "relearn_target_free"
+      exposure_type: "target_free"
+      data_source: "retain_only_corpus"
+      schedule: "5 epochs, lr=1e-4"
+      optimizer: "AdamW"
+      trainable_parameters: "LoRA rank-8"
+      held_out_evaluation: "20% validation"
+      reporting_contract:
+        reached_format: "epochs_to_recovery"
+        unreached_format: "censored_at_max_epochs"
+        substitution_prohibited: true
+    # Missing: target_exposed condition — should fail
+
+blocking_decisions:
+  - decision_id: "D-17"
+    description: "Total trial cap"
+    status: "open"

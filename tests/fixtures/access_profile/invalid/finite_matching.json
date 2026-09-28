@@ -1,0 +1,15 @@
+{
+  "justification_id": "just_bad_emp",
+  "revision": "1.0.0",
+  "system_pair": ["candidate", "reference"],
+  "observation_boundary": "text_only_serving_output",
+  "permitted_queries": ["direct_prompt"],
+  "historical_access": [],
+  "argument_type": "empirical",
+  "argument_summary": "One matching refusal establishes non-identifiability.",
+  "reviewer_id": "reviewer_beta",
+  "review_date": "2026-09-21",
+  "limitations": [
+    "Scoped to a single query type"
+  ]
+}

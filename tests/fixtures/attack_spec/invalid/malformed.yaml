@@ -1,0 +1,8 @@
+spec_version: "0.1.0-demo"
+arms:
+  - arm_id: "native"
+    total: 12
+    channel_allocations:
+      - channel_id: "prompt_variation"
+        trials: [12
+        purpose: "broken bracket
