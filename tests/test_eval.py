@@ -501,7 +501,12 @@ def _gateway(bundle: object) -> object:
     from src.eval.spec_load import SpecBundle
 
     assert isinstance(bundle, SpecBundle)
-    return Gateway(Accountant(bundle, "native"), ScriptedModel(), DictCache())
+    return Gateway(
+        Accountant(bundle, "native"),
+        ScriptedModel(),
+        DictCache(),
+        identity_hash="fixture",
+    )
 
 
 def _semantic_case(case_id: str, families: list[str]) -> object:

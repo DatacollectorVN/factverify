@@ -42,6 +42,8 @@ def build_control(
     *,
     spec_root: Path,
     ledger: ControlLedgerPort,
+    git_commit: str,
+    dirty: bool,
     behavior: BehaviorPort | None = None,
     trainer: TrainerPort | None = None,
     parent_model: ModelPort | None = None,
@@ -102,13 +104,15 @@ def build_control(
         raise ControlError("mechanism_layer")
     cost.finish(0, 0)
     if outcome_status == "unchecked":
-        _commit(ledger, config, cost, "unchecked")
+        _commit(ledger, config, cost, "unchecked", git_commit=git_commit, dirty=dirty)
         raise ControlError(error_name)
     if outcome_status == "rejected":
         if rejection is None:
             raise ControlError("rejection")
         _write_rejection(config, rejection)
-        ledger_id = _commit(ledger, config, cost, "rejected")
+        ledger_id = _commit(
+            ledger, config, cost, "rejected", git_commit=git_commit, dirty=dirty
+        )
         return BuildResult("rejected", None, ledger_id, access_log, None, None)
     flag = expected_identifiability(config.family, spec)
     label = ControlLabel(
@@ -131,7 +135,9 @@ def build_control(
     label.artifact_digest = digest
     label_path = config.output_dir / "control.json"
     write_label(label_path, label)
-    ledger_id = _commit(ledger, config, cost, "accepted")
+    ledger_id = _commit(
+        ledger, config, cost, "accepted", git_commit=git_commit, dirty=dirty
+    )
     artifact = ControlArtifact(config.family, port)
     return BuildResult("accepted", label_path, ledger_id, access_log, digest, artifact)
 
@@ -153,7 +159,13 @@ def _untouched_layer(decisions: dict[str, DecisionRow]) -> tuple[str, str, str]:
 
 
 def _commit(
-    ledger: ControlLedgerPort, config: ControlConfig, cost: CostRecord, status: str
+    ledger: ControlLedgerPort,
+    config: ControlConfig,
+    cost: CostRecord,
+    status: str,
+    *,
+    git_commit: str,
+    dirty: bool,
 ) -> str:
     return ledger.commit(
         LedgerRow(
@@ -171,6 +183,13 @@ def _commit(
             wall_clock_seconds=cost.wall_clock_seconds,
             gpu_hours=cost.gpu_hours,
             peak_memory_bytes=cost.peak_memory_bytes,
+            git_commit=git_commit,
+            dirty=dirty,
+            tokens=0,
+            scored_candidates=0,
+            exports=0,
+            training_steps=cost.training_steps,
+            training_examples=cost.training_examples,
         )
     )
 

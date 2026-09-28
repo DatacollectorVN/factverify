@@ -1,84 +1,212 @@
-"""Generation cache keyed by (model_hash, prompt_hash, decoding_params).
-
-Avoids redundant model queries across evaluators and runs.
-"""
+"""Generation cache. A read always returns an event. The work tree is not used."""
 
 from __future__ import annotations
 
-import hashlib
 import json
 import sqlite3
-from dataclasses import dataclass
+from collections.abc import Callable
+from datetime import UTC, datetime
 from pathlib import Path
 
-CACHE_DB = Path(__file__).resolve().parent.parent.parent / ".cache" / "generations.db"
+from src.cache.errors import CacheError
+from src.cache.key import (
+    CacheBody,
+    CacheEntry,
+    CacheEvent,
+    CacheRequest,
+    cache_key,
+    content_digest,
+)
 
-SCHEMA = """
-CREATE TABLE IF NOT EXISTS generations (
-    model_hash     TEXT NOT NULL,
-    prompt_hash    TEXT NOT NULL,
-    decoding_key   TEXT NOT NULL,
-    response       TEXT NOT NULL,
-    created_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
-    PRIMARY KEY (model_hash, prompt_hash, decoding_key)
+_DDL = """
+CREATE TABLE IF NOT EXISTS entries (
+    cache_key TEXT PRIMARY KEY,
+    body TEXT NOT NULL,
+    token_count INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    content_digest TEXT NOT NULL,
+    producer_run_id TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS events (
+    event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cache_key TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    stored_digest TEXT,
+    new_digest TEXT,
+    created_at TEXT NOT NULL
 );
 """
 
 
-def _hash(text: str) -> str:
-    return hashlib.sha256(text.encode()).hexdigest()[:16]
+class Cache:
+    """SQLite cache rooted at a caller-supplied directory."""
 
-
-def decoding_key(params: dict[str, object]) -> str:
-    blob = json.dumps(params, sort_keys=True, ensure_ascii=True)
-    return _hash(blob)
-
-
-@dataclass
-class GenerationCache:
-    db_path: Path = CACHE_DB
-    _conn: sqlite3.Connection | None = None
-
-    def _get_conn(self) -> sqlite3.Connection:
-        if self._conn is None:
-            self.db_path.parent.mkdir(parents=True, exist_ok=True)
-            self._conn = sqlite3.connect(str(self.db_path))
-            self._conn.executescript(SCHEMA)
-        return self._conn
-
-    def get(
-        self,
-        model_hash: str,
-        prompt_hash: str,
-        decoding_params: dict[str, object],
-    ) -> str | None:
-        conn = self._get_conn()
-        row = conn.execute(
-            "SELECT response FROM generations"
-            " WHERE model_hash=? AND prompt_hash=? AND decoding_key=?",
-            (model_hash, prompt_hash, decoding_key(decoding_params)),
-        ).fetchone()
-        return row[0] if row else None
-
-    def put(
-        self,
-        model_hash: str,
-        prompt_hash: str,
-        decoding_params: dict[str, object],
-        response: str,
+    def __init__(
+        self, connection: sqlite3.Connection, root: Path, decisions: Path
     ) -> None:
-        conn = self._get_conn()
-        conn.execute(
-            """
-            INSERT OR REPLACE INTO generations
-                (model_hash, prompt_hash, decoding_key, response)
-            VALUES (?, ?, ?, ?)
-            """,
-            (model_hash, prompt_hash, decoding_key(decoding_params), response),
-        )
-        conn.commit()
+        self.connection = connection
+        self.root = root
+        self.decisions = decisions
 
-    def close(self) -> None:
-        if self._conn:
-            self._conn.close()
-            self._conn = None
+    def events(self) -> tuple[CacheEvent, ...]:
+        """Events in insert order."""
+        rows = self.connection.execute(
+            "SELECT kind, stored_digest, new_digest FROM events ORDER BY event_id"
+        ).fetchall()
+        return tuple(
+            CacheEvent(
+                kind=str(row["kind"]),
+                stored_digest=None
+                if row["stored_digest"] is None
+                else str(row["stored_digest"]),
+                new_digest=None
+                if row["new_digest"] is None
+                else str(row["new_digest"]),
+            )
+            for row in rows
+        )
+
+
+def open_cache(root: Path, *, decisions: Path) -> Cache:
+    """Refuse a root inside .factverify. Create the store directory otherwise."""
+    resolved = root.resolve()
+    if ".factverify" in resolved.parts:
+        raise CacheError("location")
+    if not decisions.is_file():
+        raise CacheError("decisions")
+    resolved.mkdir(parents=True, exist_ok=True)
+    connection = sqlite3.connect(str(resolved / "cache.sqlite"), isolation_level=None)
+    connection.row_factory = sqlite3.Row
+    connection.executescript(_DDL)
+    return Cache(connection, resolved, decisions)
+
+
+def get_or_compute(
+    cache: Cache,
+    request: CacheRequest,
+    compute: Callable[[], CacheBody],
+) -> tuple[CacheEntry, CacheEvent]:
+    """Return the stored body or the computed body, and exactly one event."""
+    key = cache_key(request, decisions=cache.decisions)
+    row = cache.connection.execute(
+        "SELECT * FROM entries WHERE cache_key = ?",
+        (key,),
+    ).fetchone()
+    if row is None:
+        produced = compute()
+        entry = _insert(cache, key, produced, request.producer_run_id)
+        event = CacheEvent("miss")
+        _record(cache, key, event)
+        return entry, event
+    stored_body = _load_body(str(row["body"]))
+    actual = content_digest(stored_body)
+    recorded = str(row["content_digest"])
+    if actual != recorded:
+        produced = compute()
+        entry = _replace(cache, key, produced, request.producer_run_id)
+        event = CacheEvent(
+            "corrupt", stored_digest=recorded, new_digest=entry.content_digest
+        )
+        _record(cache, key, event)
+        return entry, event
+    if str(row["producer_run_id"]) == request.producer_run_id:
+        entry = _entry_from_row(row, stored_body)
+        event = CacheEvent("hit")
+        _record(cache, key, event)
+        return entry, event
+    produced = compute()
+    new_digest = content_digest(produced.body)
+    if new_digest == recorded:
+        entry = _entry_from_row(row, stored_body)
+        event = CacheEvent("hit", stored_digest=recorded, new_digest=new_digest)
+        _record(cache, key, event)
+        return entry, event
+    event = CacheEvent("conflict", stored_digest=recorded, new_digest=new_digest)
+    _record(cache, key, event)
+    raise CacheError("conflict", event)
+
+
+def _insert(
+    cache: Cache, key: str, produced: CacheBody, producer_run_id: str
+) -> CacheEntry:
+    created_at = datetime.now(UTC).isoformat()
+    digest = content_digest(produced.body)
+    cache.connection.execute(
+        """
+        INSERT INTO entries (
+            cache_key, body, token_count, created_at, content_digest, producer_run_id
+        ) VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            key,
+            json.dumps(produced.body, sort_keys=True),
+            produced.token_count,
+            created_at,
+            digest,
+            producer_run_id,
+        ),
+    )
+    return CacheEntry(
+        produced.body, produced.token_count, created_at, digest, producer_run_id
+    )
+
+
+def _replace(
+    cache: Cache, key: str, produced: CacheBody, producer_run_id: str
+) -> CacheEntry:
+    created_at = datetime.now(UTC).isoformat()
+    digest = content_digest(produced.body)
+    cache.connection.execute(
+        """
+        UPDATE entries
+        SET body = ?, token_count = ?, created_at = ?, content_digest = ?,
+            producer_run_id = ?
+        WHERE cache_key = ?
+        """,
+        (
+            json.dumps(produced.body, sort_keys=True),
+            produced.token_count,
+            created_at,
+            digest,
+            producer_run_id,
+            key,
+        ),
+    )
+    return CacheEntry(
+        produced.body, produced.token_count, created_at, digest, producer_run_id
+    )
+
+
+def _entry_from_row(row: sqlite3.Row, body: str | dict[str, object]) -> CacheEntry:
+    return CacheEntry(
+        body=body,
+        token_count=int(row["token_count"]),
+        created_at=str(row["created_at"]),
+        content_digest=str(row["content_digest"]),
+        producer_run_id=str(row["producer_run_id"]),
+    )
+
+
+def _load_body(stored: str) -> str | dict[str, object]:
+    loaded = json.loads(stored)
+    if isinstance(loaded, str):
+        return loaded
+    if isinstance(loaded, dict):
+        return {str(key): value for key, value in loaded.items()}
+    raise CacheError("body")
+
+
+def _record(cache: Cache, key: str, event: CacheEvent) -> None:
+    cache.connection.execute(
+        """
+        INSERT INTO events (cache_key, kind, stored_digest, new_digest, created_at)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (
+            key,
+            event.kind,
+            event.stored_digest,
+            event.new_digest,
+            datetime.now(UTC).isoformat(),
+        ),
+    )

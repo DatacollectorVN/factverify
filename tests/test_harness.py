@@ -63,6 +63,13 @@ def _prior_reference(seed: int, split: str) -> CheckpointRow:
         peak_memory_bytes=0,
         training_steps=0,
         training_examples=0,
+        family="finetune",
+        implementation_id="",
+        git_commit="fixture",
+        dirty=False,
+        tokens=0,
+        scored_candidates=0,
+        exports=0,
     )
 
 
@@ -73,7 +80,13 @@ def test_fv_harn_001_config_complete(harness_spec_root: Path, tmp_path: Path) ->
         tmp_path / "finetune.yaml",
         output_dir=str(tmp_path / "ft"),
     )
-    result = run_job(complete, spec_root=harness_spec_root, ledger=InMemoryLedger())
+    result = run_job(
+        complete,
+        spec_root=harness_spec_root,
+        git_commit="fixture",
+        dirty=False,
+        ledger=InMemoryLedger(),
+    )
     assert result.status == "succeeded"
     assert result.adapter_path is not None
     meta = _read_meta(result.adapter_path)
@@ -86,7 +99,13 @@ def test_fv_harn_001_config_complete(harness_spec_root: Path, tmp_path: Path) ->
         output_dir=str(missing_out),
     )
     with pytest.raises(FactVerifyHarnessError, match="learning_rate"):
-        run_job(missing, spec_root=harness_spec_root, ledger=InMemoryLedger())
+        run_job(
+            missing,
+            spec_root=harness_spec_root,
+            git_commit="fixture",
+            dirty=False,
+            ledger=InMemoryLedger(),
+        )
     assert not missing_out.exists()
 
 
@@ -99,11 +118,23 @@ def test_fv_harn_002_seeded(harness_spec_root: Path, tmp_path: Path) -> None:
         seed=0,
     )
     ledger = InMemoryLedger()
-    first = run_job(first_cfg, spec_root=harness_spec_root, ledger=ledger)
+    first = run_job(
+        first_cfg,
+        spec_root=harness_spec_root,
+        git_commit="fixture",
+        dirty=False,
+        ledger=ledger,
+    )
     assert first.adapter_path is not None
     side = tmp_path / "same-copy"
     shutil.copytree(first.adapter_path, side)
-    second = run_job(first_cfg, spec_root=harness_spec_root, ledger=InMemoryLedger())
+    second = run_job(
+        first_cfg,
+        spec_root=harness_spec_root,
+        git_commit="fixture",
+        dirty=False,
+        ledger=InMemoryLedger(),
+    )
     assert second.adapter_path is not None
     assert (
         _read_meta(side)["data_order"] == _read_meta(second.adapter_path)["data_order"]
@@ -125,8 +156,20 @@ def test_fv_harn_002_seeded(harness_spec_root: Path, tmp_path: Path) -> None:
         seed=1,
         manifest={"train": three},
     )
-    run_a = run_job(seed_a, spec_root=harness_spec_root, ledger=InMemoryLedger())
-    run_b = run_job(seed_b, spec_root=harness_spec_root, ledger=InMemoryLedger())
+    run_a = run_job(
+        seed_a,
+        spec_root=harness_spec_root,
+        git_commit="fixture",
+        dirty=False,
+        ledger=InMemoryLedger(),
+    )
+    run_b = run_job(
+        seed_b,
+        spec_root=harness_spec_root,
+        git_commit="fixture",
+        dirty=False,
+        ledger=InMemoryLedger(),
+    )
     assert run_a.adapter_path is not None and run_b.adapter_path is not None
     meta_a = _read_meta(run_a.adapter_path)
     meta_b = _read_meta(run_b.adapter_path)
@@ -142,7 +185,13 @@ def test_fv_harn_006_manifest_only(harness_spec_root: Path, tmp_path: Path) -> N
         tmp_path / "finetune.yaml",
         output_dir=str(tmp_path / "ft"),
     )
-    result = run_job(config, spec_root=harness_spec_root, ledger=InMemoryLedger())
+    result = run_job(
+        config,
+        spec_root=harness_spec_root,
+        git_commit="fixture",
+        dirty=False,
+        ledger=InMemoryLedger(),
+    )
     assert result.status == "succeeded"
     assert set(result.access_log) == {"retain_a"}
     catalog = DataCatalog(CORPUS, ["retain_a"])
@@ -159,7 +208,13 @@ def test_fv_harn_007_metadata(
         tmp_path / "finetune.yaml",
         output_dir=str(tmp_path / "ft"),
     )
-    result = run_job(config, spec_root=harness_spec_root, ledger=InMemoryLedger())
+    result = run_job(
+        config,
+        spec_root=harness_spec_root,
+        git_commit="fixture",
+        dirty=False,
+        ledger=InMemoryLedger(),
+    )
     assert result.adapter_path is not None
     meta = _read_meta(result.adapter_path)
     base = load_model("tiny_base", spec_root=harness_spec_root)
@@ -195,7 +250,13 @@ def test_fv_harn_007_metadata(
         tmp_path / "finetune-fail.yaml",
         output_dir=str(failed_out),
     )
-    failed = run_job(failed_cfg, spec_root=harness_spec_root, ledger=InMemoryLedger())
+    failed = run_job(
+        failed_cfg,
+        spec_root=harness_spec_root,
+        git_commit="fixture",
+        dirty=False,
+        ledger=InMemoryLedger(),
+    )
     assert failed.status == "failed"
     assert not failed_out.exists()
 
@@ -208,7 +269,13 @@ def test_fv_harn_008_ledger_row(harness_spec_root: Path, tmp_path: Path) -> None
         output_dir=str(tmp_path / "ft"),
     )
     ledger = InMemoryLedger()
-    result = run_job(config, spec_root=harness_spec_root, ledger=ledger)
+    result = run_job(
+        config,
+        spec_root=harness_spec_root,
+        git_commit="fixture",
+        dirty=False,
+        ledger=ledger,
+    )
     assert result.status == "succeeded"
     succeeded = [row for row in ledger.rows if row.status == "succeeded"]
     assert len(succeeded) == 1
@@ -226,6 +293,8 @@ def test_fv_harn_008_ledger_row(harness_spec_root: Path, tmp_path: Path) -> None
     boom = run_job(
         boom_cfg,
         spec_root=harness_spec_root,
+        git_commit="fixture",
+        dirty=False,
         ledger=InMemoryLedger(fail_commit=True),
     )
     assert boom.status == "failed"
@@ -242,7 +311,13 @@ def test_fv_harn_009_cost(
         output_dir=str(tmp_path / "ft"),
     )
     ledger = InMemoryLedger()
-    result = run_job(config, spec_root=harness_spec_root, ledger=ledger)
+    result = run_job(
+        config,
+        spec_root=harness_spec_root,
+        git_commit="fixture",
+        dirty=False,
+        ledger=ledger,
+    )
     assert result.status == "succeeded"
     row = ledger.rows[0]
     assert row.training_examples >= 1
@@ -264,7 +339,13 @@ def test_fv_harn_009_cost(
         output_dir=str(crash_out),
     )
     crash_ledger = InMemoryLedger()
-    crashed = run_job(crash_cfg, spec_root=harness_spec_root, ledger=crash_ledger)
+    crashed = run_job(
+        crash_cfg,
+        spec_root=harness_spec_root,
+        git_commit="fixture",
+        dirty=False,
+        ledger=crash_ledger,
+    )
     assert crashed.status == "failed"
     assert not crash_out.exists()
     failed = crash_ledger.rows[0]
@@ -294,7 +375,13 @@ def test_fv_harn_003_bundle_excluded(harness_spec_root: Path, tmp_path: Path) ->
         output_dir=str(tmp_path / "ref"),
         paired_finetune_config=str(paired),
     )
-    result = run_job(ok, spec_root=harness_spec_root, ledger=InMemoryLedger())
+    result = run_job(
+        ok,
+        spec_root=harness_spec_root,
+        git_commit="fixture",
+        dirty=False,
+        ledger=InMemoryLedger(),
+    )
     assert result.status == "succeeded"
     assert result.adapter_path is not None
     assert _read_meta(result.adapter_path)["excluded_bundle_id"] == "bundle-fact"
@@ -307,7 +394,13 @@ def test_fv_harn_003_bundle_excluded(harness_spec_root: Path, tmp_path: Path) ->
         paired_finetune_config=str(paired),
     )
     with pytest.raises(FactVerifyHarnessError, match="fact_doc"):
-        run_job(leak, spec_root=harness_spec_root, ledger=InMemoryLedger())
+        run_job(
+            leak,
+            spec_root=harness_spec_root,
+            git_commit="fixture",
+            dirty=False,
+            ledger=InMemoryLedger(),
+        )
     assert not leak_out.exists()
 
 
@@ -320,7 +413,13 @@ def test_fv_harn_004_matched_procedure(harness_spec_root: Path, tmp_path: Path) 
         output_dir=str(tmp_path / "ref"),
         paired_finetune_config=str(paired),
     )
-    result = run_job(ok, spec_root=harness_spec_root, ledger=InMemoryLedger())
+    result = run_job(
+        ok,
+        spec_root=harness_spec_root,
+        git_commit="fixture",
+        dirty=False,
+        ledger=InMemoryLedger(),
+    )
     assert result.status == "succeeded"
     assert result.adapter_path is not None
     assert _read_meta(result.adapter_path)["paired_finetune_config_hash"] == _file_hash(
@@ -334,7 +433,13 @@ def test_fv_harn_004_matched_procedure(harness_spec_root: Path, tmp_path: Path) 
         paired_finetune_config=str(paired),
     )
     with pytest.raises(FactVerifyHarnessError, match="learning_rate"):
-        run_job(bad, spec_root=harness_spec_root, ledger=InMemoryLedger())
+        run_job(
+            bad,
+            spec_root=harness_spec_root,
+            git_commit="fixture",
+            dirty=False,
+            ledger=InMemoryLedger(),
+        )
 
 
 def test_fv_harn_010_seed_disjoint(harness_spec_root: Path, tmp_path: Path) -> None:
@@ -349,7 +454,13 @@ def test_fv_harn_010_seed_disjoint(harness_spec_root: Path, tmp_path: Path) -> N
     conflict = InMemoryLedger()
     conflict.rows.append(_prior_reference(seed=7, split="final_test"))
     with pytest.raises(FactVerifyHarnessError, match="seed 7"):
-        run_job(config, spec_root=harness_spec_root, ledger=conflict)
+        run_job(
+            config,
+            spec_root=harness_spec_root,
+            git_commit="fixture",
+            dirty=False,
+            ledger=conflict,
+        )
 
     fresh = _write_job(
         JOBS / "reference_ok.yaml",
@@ -357,7 +468,13 @@ def test_fv_harn_010_seed_disjoint(harness_spec_root: Path, tmp_path: Path) -> N
         output_dir=str(tmp_path / "ref-fresh"),
         paired_finetune_config=str(paired),
     )
-    result = run_job(fresh, spec_root=harness_spec_root, ledger=InMemoryLedger())
+    result = run_job(
+        fresh,
+        spec_root=harness_spec_root,
+        git_commit="fixture",
+        dirty=False,
+        ledger=InMemoryLedger(),
+    )
     assert result.status == "succeeded"
 
 
@@ -368,7 +485,13 @@ def test_fv_harn_005_methods(harness_spec_root: Path, tmp_path: Path) -> None:
         tmp_path / "parent.yaml",
         output_dir=str(tmp_path / "parent"),
     )
-    parent = run_job(parent_cfg, spec_root=harness_spec_root, ledger=InMemoryLedger())
+    parent = run_job(
+        parent_cfg,
+        spec_root=harness_spec_root,
+        git_commit="fixture",
+        dirty=False,
+        ledger=InMemoryLedger(),
+    )
     assert parent.adapter_path is not None
     base = load_model("tiny_base", spec_root=harness_spec_root)
     parent_loaded = load_model(
@@ -390,7 +513,13 @@ def test_fv_harn_005_methods(harness_spec_root: Path, tmp_path: Path) -> None:
             output_dir=str(tmp_path / name.replace(".yaml", "")),
             parent_adapter=str(parent.adapter_path),
         )
-        result = run_job(config, spec_root=harness_spec_root, ledger=InMemoryLedger())
+        result = run_job(
+            config,
+            spec_root=harness_spec_root,
+            git_commit="fixture",
+            dirty=False,
+            ledger=InMemoryLedger(),
+        )
         assert result.status == "succeeded"
         assert result.adapter_path is not None
         meta = _read_meta(result.adapter_path)
@@ -418,7 +547,13 @@ def test_fv_harn_005_methods(harness_spec_root: Path, tmp_path: Path) -> None:
         path: path.stat().st_mtime_ns for path in CORPUS.iterdir() if path.is_file()
     }
     with pytest.raises(FactVerifyHarnessError, match="NOT_A_METHOD"):
-        run_job(unknown, spec_root=harness_spec_root, ledger=InMemoryLedger())
+        run_job(
+            unknown,
+            spec_root=harness_spec_root,
+            git_commit="fixture",
+            dirty=False,
+            ledger=InMemoryLedger(),
+        )
     after = {
         path: path.stat().st_mtime_ns for path in CORPUS.iterdir() if path.is_file()
     }

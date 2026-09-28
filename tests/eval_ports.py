@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
+from src.cache.key import CacheBody, CacheEntry, CacheEvent, CacheRequest
 from src.eval.types import Probe
 
 
@@ -41,13 +44,34 @@ class ScriptedModel:
 
 class DictCache:
     def __init__(self) -> None:
-        self.data: dict[tuple[str, str], str] = {}
+        self.data: dict[tuple[object, ...], CacheEntry] = {}
 
-    def get(self, key: tuple[str, str]) -> str | None:
-        return self.data.get(key)
-
-    def put(self, key: tuple[str, str], value: str) -> None:
-        self.data[key] = value
+    def get_or_compute(
+        self,
+        request: CacheRequest,
+        compute: Callable[[], CacheBody],
+    ) -> tuple[CacheEntry, CacheEvent]:
+        key = (
+            request.identity_hash,
+            request.model_input,
+            tuple(sorted(request.decoding.items())),
+            request.seed,
+            request.sample_index,
+            request.request_kind,
+        )
+        found = self.data.get(key)
+        if found is not None:
+            return found, CacheEvent("hit")
+        produced = compute()
+        entry = CacheEntry(
+            body=produced.body,
+            token_count=produced.token_count,
+            created_at="",
+            content_digest="",
+            producer_run_id=request.producer_run_id,
+        )
+        self.data[key] = entry
+        return entry, CacheEvent("miss")
 
 
 class FixedMetrics:

@@ -31,6 +31,13 @@ class CheckpointRow:
     peak_memory_bytes: int
     training_steps: int
     training_examples: int
+    family: str
+    implementation_id: str
+    git_commit: str
+    dirty: bool
+    tokens: int
+    scored_candidates: int
+    exports: int
 
 
 class LedgerPort(Protocol):

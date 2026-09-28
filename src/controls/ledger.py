@@ -34,6 +34,13 @@ class LedgerRow:
     wall_clock_seconds: float
     gpu_hours: float
     peak_memory_bytes: int
+    git_commit: str
+    dirty: bool
+    tokens: int
+    scored_candidates: int
+    exports: int
+    training_steps: int
+    training_examples: int
 
 
 class ControlLedgerPort(Protocol):

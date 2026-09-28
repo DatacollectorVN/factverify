@@ -25,7 +25,7 @@ import os
 import sys
 import time
 from pathlib import Path
-
+import re as _re
 import click
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -125,7 +125,7 @@ def _call_claude(
     response = client.messages.create(  # type: ignore[attr-defined]
         model=model_id,
         max_tokens=max_tokens,
-        temperature=temperature,
+        extra_body={"temperature": temperature},
         system=_SYSTEM,
         messages=[{"role": "user", "content": user_content}],
     )
@@ -149,10 +149,20 @@ def _parse_mentions(
     Skips entries whose span is out-of-bounds or whose slice doesn't
     exist in the field text (FV-DATA-002 criterion 2).
     """
+    # Extract the last valid JSON object from the response.
+    # Claude sometimes self-corrects mid-response producing multiple code blocks;
+    # the last ```json ... ``` block is always the final answer.
+
+    blocks = _re.findall(r"```(?:json)?\s*(\{.*?\})\s*```", raw, _re.DOTALL)
+    candidate = blocks[-1] if blocks else raw.strip()
     try:
-        data = json.loads(raw)
-    except json.JSONDecodeError as exc:
-        raise ValueError(f"Claude returned non-JSON: {raw!r}") from exc
+        data = json.loads(candidate)
+    except json.JSONDecodeError:
+        # Last resort: try the raw text directly.
+        try:
+            data = json.loads(raw.strip())
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Claude returned non-JSON: {raw!r}") from exc
 
     field_texts = {"question": question, "answer": answer}
     mentions: list[Mention] = []

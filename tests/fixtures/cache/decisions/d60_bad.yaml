@@ -1,0 +1,2 @@
+decisions:
+  - {decision_id: D-60, status: closed, include_software_versions: maybe}

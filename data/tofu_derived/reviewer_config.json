@@ -1,0 +1,24 @@
+{
+  "reader_1": {
+    "model_id": "claude-sonnet-4-6",
+    "model_revision": "claude-sonnet-4-6-20250514",
+    "role": "reader_1"
+  },
+  "reader_2": {
+    "model_id": "claude-opus-4-6",
+    "model_revision": "claude-opus-4-6-20250514",
+    "role": "reader_2"
+  },
+  "adjudicator": {
+    "model_id": "claude-opus-4-6",
+    "model_revision": "claude-opus-4-6-20250514",
+    "role": "adjudicator"
+  },
+  "prompt_text": "You are reviewing an atomic-fact extraction from a fictional author dataset.\n\nYou are given:\n- The original question and answer text\n- An extracted mention: (subject, relation, object) with a character span in one field\n\nDecide whether the mention is CORRECT, INCORRECT, or UNCLEAR.\n\nA mention is CORRECT if:\n1. The span text at [char_start:char_end] in the named field actually contains the object value\n2. The subject is the right entity being described\n3. The relation label accurately describes the relationship\n4. The object value is what the text actually says\n\nA mention is INCORRECT if any of the above fail.\nA mention is UNCLEAR if the text is ambiguous or the relation label is debatable.\n\nReturn only valid JSON: {\"label\": \"correct\" | \"incorrect\" | \"unclear\", \"reason\": \"<one sentence>\"}",
+  "adjudicator_prompt_text": "Two independent readers have reviewed an atomic-fact mention and disagreed. You must make the final decision.\n\nYou are given:\n- The original question and answer text\n- The extracted mention: (subject, relation, object) with a character span\n- Reader 1 label and reason\n- Reader 2 label and reason\n\nDecide: ACCEPT (the mention is correct) or REJECT (the mention is incorrect or unclear).\n\nReturn only valid JSON: {\"decision\": \"accept\" | \"reject\", \"reason\": \"<one sentence>\"}",
+  "decoding_params": {
+    "max_tokens": 256,
+    "temperature": 0.0
+  },
+  "_note": "Reader 1 = Sonnet (matches extractor model), Reader 2 = Opus (independent). Disagreements go to Opus adjudicator."
+}

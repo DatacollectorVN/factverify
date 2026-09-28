@@ -47,13 +47,22 @@ def run_job(
     *,
     spec_root: Path,
     ledger: LedgerPort,
+    git_commit: str,
+    dirty: bool,
 ) -> JobResult:
     """Train one checkpoint from a job file. Validation failures raise."""
     if not spec_root.exists():
         raise FactVerifyHarnessError(f"unreadable spec root {spec_root}")
     config = load_job_config(config_path)
     paired_hash = _precheck(config, ledger)
-    return _execute(config, spec_root=spec_root, ledger=ledger, paired_hash=paired_hash)
+    return _execute(
+        config,
+        spec_root=spec_root,
+        ledger=ledger,
+        paired_hash=paired_hash,
+        git_commit=git_commit,
+        dirty=dirty,
+    )
 
 
 def _precheck(config: JobConfig, ledger: LedgerPort) -> str | None:
@@ -85,6 +94,8 @@ def _execute(
     spec_root: Path,
     ledger: LedgerPort,
     paired_hash: str | None,
+    git_commit: str,
+    dirty: bool,
 ) -> JobResult:
     digest = config_hash(config)
     cost = CostRecord()
@@ -142,6 +153,8 @@ def _execute(
             cost=cost,
             status="succeeded",
             adapter_path=output_dir,
+            git_commit=git_commit,
+            dirty=dirty,
         )
         ledger.commit_checkpoint(row)
     except FactVerifyLoaderError:
@@ -158,6 +171,8 @@ def _execute(
             digest=digest,
             parent_hash=parent_hash or "unknown-parent",
             cost=cost,
+            git_commit=git_commit,
+            dirty=dirty,
         )
         return JobResult(
             status="failed",
@@ -233,6 +248,8 @@ def _row(
     cost: CostRecord,
     status: str,
     adapter_path: Path | None,
+    git_commit: str,
+    dirty: bool,
 ) -> CheckpointRow:
     return CheckpointRow(
         checkpoint_identity_hash=identity,
@@ -253,6 +270,13 @@ def _row(
         peak_memory_bytes=cost.peak_memory_bytes,
         training_steps=cost.training_steps,
         training_examples=cost.training_examples,
+        family=config.method,
+        implementation_id="",
+        git_commit=git_commit,
+        dirty=dirty,
+        tokens=0,
+        scored_candidates=0,
+        exports=0,
     )
 
 
@@ -263,6 +287,8 @@ def _commit_failure(
     digest: str,
     parent_hash: str,
     cost: CostRecord,
+    git_commit: str,
+    dirty: bool,
 ) -> None:
     row = _row(
         config,
@@ -272,6 +298,8 @@ def _commit_failure(
         cost=cost,
         status="failed",
         adapter_path=None,
+        git_commit=git_commit,
+        dirty=dirty,
     )
     try:
         ledger.commit_checkpoint(row)

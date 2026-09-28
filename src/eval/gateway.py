@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from pathlib import Path
 from typing import Protocol
 
+from src.cache.errors import CacheError
+from src.cache.key import CacheBody, CacheEntry, CacheEvent, CacheRequest
 from src.eval.budget import Accountant
 from src.eval.errors import TransportError
 from src.eval.types import Probe, QueryRequest
@@ -18,9 +21,11 @@ class ModelPort(Protocol):
 
 
 class CachePort(Protocol):
-    def get(self, key: tuple[str, str]) -> str | None: ...
-
-    def put(self, key: tuple[str, str], value: str) -> None: ...
+    def get_or_compute(
+        self,
+        request: CacheRequest,
+        compute: Callable[[], CacheBody],
+    ) -> tuple[CacheEntry, CacheEvent]: ...
 
 
 class MetricPort(Protocol):
@@ -80,36 +85,46 @@ class Gateway:
         model: ModelPort,
         cache: CachePort,
         *,
+        identity_hash: str,
         replay_lines: list[dict[str, object]] | None = None,
     ) -> None:
         self.accountant = accountant
         self.model = model
         self.cache = cache
+        self.identity_hash = identity_hash
         self.replay_lines = replay_lines
         self.pending: dict[str, object] | None = None
         self._started = time.perf_counter()
 
-    def complete(self, probe: Probe, channel_id: str, *, seed: int = 0) -> str:
+    def complete(
+        self,
+        probe: Probe,
+        channel_id: str,
+        *,
+        seed: int = 0,
+        sample_index: int = 1,
+    ) -> str:
         if self.replay_lines is not None:
             return str(self._replay(probe.probe_id, channel_id)["completion"])
-        key = (probe.probe_id, channel_id)
-        cached = self.cache.get(key)
-        if cached is not None:
-            request = self._request(probe, channel_id, "cache_hit", seed)
-            self.accountant.query(channel_id, request)
-            return cached
-        request = self._request(probe, channel_id, "generation", seed)
-        self.accountant.ensure_capacity(channel_id, probe_trials(request), request)
-        try:
-            completion = self.model.complete(probe)
-        except TransportError:
-            failure = self._request(probe, channel_id, "transport_failure", seed)
-            self.accountant.query(channel_id, failure)
-            raise
-        self.accountant.query(channel_id, request)
-        self.cache.put(key, completion)
-        self.pending = self._line(probe, channel_id, completion, seed)
-        return completion
+        request = self._cache_request(probe, seed, sample_index, "generate")
+
+        def compute() -> CacheBody:
+            charged = self._request(probe, channel_id, "generation", seed)
+            self.accountant.ensure_capacity(channel_id, probe_trials(charged), charged)
+            try:
+                text = self.model.complete(probe)
+            except TransportError:
+                failure = self._request(probe, channel_id, "transport_failure", seed)
+                self.accountant.query(channel_id, failure)
+                raise
+            return CacheBody(body=text, token_count=0)
+
+        entry, event = self._cached(
+            channel_id, probe, seed, request, compute, "generation"
+        )
+        if event.kind in {"miss", "corrupt"}:
+            self.pending = self._line(probe, channel_id, str(entry.body), seed)
+        return str(entry.body)
 
     def score(self, probe: Probe, channel_id: str) -> dict[str, float]:
         if self.replay_lines is not None:
@@ -117,14 +132,29 @@ class Gateway:
             if not isinstance(stored, dict):
                 return {}
             return {str(key): float(value) for key, value in stored.items()}
-        request = self._request(probe, channel_id, "candidate_score", 0)
-        self.accountant.query(channel_id, request)
-        raw = self.model.score_candidate(probe)
+        request = self._cache_request(probe, 0, 1, "score")
+
+        def compute() -> CacheBody:
+            raw = self.model.score_candidate(probe)
+            body: dict[str, object] = {key: value for key, value in raw.items()}
+            return CacheBody(body=body, token_count=0)
+
+        entry, _event = self._cached(
+            channel_id, probe, 0, request, compute, "candidate_score"
+        )
+        raw = entry.body
+        if not isinstance(raw, dict):
+            return {}
+        scores: dict[str, float] = {}
+        for key, value in raw.items():
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                return {}
+            scores[str(key)] = float(value)
         if self.pending is not None:
-            scores = self.pending.setdefault("metric_scores", {})
-            if isinstance(scores, dict):
-                scores.update(raw)
-        return raw
+            bucket = self.pending.setdefault("metric_scores", {})
+            if isinstance(bucket, dict):
+                bucket.update(scores)
+        return scores
 
     def note_scores(self, scores: dict[str, float]) -> None:
         if self.pending is None:
@@ -138,6 +168,44 @@ class Gateway:
         self.accountant.wall_clock_seconds = elapsed
         self.accountant.gpu_hours = gpu_hours(elapsed)
         self.accountant.peak_memory_bytes = peak_memory_bytes()
+
+    def _cache_request(
+        self, probe: Probe, seed: int, sample_index: int, request_kind: str
+    ) -> CacheRequest:
+        return CacheRequest(
+            identity_hash=self.identity_hash,
+            model_input=probe.prompt,
+            decoding={"probe_id": probe.probe_id, "seed": seed},
+            seed=seed,
+            sample_index=sample_index,
+            request_kind=request_kind,
+            producer_run_id=self.accountant.arm_id,
+        )
+
+    def _cached(
+        self,
+        channel_id: str,
+        probe: Probe,
+        seed: int,
+        request: CacheRequest,
+        compute: Callable[[], CacheBody],
+        miss_kind: str,
+    ) -> tuple[CacheEntry, CacheEvent]:
+        try:
+            entry, event = self.cache.get_or_compute(request, compute)
+        except CacheError as exc:
+            if exc.message != "conflict":
+                raise
+            charged = self._request(probe, channel_id, "generation", seed)
+            self.accountant.query(channel_id, charged)
+            if exc.event is not None:
+                self.accountant.note_cache_event(exc.event)
+            raise
+        kind = "cache_hit" if event.kind == "hit" else miss_kind
+        charged = self._request(probe, channel_id, kind, seed)
+        self.accountant.query(channel_id, charged)
+        self.accountant.note_cache_event(event)
+        return entry, event
 
     def _replay(self, probe_id: str, channel_id: str) -> dict[str, object]:
         assert self.replay_lines is not None

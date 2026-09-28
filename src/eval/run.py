@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import argparse
 import sys
+from collections.abc import Callable
 from pathlib import Path
 
+from src.cache.key import CacheBody, CacheEntry, CacheEvent, CacheRequest
 from src.eval import evaluate_case
 from src.eval.errors import FactVerifyEvalError
 from src.eval.gateway import CachePort, MetricPort, ModelPort
@@ -15,13 +17,34 @@ from src.eval.types import Bounds, Case, Probe
 
 class _MemoryCache:
     def __init__(self) -> None:
-        self._data: dict[tuple[str, str], str] = {}
+        self._data: dict[tuple[object, ...], CacheEntry] = {}
 
-    def get(self, key: tuple[str, str]) -> str | None:
-        return self._data.get(key)
-
-    def put(self, key: tuple[str, str], value: str) -> None:
-        self._data[key] = value
+    def get_or_compute(
+        self,
+        request: CacheRequest,
+        compute: Callable[[], CacheBody],
+    ) -> tuple[CacheEntry, CacheEvent]:
+        key = (
+            request.identity_hash,
+            request.model_input,
+            tuple(sorted(request.decoding.items())),
+            request.seed,
+            request.sample_index,
+            request.request_kind,
+        )
+        found = self._data.get(key)
+        if found is not None:
+            return found, CacheEvent("hit")
+        produced = compute()
+        entry = CacheEntry(
+            body=produced.body,
+            token_count=produced.token_count,
+            created_at="",
+            content_digest="",
+            producer_run_id=request.producer_run_id,
+        )
+        self._data[key] = entry
+        return entry, CacheEvent("miss")
 
 
 class _FixedMetrics:

@@ -50,7 +50,9 @@ def score_native(
         raise FactVerifyEvalError(probe.template_id or probe.probe_id)
     if not case.answers:
         raise FactVerifyEvalError("answers")
-    completion = gateway.complete(probe, "prompt_variation", seed=case.seed)
+    completion = gateway.complete(
+        probe, "prompt_variation", seed=case.seed, sample_index=1
+    )
     answer = case.answers[0]
     text_scores = {
         "rouge_l": rouge_l(completion, answer),

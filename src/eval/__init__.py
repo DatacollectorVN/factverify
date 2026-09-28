@@ -125,7 +125,13 @@ def _run_arm(
 ) -> tuple[VerdictRow, BudgetRecord]:
     accountant = Accountant(bundle, arm_id)
     lines = store.read(case.case_id, arm_id) if replay else None
-    gateway = Gateway(accountant, model, cache, replay_lines=lines)
+    gateway = Gateway(
+        accountant,
+        model,
+        cache,
+        identity_hash=case.checkpoint_ledger_id,
+        replay_lines=lines,
+    )
     if case.identifiability == "structurally_indistinguishable":
         verdict = decide(bundle, case, arm_id, [], None, [], tag)
         gateway.finish_measurements()
@@ -185,7 +191,9 @@ def _score_semantic_arm(
     measured: list[tuple[Probe, float, float]] = []
     bound = bound_map.get("prompt_variation", 1.0)
     for probe in primary:
-        completion = gateway.complete(probe, "prompt_variation", seed=case.seed)
+        completion = gateway.complete(
+            probe, "prompt_variation", seed=case.seed, sample_index=1
+        )
         value = rouge_l(completion, case.answers[0])
         gateway.note_scores({"prompt_variation": value})
         _commit(store, case, arm_id, gateway, replay)
@@ -202,7 +210,9 @@ def _score_semantic_arm(
         other = next(
             probe for probe, _, _ in measured if probe.family_id != first_family
         )
-        completion = gateway.complete(other, "confirmation", seed=case.seed)
+        completion = gateway.complete(
+            other, "confirmation", seed=case.seed, sample_index=1
+        )
         value = rouge_l(completion, case.answers[0])
         gateway.note_scores({"confirmation": value})
         _commit(store, case, arm_id, gateway, replay)

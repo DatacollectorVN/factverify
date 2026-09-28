@@ -43,6 +43,7 @@ class Accountant:
     wall_clock_seconds: float = 0.0
     gpu_hours: float = 0.0
     peak_memory_bytes: int = 0
+    cache_events: list[object] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         arm = self.bundle.arms.get(self.arm_id)
@@ -83,6 +84,10 @@ class Accountant:
             return self._charge_reference(target, request)
         observations, new_compute, generated = self._amounts(request)
         return self._consume(target, request, observations, new_compute, generated)
+
+    def note_cache_event(self, event: object) -> None:
+        """Record a cache event. The remaining balance is unchanged."""
+        self.cache_events.append(event)
 
     def budget_record(self) -> BudgetRecord:
         """Cost vector including a positive remainder when the arm stops early."""

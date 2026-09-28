@@ -1,0 +1,7 @@
+n_checkpoints: 30
+n_facts: 5
+n_prompts: 20
+true_fcr: "0.25"
+checkpoint_shift: "0.20"
+n_simulations: 100
+seed: 7

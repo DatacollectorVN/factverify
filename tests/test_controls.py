@@ -108,6 +108,8 @@ def _build(
         path,
         spec_root=spec,
         ledger=ledger,
+        git_commit="fixture",
+        dirty=False,
         behavior=behavior,
         trainer=trainer,
         parent_model=parent_model,
@@ -124,7 +126,12 @@ def _probe(probe_id: str = "p1", group_id: str = "grp-cal") -> Probe:
 
 
 def _gateway(model: ModelPort) -> Gateway:
-    return Gateway(Accountant(load_spec(SPEC_CLOSED), "native"), model, DictCache())
+    return Gateway(
+        Accountant(load_spec(SPEC_CLOSED), "native"),
+        model,
+        DictCache(),
+        identity_hash="fixture",
+    )
 
 
 def _generated(model: ModelPort, artifact: ControlArtifact | None, probe: Probe) -> int:
@@ -539,8 +546,12 @@ def test_fv_ctrl_008_reproducible(tmp_path: Path) -> None:
         output_dir=str(tmp_path / "same-out"),
         decisions=str(DECISIONS / "d53_exact.yaml"),
     )
-    left = build_control(path, spec_root=SPEC_A, ledger=ledger)
-    right = build_control(path, spec_root=SPEC_A, ledger=ledger)
+    left = build_control(
+        path, spec_root=SPEC_A, ledger=ledger, git_commit="fixture", dirty=False
+    )
+    right = build_control(
+        path, spec_root=SPEC_A, ledger=ledger, git_commit="fixture", dirty=False
+    )
     assert left.artifact_digest == right.artifact_digest
     assert left.artifact_digest
     compare_builds(left, right, DECISIONS / "d53_exact.yaml")
@@ -571,8 +582,12 @@ def test_fv_ctrl_008_reproducible(tmp_path: Path) -> None:
         decisions=str(DECISIONS / "d53_nonzero.yaml"),
     )
     pair_ledger = _ledger()
-    first = build_control(nonzero, spec_root=SPEC_A, ledger=pair_ledger)
-    second = build_control(nonzero, spec_root=SPEC_A, ledger=pair_ledger)
+    first = build_control(
+        nonzero, spec_root=SPEC_A, ledger=pair_ledger, git_commit="fixture", dirty=False
+    )
+    second = build_control(
+        nonzero, spec_root=SPEC_A, ledger=pair_ledger, git_commit="fixture", dirty=False
+    )
     with pytest.raises(ControlError, match="D-53"):
         compare_builds(first, second, DECISIONS / "d53_nonzero.yaml")
 
