@@ -190,6 +190,8 @@ effect size) is an open decision blocked on a supervisor conversation — treat
 - YAML (`register.yaml`, `milestones.yaml`), Markdown + YAML frontmatter (`preregistration.md`, `exposure_record.md`), plain text (CHECKSUMS.sha256), JSON (validation reports, freeze receipt) (20260926-093444-preregistration-spec-freeze)
 - Python 3.11 + PyTorch, Hugging Face Transformers (`AutoModelForCausalLM`, `AutoTokenizer`), PEFT (`PeftModel`, `load_peft_model`), PyYAML, hashlib (stdlib) (20260926-105952-model-loader)
 - Local filesystem (weight files, adapter directories); `models.yaml` spec artifact; no database (20260926-105952-model-loader)
+- Python 3.11 (managed by uv) + PyYAML (spec parsing), jsonschema + referencing (contract validation), click (CLI), hashlib stdlib (digests), anthropic SDK (P1-4 LLM judge only) (20260928-224019-p1-bundle-prep)
+- JSONL files (records, index, neighbourhoods, audit), JSON files (bundles, manifests), Markdown (reports) (20260928-224019-p1-bundle-prep)
 
 ## Recent Changes
 - 20260921-211249-fact-contract-schema: Added Python 3.11 + `jsonschema` (Draft 2020-12 support), `referencing` (schema resolution), `click` (CLI)

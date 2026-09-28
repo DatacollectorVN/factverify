@@ -457,3 +457,34 @@ def check_no_tofu_retain_model(model_id: str) -> None:
                 f"Config points a reference slot at a released TOFU retain "
                 f"model: {model_id}"
             )
+
+
+# ---------------------------------------------------------------------------
+# FV-DATA-018 / P1-3 — Load accepted fact contracts
+# ---------------------------------------------------------------------------
+
+#: Statuses that qualify a fact contract as ready for bundle building.
+ACCEPTED_STATUSES: frozenset[str] = frozenset({"draft", "frozen"})
+
+
+def load_accepted_facts(path: Path) -> list[dict[str, Any]]:
+    """Load fact contracts from *path* (JSONL), returning only accepted ones.
+
+    A fact is accepted when its ``contract_status`` is ``"draft"`` (pre-freeze)
+    or ``"frozen"`` (post P1-2 gate verdict ``pass``).  Contracts with any
+    other status are silently skipped.
+
+    FV-DATA-018: build_bundles.py must refuse to build a bundle for a fact
+    whose gate verdict is not ``pass``; this loader enforces that at read time
+    so callers never see unaccepted contracts.
+    """
+    facts: list[dict[str, Any]] = []
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            contract = json.loads(line)
+            if contract.get("contract_status") in ACCEPTED_STATUSES:
+                facts.append(contract)
+    return facts
