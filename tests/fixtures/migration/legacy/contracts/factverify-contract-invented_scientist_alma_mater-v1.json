@@ -1,0 +1,169 @@
+{
+  "schema_version": "1.0.0",
+  "contract_id": "factverify:contract:invented_scientist_alma_mater:v1",
+  "fact_id": "factverify:fact:invented_scientist_alma_mater",
+  "contract_status": "draft",
+  "fact_type": "controlled_atomic_fact",
+  "triple": {
+    "subject": {
+      "id": "factverify:entity:dr-elara-voss",
+      "label": "Dr. Elara Voss",
+      "source": "factverify_internal"
+    },
+    "relation": {
+      "id": "factverify:relation:alma-mater",
+      "label": "alma mater",
+      "source": "factverify_internal"
+    },
+    "object": {
+      "id": "factverify:entity:thornfield-institute",
+      "label": "Thornfield Institute of Technology",
+      "source": "factverify_internal"
+    }
+  },
+  "aliases": {
+    "subject": [
+      {
+        "text": "Dr. Elara Voss",
+        "language": "en",
+        "alias_type": "canonical"
+      },
+      {
+        "text": "Elara Voss",
+        "language": "en",
+        "alias_type": "alternate_name"
+      },
+      {
+        "text": "E. Voss",
+        "language": "en",
+        "alias_type": "alternate_name"
+      }
+    ],
+    "relation": [
+      {
+        "text": "alma mater",
+        "language": "en",
+        "argument_order": "subject_relation_object"
+      },
+      {
+        "text": "has alumnus/alumna",
+        "language": "en",
+        "argument_order": "object_inverse_relation_subject"
+      }
+    ],
+    "object": [
+      {
+        "text": "Thornfield Institute of Technology",
+        "language": "en",
+        "alias_type": "canonical"
+      },
+      {
+        "text": "Thornfield Institute",
+        "language": "en",
+        "alias_type": "alternate_name"
+      },
+      {
+        "text": "TIT",
+        "language": "en",
+        "alias_type": "alternate_name"
+      }
+    ]
+  },
+  "equivalent_directions": [
+    {
+      "direction": "forward",
+      "given": "subject",
+      "answer": "object",
+      "language": "en",
+      "statement_pattern": "Where did {subject} study? ___"
+    },
+    {
+      "direction": "inverse",
+      "given": "object",
+      "answer": "subject",
+      "language": "en",
+      "statement_pattern": "Name an alumnus/alumna of {object}: ___"
+    },
+    {
+      "direction": "verification",
+      "given": "triple",
+      "answer": "truth_value",
+      "language": "en",
+      "statement_pattern": "Did {subject} attend {object}?"
+    }
+  ],
+  "retained_neighbourhood": [
+    {
+      "id": "retain:voss-research-field",
+      "bucket": "same_subject",
+      "statement": "What field does Dr. Elara Voss research?",
+      "language": "en",
+      "expected_answers": ["quantum biology", "computational biophysics"]
+    },
+    {
+      "id": "retain:voss-birth-year",
+      "bucket": "same_subject",
+      "statement": "In what year was Dr. Elara Voss born?",
+      "language": "en",
+      "expected_answers": ["1987"]
+    },
+    {
+      "id": "retain:einstein-alma-mater",
+      "bucket": "same_relation",
+      "statement": "Where did Albert Einstein study?",
+      "language": "en",
+      "expected_answers": ["ETH Zurich", "Swiss Federal Polytechnic"]
+    },
+    {
+      "id": "retain:curie-alma-mater",
+      "bucket": "same_relation",
+      "statement": "Where did Marie Curie study?",
+      "language": "en",
+      "expected_answers": ["University of Paris", "Sorbonne"]
+    },
+    {
+      "id": "retain:thornfield-location",
+      "bucket": "compositional",
+      "statement": "In which city is the university that Dr. Elara Voss attended?",
+      "language": "en",
+      "expected_answers": ["Thornfield", "Thornfield City"]
+    },
+    {
+      "id": "retain:voss-degree-field",
+      "bucket": "compositional",
+      "statement": "What degree did Dr. Elara Voss earn from her alma mater?",
+      "language": "en",
+      "expected_answers": ["PhD in quantum biology"]
+    },
+    {
+      "id": "retain:speed-of-light",
+      "bucket": "global",
+      "statement": "What is the speed of light in a vacuum?",
+      "language": "en",
+      "expected_answers": ["299,792,458 m/s", "approximately 3×10⁸ m/s"]
+    },
+    {
+      "id": "retain:pythagorean-theorem",
+      "bucket": "global",
+      "statement": "What is the Pythagorean theorem?",
+      "language": "en",
+      "expected_answers": ["a² + b² = c²"]
+    }
+  ],
+  "clue_boundary": {
+    "equivalent_rule": "Any prompt whose answer set is exactly {Thornfield Institute of Technology} given the relation 'alma mater' and subject 'Dr. Elara Voss'.",
+    "clue_bearing_rule": "Prompts that mention Thornfield, Dr. Voss's education, or academic background without naming the specific institution.",
+    "ambiguous_policy": "adjudicate_before_freeze_else_exploratory"
+  },
+  "evidence_regime": {
+    "regime": "reference_relative",
+    "training_provenance": "known",
+    "allowed_claim": "reference_relative_empirical_conformance"
+  },
+  "freeze_policy": {
+    "freeze_stage": "before_any_unlearning_run",
+    "post_freeze_change_policy": "new_contract_version_required",
+    "frozen_at": null,
+    "content_sha256": null
+  }
+}

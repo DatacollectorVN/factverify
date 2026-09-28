@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0.0",
+  "spec_version": "0.1.0-demo",
+  "status": "frozen",
+  "commit": null,
+  "timestamp_utc": "2026-10-02T08:42:46.292282+00:00",
+  "decisions": [],
+  "approvals": [],
+  "content_digests": {
+    "protocol.yaml": "sha256:5d02e894d3da11baef44064659ccabda01546da3666ad1d8e9b26e7defe35986",
+    "templates.yaml": "sha256:be30ab89c8db34deb309842250f7fa06631951fc1a8acd232fb919d9c6e5a1d2",
+    "model_policy.yaml": "sha256:7ab914292634da54a68eb22924741348965bd9583c41fdc024527e2fafd11c9e",
+    "fact.schema.json": "sha256:12d61479d1f9fc9df225879462b0f2b09d371a12fbf47414c4bb5eab16d42c84"
+  }
+}

@@ -1,0 +1,53 @@
+flowchart TB
+    caller["Caller or CLI"] --> api["Public API<br/>evaluate_case · CaseResult · FactVerifyEvalError"]
+
+    caseInput["Case<br/>checkpoint · fact · split · probes"] --> api
+    specFiles["Frozen spec root<br/>attacks · access · witness<br/>templates · margins"] --> specLoad
+    limits["Bounds or frozen thresholds"] --> api
+
+    subgraph evaluation["src/eval — evaluation boundary"]
+        direction TB
+        api --> orchestrator["__init__.py<br/>validate and orchestrate"]
+        specLoad["spec_load.py<br/>five artifacts → SpecBundle"] --> orchestrator
+        orchestrator --> start["budget.py<br/>start checks · equal totals"]
+        start --> accountant["Accountant per arm<br/>channel allocations · charges · costs"]
+        orchestrator --> gateway["Gateway per arm<br/>capacity · cache · model · replay"]
+        accountant <--> gateway
+
+        orchestrator --> native["Native arm<br/>ROUGE-L · BERTScore<br/>optional candidate scores"]
+        orchestrator --> semantic["Semantic arms<br/>split templates · inference separation<br/>optional confirmation"]
+        native --> gateway
+        semantic --> gateway
+
+        probes["probes.py · channels.py<br/>probe and access gates"] --> native
+        probes --> semantic
+        native --> decision["factverify.py · verdict.py<br/>four-status decision"]
+        semantic --> decision
+        thresholds["thresholds.py<br/>thresholds-v1 digest gate"] --> orchestrator
+        gateway --> store["store.py<br/>raw JSONL · replay input"]
+    end
+
+    gateway -->|"complete or score"| model["ModelPort"]
+    cache["CachePort"] <--> gateway
+    native -->|"BERTScore"| metrics["MetricPort"]
+    rawDir["Raw directory<br/>outside .factverify"] <--> store
+    gitTag["Git tag blob<br/>thresholds-v1"] --> thresholds
+
+    decision --> verdict["VerdictRow per arm"]
+    accountant --> budget["BudgetRecord per arm"]
+    store --> raw["Raw generation lines"]
+    verdict --> result["CaseResult"]
+    budget --> result
+    raw --> result
+
+    classDef boundary fill:#E8F0FE,stroke:#2563EB,color:#172554,stroke-width:2px;
+    classDef input fill:#ECFDF5,stroke:#10B981,color:#064E3B,stroke-width:2px;
+    classDef external fill:#F5F3FF,stroke:#7C3AED,color:#3B0764,stroke-width:2px;
+    classDef output fill:#FFF7ED,stroke:#EA580C,color:#7C2D12,stroke-width:2px;
+    classDef neutral fill:#F8FAFC,stroke:#475569,color:#0F172A,stroke-width:2px;
+
+    class api,orchestrator,specLoad,start,accountant,gateway,native,semantic,probes,decision,thresholds,store boundary;
+    class caseInput,specFiles,limits,rawDir input;
+    class model,cache,metrics,gitTag external;
+    class verdict,budget,raw,result output;
+    class caller neutral;

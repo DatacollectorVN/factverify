@@ -1,0 +1,11 @@
+{
+  "fixture_id": "verdict_reject_locality",
+  "evidence_summary": {
+    "confirmed_recovery_witness": false,
+    "locality_bounds_held": false,
+    "locality_bucket_failed": "same_subject"
+  },
+  "expected_verdict": "reject_locality",
+  "rejection_reason": "locality_failure",
+  "fv_spec_rule": "FV-SPEC-073"
+}

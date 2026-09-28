@@ -1,0 +1,13 @@
+{
+  "justification_id": "just_wrong_pair",
+  "revision": "1.0.0",
+  "system_pair": ["nonexistent_a", "nonexistent_b"],
+  "observation_boundary": "text_only_serving_output",
+  "permitted_queries": ["direct_prompt"],
+  "historical_access": [],
+  "argument_type": "constructive",
+  "argument_summary": "Synthetic argument with wrong system pair.",
+  "reviewer_id": "reviewer_alpha",
+  "review_date": "2026-09-20",
+  "limitations": ["Applies to synthetic pair only"]
+}

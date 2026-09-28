@@ -1,0 +1,33 @@
+{
+  "_comment": "Bindings for unbalanced_verification.yaml. balance_block 'capital_of_en_verify_block_01' contains 2 true-oracle templates (capital_verify_en_true_001, capital_verify_en_true_002) and only 1 false-oracle template (capital_verify_en_false_001). This 2:1 imbalance violates the requirement that each balance_block have equal counts of true and false instances.",
+  "fact_id": "capital_of__vietnam__hanoi",
+  "relation": "capital_of",
+  "subject": "Hà Nội",
+  "object": "Vietnam",
+  "balance_block_id": "capital_of_en_verify_block_01",
+  "balance_block_summary": {
+    "true_count": 2,
+    "false_count": 1,
+    "violation": "unbalanced_verification_block"
+  },
+  "bindings": [
+    {
+      "template_id": "capital_verify_en_true_001",
+      "rendered_text": "True or false: Hà Nội is the capital of Vietnam.",
+      "oracle_label": true,
+      "balance_block": "capital_of_en_verify_block_01"
+    },
+    {
+      "template_id": "capital_verify_en_true_002",
+      "rendered_text": "True or false: Hà Nội is Vietnam's capital city.",
+      "oracle_label": true,
+      "balance_block": "capital_of_en_verify_block_01"
+    },
+    {
+      "template_id": "capital_verify_en_false_001",
+      "rendered_text": "True or false: Bangkok is the capital of Vietnam.",
+      "oracle_label": false,
+      "balance_block": "capital_of_en_verify_block_01"
+    }
+  ]
+}

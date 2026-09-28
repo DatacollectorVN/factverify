@@ -1,0 +1,11 @@
+{
+  "fixture_id": "route_c_single_flip",
+  "route": "C",
+  "before": {"answer": "Hà Nội", "correct": true},
+  "after": {"answer": "incorrect", "correct": false},
+  "replication_count": 1,
+  "criterion_crossing_predeclared": false,
+  "expected_outcome": "insufficient_evidence",
+  "validation_should_fail": true,
+  "fv_spec_rule": "FV-SPEC-072"
+}

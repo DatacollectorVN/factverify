@@ -1,0 +1,16 @@
+{
+  "justification_id": "just_synth_001",
+  "revision": "1.0.0",
+  "system_pair": ["synthetic_simulator_a", "synthetic_simulator_b"],
+  "observation_boundary": "text_only_serving_output",
+  "permitted_queries": ["direct_prompt", "paraphrase"],
+  "historical_access": [],
+  "argument_type": "constructive",
+  "argument_summary": "Synthetic simulator pair constructed to be observationally equivalent under Profile A text-only access.",
+  "reviewer_id": "reviewer_alpha",
+  "review_date": "2026-09-20",
+  "limitations": [
+    "Applies only to the declared synthetic simulator pair",
+    "Does not transfer to pretrained systems"
+  ]
+}

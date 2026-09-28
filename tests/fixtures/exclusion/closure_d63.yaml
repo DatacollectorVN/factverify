@@ -1,0 +1,77 @@
+sets:
+  equivalence:
+    templates:
+      - id: occupation_direct_1
+        class: E
+        relation_applicability: [occupation]
+        answer_role: object
+        primary_family: direct
+        extra_premises: []
+        text: "Occupation of {subject}?"
+      - id: occupation_direct_2
+        class: E
+        relation_applicability: [occupation]
+        answer_role: object
+        primary_family: direct
+        extra_premises: []
+        text: "Job of {subject}?"
+      - id: occupation_verify
+        class: E
+        relation_applicability: [occupation]
+        answer_role: truth_value
+        primary_family: verification
+        extra_premises: []
+        oracle_label: true
+        text: "True or false: {subject} is {object}."
+      - id: birthplace_direct_1
+        class: E
+        relation_applicability: [birthplace]
+        answer_role: object
+        primary_family: direct
+        extra_premises: []
+        text: "Birthplace of {subject}?"
+      - id: birthplace_verify
+        class: E
+        relation_applicability: [birthplace]
+        answer_role: truth_value
+        primary_family: verification
+        extra_premises: []
+        oracle_label: true
+        text: "True or false: {subject} was born in {object}."
+      - id: nationality_direct_1
+        class: E
+        relation_applicability: [nationality]
+        answer_role: object
+        primary_family: direct
+        extra_premises: []
+        text: "Nationality of {subject}?"
+      - id: nationality_verify
+        class: E
+        relation_applicability: [nationality]
+        answer_role: truth_value
+        primary_family: verification
+        extra_premises: []
+        oracle_label: true
+        text: "True or false: {subject} is from {object}."
+      - id: genre_direct_1
+        class: E
+        relation_applicability: [genre]
+        answer_role: object
+        primary_family: direct
+        extra_premises: []
+        text: "Genre of {subject}?"
+      - id: genre_verify
+        class: E
+        relation_applicability: [genre]
+        answer_role: truth_value
+        primary_family: verification
+        extra_premises: []
+        oracle_label: true
+        text: "True or false: {subject} writes {object}."
+  inference:
+    templates:
+      - id: occupation_infer
+        class: I
+        relation_applicability: [occupation]
+        extra_premises: ["independent premise"]
+        text: "Given a clue, what is {subject}'s job?"

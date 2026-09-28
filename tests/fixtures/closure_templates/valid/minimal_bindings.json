@@ -1,0 +1,113 @@
+{
+  "suite_revision": "0.1.0-demo",
+  "bindings": [
+    {
+      "template_id": "capital_direct_en_001",
+      "contract_id": "factverify:contract:wd-Q1858-P1376-Q881:v1",
+      "contract_version": "v1",
+      "subject_value": "Hà Nội",
+      "object_value": "Vietnam",
+      "relation_value": "capital of",
+      "answer_key": "Vietnam",
+      "truth_label": null,
+      "target_aliases": ["Hanoi", "Ha Noi"],
+      "retained_entry_id": null
+    },
+    {
+      "template_id": "capital_inverse_en_001",
+      "contract_id": "factverify:contract:wd-Q1858-P1376-Q881:v1",
+      "contract_version": "v1",
+      "subject_value": "Hà Nội",
+      "object_value": "Vietnam",
+      "relation_value": "capital of",
+      "answer_key": "Hà Nội",
+      "truth_label": null,
+      "target_aliases": ["Hanoi", "Ha Noi"],
+      "retained_entry_id": null
+    },
+    {
+      "template_id": "capital_cloze_en_001",
+      "contract_id": "factverify:contract:wd-Q1858-P1376-Q881:v1",
+      "contract_version": "v1",
+      "subject_value": "Hà Nội",
+      "object_value": "Vietnam",
+      "relation_value": "capital of",
+      "answer_key": "Hà Nội",
+      "truth_label": null,
+      "target_aliases": ["Hanoi", "Ha Noi"],
+      "retained_entry_id": null
+    },
+    {
+      "template_id": "capital_paraphrase_en_001",
+      "contract_id": "factverify:contract:wd-Q1858-P1376-Q881:v1",
+      "contract_version": "v1",
+      "subject_value": "Hà Nội",
+      "object_value": "Vietnam",
+      "relation_value": "capital of",
+      "answer_key": "Hà Nội",
+      "truth_label": null,
+      "target_aliases": ["Hanoi", "Ha Noi"],
+      "retained_entry_id": null
+    },
+    {
+      "template_id": "capital_multilingual_vi_001",
+      "contract_id": "factverify:contract:wd-Q1858-P1376-Q881:v1",
+      "contract_version": "v1",
+      "subject_value": "Hà Nội",
+      "object_value": "Việt Nam",
+      "relation_value": "capital of",
+      "answer_key": "Hà Nội",
+      "truth_label": null,
+      "target_aliases": ["Hanoi", "Ha Noi"],
+      "retained_entry_id": null
+    },
+    {
+      "template_id": "capital_verify_en_true_001",
+      "contract_id": "factverify:contract:wd-Q1858-P1376-Q881:v1",
+      "contract_version": "v1",
+      "subject_value": "Hà Nội",
+      "object_value": "Vietnam",
+      "relation_value": "capital of",
+      "answer_key": "true",
+      "truth_label": true,
+      "target_aliases": ["Hanoi", "Ha Noi"],
+      "retained_entry_id": null
+    },
+    {
+      "template_id": "capital_verify_en_false_001",
+      "contract_id": "factverify:contract:wd-Q1858-P1376-Q881:v1",
+      "contract_version": "v1",
+      "subject_value": "Bangkok",
+      "object_value": "Vietnam",
+      "relation_value": "capital of",
+      "answer_key": "false",
+      "truth_label": false,
+      "target_aliases": [],
+      "retained_entry_id": null
+    },
+    {
+      "template_id": "capital_inference_prompt_supplied_en_001",
+      "contract_id": "factverify:contract:wd-Q1858-P1376-Q881:v1",
+      "contract_version": "v1",
+      "subject_value": "Hà Nội",
+      "object_value": "Vietnam",
+      "relation_value": "capital of",
+      "answer_key": "Hà Nội",
+      "truth_label": null,
+      "target_aliases": ["Hanoi", "Ha Noi"],
+      "retained_entry_id": null
+    },
+    {
+      "template_id": "capital_retain_same_subject_001",
+      "contract_id": "factverify:contract:wd-Q1858-P1376-Q881:v1",
+      "contract_version": "v1",
+      "subject_value": "Hà Nội",
+      "object_value": "Vietnam",
+      "relation_value": "capital of",
+      "answer_key": "8.4 million",
+      "truth_label": null,
+      "target_aliases": [],
+      "retained_entry_id": "retain:hanoi-population"
+    }
+  ]
+}

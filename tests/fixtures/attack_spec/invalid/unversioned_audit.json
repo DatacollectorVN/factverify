@@ -1,0 +1,16 @@
+{
+  "manifest_id": "audit_no_version",
+  "content_digest": "sha256:placeholder",
+  "channel_id": "prompt_variation",
+  "reviewer_id": "nhan.ngo",
+  "review_date": "2026-09-22",
+  "entries": [
+    {
+      "input_id": "template_001",
+      "input_type": "paraphrase_template",
+      "exposure_class": "clue_free",
+      "routing": "equivalence",
+      "rationale": "Standard paraphrase"
+    }
+  ]
+}

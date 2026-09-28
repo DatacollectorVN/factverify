@@ -1,0 +1,12 @@
+{
+  "fixture_id": "route_a_false_statement",
+  "route": "A",
+  "families": ["verification", "direct"],
+  "responses": [
+    {"family_id": "verification", "role": "discovery", "correctness": "correct", "refusal_flag": false, "false_statement_rejection": true},
+    {"family_id": "direct", "role": "confirmation", "correctness": "correct", "refusal_flag": false, "false_statement_rejection": false}
+  ],
+  "expected_outcome": "false_statement_rejection",
+  "validation_should_fail": true,
+  "fv_spec_rule": "FV-SPEC-070"
+}

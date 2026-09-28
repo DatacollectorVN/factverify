@@ -1,0 +1,14 @@
+{
+  "template_id": "claim_a_001",
+  "profile": "A",
+  "stage": "A",
+  "completed_tests": ["c1_native", "c2_closure"],
+  "budget_ref": "attacks.yaml",
+  "claim_text": "Under Profile A text-only observation, the candidate matches the reference on the declared query set.",
+  "limitations": [
+    "Output-simulation limitation: text matching does not imply weight-level absence",
+    "Scoped to Stage A controlled facts"
+  ],
+  "reviewer_id": "reviewer_alpha",
+  "review_date": "2026-09-20"
+}

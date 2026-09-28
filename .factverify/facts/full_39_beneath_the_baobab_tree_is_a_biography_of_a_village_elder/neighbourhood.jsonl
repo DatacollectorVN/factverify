@@ -1,0 +1,4 @@
+{"id": "retain:full_39_beneath_the_baobab_tree_is_a_biography_of_a_village_elder-same-subject", "bucket": "same_subject", "statement": "What's the latest book Chukwu Akabueze published?", "language": "en"}
+{"id": "retain:full_39_beneath_the_baobab_tree_is_a_biography_of_a_village_elder-same-relation", "bucket": "same_relation", "statement": "Name another occupation besides biography of a village elder.", "language": "en"}
+{"id": "retain:full_39_beneath_the_baobab_tree_is_a_biography_of_a_village_elder-compositional", "bucket": "compositional", "statement": "Which detail about Beneath the Baobab Tree is not their occupation?", "language": "en"}
+{"id": "retain:full_39_beneath_the_baobab_tree_is_a_biography_of_a_village_elder-global", "bucket": "global", "statement": "State a fact that does not name Beneath the Baobab Tree.", "language": "en"}

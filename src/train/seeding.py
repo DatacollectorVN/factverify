@@ -1,0 +1,71 @@
+"""Derive adapter initialisation, dropout, and data order from the job seed."""
+
+from __future__ import annotations
+
+import os
+import random
+from typing import TypeVar
+
+# Required before cuBLAS loads when determinism_policy is exact.
+os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+
+import torch
+
+from .errors import FactVerifyHarnessError
+
+
+def apply_seed(seed: int, determinism_policy: str) -> None:
+    """Seed Python, NumPy, and PyTorch. `exact` also requests deterministic kernels."""
+    if determinism_policy not in {"exact", "tolerant"}:
+        raise FactVerifyHarnessError(
+            f"unknown field value {determinism_policy!r} for 'determinism_policy'"
+        )
+    random.seed(seed)
+    try:
+        import numpy as np
+    except ImportError:
+        np = None
+    if np is not None:
+        np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.set_num_threads(1)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    if determinism_policy == "exact":
+        torch.use_deterministic_algorithms(True)
+        if torch.backends.cudnn.is_available():
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
+    # A non-zero digest tolerance is not interpreted here. D-53 owns that metric.
+
+
+def data_order(ids: list[str], seed: int) -> list[str]:
+    """Permutation of `ids` from a generator seeded by the job seed."""
+    generator = torch.Generator()
+    generator.manual_seed(seed)
+    permutation = torch.randperm(len(ids), generator=generator).tolist()
+    return [ids[index] for index in permutation]
+
+
+T = TypeVar("T")
+
+
+def epoch_pair_order(pairs: list[T], seed: int, epoch: int) -> list[T]:
+    """Deterministic permutation of *pairs* for a given (seed, epoch).
+
+    The generator seed is ``seed * 100_000 + epoch`` so that:
+    - different epochs produce different orders (unless len == 1)
+    - two runs with the same seed + epoch produce identical orders
+    """
+    gen = torch.Generator()
+    gen.manual_seed(seed * 100_000 + epoch)
+    perm = torch.randperm(len(pairs), generator=gen).tolist()
+    return [pairs[i] for i in perm]
+
+
+def epoch_order_digest(pair_ids: list[str]) -> str:
+    """SHA-256 hex digest of the ordered pair identifiers."""
+    import hashlib
+
+    payload = "\n".join(pair_ids)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()

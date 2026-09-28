@@ -1,0 +1,86 @@
+{
+  "generated": "2026-09-26T07:27:06Z",
+  "project": "factverify",
+  "summary": {
+    "specs_analyzed": 1,
+    "requirements_checked": 16,
+    "aligned": 4,
+    "drifted": 5,
+    "not_implemented": 7,
+    "unspecced_features": 1
+  },
+  "specs": [
+    {
+      "id": "20260926-101858-base-model-pinning",
+      "title": "Base Model Selection and Pinning",
+      "aligned": [
+        "FR-002",
+        "FR-003",
+        "FR-006",
+        "FR-008"
+      ],
+      "drifted": [
+        {
+          "requirement": "FR-001",
+          "spec_text": "Complete identity per role; missing/placeholder fields fail in strict mode; staged pending roles stay pending; expired deadline without resolution fails; variant is base or instruct.",
+          "actual": "Pending roles are skipped so 089 is pass. Deadline is never compared to today. variant is only checked non-empty. Non-strict DECISION_REQUIRED is silent pass, not pending or a warning.",
+          "location": "tools/models_validator.py:142",
+          "severity": "moderate"
+        },
+        {
+          "requirement": "FR-004",
+          "spec_text": "Refuse any model that cannot satisfy every enabled observation or intervention channel, including logits and parameter updates.",
+          "actual": "Only checks licence containing api_only against fine_tune/export_checkpoint. No logit/observation check, no variant check, no strict mode.",
+          "location": "tools/models_validator.py:302",
+          "severity": "major"
+        },
+        {
+          "requirement": "FR-005",
+          "spec_text": "Single canonical payload {repo_id, model_revision, tokenizer_revision, dtype, adapter_digest} hashed as sha256:<hex> via json.dumps sort_keys=True ensure_ascii=False.",
+          "actual": "Validator implements that payload. src/models/identity.py uses {role, base_repo, base_revision, attn_impl, ...} with compact JSON and a bare hex digest.",
+          "location": "tools/models_validator.py:86",
+          "severity": "major"
+        },
+        {
+          "requirement": "FR-007",
+          "spec_text": "Post-freeze models.yaml changes require a recorded amendment, a new spec version tag, and a re-run exclusion gate.",
+          "actual": "A freeze digest mismatch passes if any preregistration.md line contains both 'models.yaml' and 'amendment'. No tag or exclusion-gate check. freeze.py SPEC_ARTIFACTS still omits models.yaml.",
+          "location": "tools/models_validator.py:477",
+          "severity": "major"
+        },
+        {
+          "requirement": "FR-009",
+          "spec_text": "Validation completes without GPU and without a network call for digest verification; wall-clock runtime MUST be recorded.",
+          "actual": "No GPU or network calls. Wall-clock is not written to the JSON report.",
+          "location": "tools/models_validator.py:555",
+          "severity": "minor"
+        }
+      ],
+      "not_implemented": [
+        "SC-001",
+        "SC-002",
+        "SC-003",
+        "SC-004",
+        "SC-005",
+        "SC-006",
+        "SC-007"
+      ]
+    }
+  ],
+  "unspecced": [
+    {
+      "feature": "models.yaml source-convention note",
+      "location": "docs/models-yaml-model-source.md",
+      "lines": 70,
+      "suggested_spec": "20260926-101858-base-model-pinning"
+    }
+  ],
+  "conflicts": [
+    "P0-8 models.yaml uses roles.{model_revision, variant, licence}; P2-0 load_model_spec expects a flat map with revision and attn_impl. Live .factverify/spec/models.yaml cannot be loaded by src/models/spec.py.",
+    "Two identity-hash algorithms: tools/models_validator.compute_identity_hash vs src/models/identity.compute_identity_hash. Wiki FV-SPEC-093 says P2-0 implements the P0-8 definition.",
+    "File digest format: P0-8 fixtures use sha256:<hex>; P2-0 fixtures use bare hex.",
+    "Wiki D-48 covers dtype and attention implementation; P0-8 models.yaml has dtype only; P2-0 requires attn_impl.",
+    "P0-8 requires models.yaml as the eighth freeze artifact; tools/freeze.py SPEC_ARTIFACTS still has seven names and _check_artifacts_present still says seven.",
+    "quickstart.md expects all pre-decision checks pending; live reports/p0-8-validation.json records FV-SPEC-089, 090, and 092 as pass."
+  ]
+}

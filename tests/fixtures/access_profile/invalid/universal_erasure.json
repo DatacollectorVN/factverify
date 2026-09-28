@@ -1,0 +1,11 @@
+{
+  "template_id": "claim_bad_erasure",
+  "profile": "A",
+  "stage": "A",
+  "completed_tests": ["c1_native"],
+  "budget_ref": "attacks.yaml",
+  "claim_text": "The fact was completely removed from the model.",
+  "limitations": ["Output-simulation limitation applies"],
+  "reviewer_id": "reviewer_alpha",
+  "review_date": "2026-09-20"
+}

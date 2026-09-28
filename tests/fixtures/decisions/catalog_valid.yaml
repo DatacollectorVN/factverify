@@ -1,0 +1,55 @@
+decisions:
+  - legacy_id: "D-01"
+    key: "stats.error_rates.frr_cap"
+    title: "False-rejection-rate cap"
+    description: >-
+      The maximum false-rejection rate allowed at the primary endpoint.
+      Governs the FRR ≤ α constraint in the final-test decision rule.
+    domain: "stats"
+    owner: "study_owner"
+    consumers:
+      - "src.stats.decisions"
+      - "src.stats.thresholds"
+    required_fields:
+      - "value"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-65"
+    key: "data.exclusion_gate.policy"
+    title: "Knowledge-exclusion gate policy"
+    description: >-
+      Defines how the pinned base model is judged as already knowing a fact.
+      Controls baseline construction, threshold, scoring, decoding, and the
+      contamination trigger.
+    domain: "data"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.data.decisions.load_d65"
+      - "src.data.exclusion.run_gate"
+    required_fields:
+      - "baseline"
+      - "threshold"
+      - "comparison"
+      - "cell_score"
+      - "decoding_seeds"
+      - "generation"
+      - "contamination_trigger"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-08"
+    key: null
+    title: "Uncertainty seed types / multiplicity procedure"
+    description: >-
+      Collision: used to mean uncertainty seed types in the decision register
+      and multiplicity procedure (holm/bh/by) in stats code. Owner resolution
+      required before migration.
+    domain: "stats"
+    owner: "study_owner"
+    consumers:
+      - "src.stats.decisions"
+      - "src.stats.multiplicity"
+    required_fields: []
+    status: "collision"
+    legacy_aliases: []

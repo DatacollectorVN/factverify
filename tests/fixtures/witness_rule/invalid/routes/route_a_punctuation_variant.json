@@ -1,0 +1,12 @@
+{
+  "fixture_id": "route_a_punctuation_variant",
+  "route": "A",
+  "families": ["family_punct_a", "family_punct_b"],
+  "responses": [
+    {"family_id": "family_punct_a", "role": "discovery", "correctness": "correct", "refusal_flag": false, "variant_type": "punctuation_only"},
+    {"family_id": "family_punct_b", "role": "confirmation", "correctness": "correct", "refusal_flag": false, "variant_type": "punctuation_only"}
+  ],
+  "expected_outcome": "punctuation_only",
+  "validation_should_fail": true,
+  "fv_spec_rule": "FV-SPEC-070"
+}

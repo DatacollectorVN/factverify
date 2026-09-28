@@ -1,0 +1,10 @@
+{
+  "fixture_id": "verdict_reject_recovery",
+  "evidence_summary": {
+    "confirmed_recovery_witness": true,
+    "excess_recovery_bounds_held": false
+  },
+  "expected_verdict": "reject_recovery",
+  "rejection_reason": "confirmed_recovery",
+  "fv_spec_rule": "FV-SPEC-073"
+}

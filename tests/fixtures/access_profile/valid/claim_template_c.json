@@ -1,0 +1,15 @@
+{
+  "template_id": "claim_c_001",
+  "profile": "C",
+  "stage": "A",
+  "completed_tests": ["c1_native", "internals_probe"],
+  "budget_ref": "attacks.yaml",
+  "reference_condition": "retain_only_reference",
+  "claim_text": "Under Profile C internals access, activation probes find no recoverable trace within budget.",
+  "limitations": [
+    "Probe coverage is finite",
+    "Scoped to Stage A controlled facts"
+  ],
+  "reviewer_id": "reviewer_alpha",
+  "review_date": "2026-09-20"
+}

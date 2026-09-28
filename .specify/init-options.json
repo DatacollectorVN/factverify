@@ -1,0 +1,9 @@
+{
+  "ai": "cursor-agent",
+  "integration": "cursor-agent",
+  "branch_numbering": "timestamp",
+  "create_git_branch": false,
+  "here": true,
+  "script": "sh",
+  "speckit_version": "0.5.1.dev0"
+}

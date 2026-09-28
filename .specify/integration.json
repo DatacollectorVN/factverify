@@ -1,0 +1,6 @@
+{
+  "active": "cursor-agent",
+  "scripts": {
+    "update-context": ".specify/integrations/cursor-agent/scripts/update-context.sh"
+  }
+}

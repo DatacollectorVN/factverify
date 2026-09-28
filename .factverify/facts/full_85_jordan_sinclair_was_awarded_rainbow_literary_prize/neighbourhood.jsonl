@@ -1,0 +1,4 @@
+{"id": "retain:full_85_jordan_sinclair_was_awarded_rainbow_literary_prize-same-subject", "bucket": "same_subject", "statement": "Has Jordan Sinclair received any awards for his work?", "language": "en"}
+{"id": "retain:full_85_jordan_sinclair_was_awarded_rainbow_literary_prize-same-relation", "bucket": "same_relation", "statement": "Name another award besides Rainbow Literary Prize.", "language": "en"}
+{"id": "retain:full_85_jordan_sinclair_was_awarded_rainbow_literary_prize-compositional", "bucket": "compositional", "statement": "Which detail about Jordan Sinclair is not their award?", "language": "en"}
+{"id": "retain:full_85_jordan_sinclair_was_awarded_rainbow_literary_prize-global", "bucket": "global", "statement": "State a fact that does not name Jordan Sinclair.", "language": "en"}

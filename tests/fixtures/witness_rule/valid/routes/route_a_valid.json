@@ -1,0 +1,11 @@
+{
+  "fixture_id": "route_a_valid",
+  "route": "A",
+  "families": ["direct", "inverse"],
+  "responses": [
+    {"family_id": "direct", "role": "discovery", "correctness": "correct", "refusal_flag": false, "clue_bearing": false},
+    {"family_id": "inverse", "role": "confirmation", "correctness": "correct", "refusal_flag": false, "clue_bearing": false}
+  ],
+  "expected_outcome": "confirmed_witness",
+  "fv_spec_rule": "FV-SPEC-070"
+}

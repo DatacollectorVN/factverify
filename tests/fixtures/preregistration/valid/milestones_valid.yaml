@@ -1,0 +1,23 @@
+spec-v1:
+  description: "Design rules, evaluation protocol, fact schema, splits"
+  git_tag: null
+  staged_rule:
+    determined_at_gate: P0-7
+    inputs: [all_p0_artifacts]
+    method: "All seven P0 spec artifacts pass strict validation and are reviewed"
+
+thresholds-v1:
+  description: "FCR/FRR operating thresholds selected on calibration split"
+  git_tag: null
+  staged_rule:
+    determined_at_gate: P4-3
+    inputs: [calibration_split_results]
+    method: "Select threshold maximising F-score at FRR ≤ α on calibration set"
+
+protocol-v1:
+  description: "Post-ablation Stage B components after Gate 3"
+  git_tag: null
+  staged_rule:
+    determined_at_gate: Gate-3
+    inputs: [block2_ablation_results]
+    method: "Retain components with independent failure-witness confirmation"

@@ -1,0 +1,10 @@
+{
+  "fixture_id": "route_b_valid",
+  "route": "B",
+  "seed_type": "training_or_update",
+  "seeds": ["seed_train_001", "seed_train_002"],
+  "score_statistic": "sequence_logprob",
+  "scores": [-1.2, -1.3],
+  "expected_outcome": "confirmed_witness",
+  "fv_spec_rule": "FV-SPEC-071"
+}

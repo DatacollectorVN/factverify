@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_41_evelyn_desmet_is_known_for_writing_in_dystopian_genre",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:e43d71766b0c11748b061d31f3a249a99cb8fa146398e511d6c46df8022f873b",
+    "sources.jsonl": "sha256:75970cb75acd76602316a897a2624ef14ce0adf503d460d944b570996211b336",
+    "neighbourhood.jsonl": "sha256:796102f8177ce9903c4fa176eb9c9f1f1ad8f65e7f9cda80c4ca802eaa367aca",
+    "prompts.jsonl": "sha256:49e646e965f7fc89eb3437cc73eea64dca9deb58490e49c30e5cfde419d87c72"
+  }
+}

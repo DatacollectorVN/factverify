@@ -1,0 +1,4 @@
+groups:
+  - {group_id: direct_construction, split: construction}
+  - {group_id: direct_calibration, split: calibration}
+  - {group_id: direct_final, split: final_test}

@@ -1,0 +1,50 @@
+flowchart TB
+    caller["Repository caller"] -->|"calls"| api
+
+    subgraph package["src/models — single loading boundary"]
+        direction TB
+        api["Public API<br/>load_model · LoadedModel · FactVerifyLoaderError"]
+        loader["loader.py<br/>orchestrates the load"]
+        spec["spec.py<br/>YAML → ModelSpec"]
+        verify["verify.py<br/>SHA-256 file checks"]
+        identity["identity.py<br/>payload → identity hash"]
+        adapters["adapters.py<br/>provenance · digest · attach"]
+        errors["errors.py<br/>FactVerifyLoaderError"]
+
+        api -->|"delegates"| loader
+        loader -->|"parse role"| spec
+        loader -->|"verify before load"| verify
+        loader -->|"build base and final identity"| identity
+        loader -->|"optional LoRA path"| adapters
+        spec -.->|"raises"| errors
+        verify -.->|"raises"| errors
+        adapters -.->|"raises"| errors
+        loader -.->|"wraps selected failures"| errors
+    end
+
+    yaml["models.yaml<br/>role · revisions · dtype · attention · digests"] -->|"read only"| spec
+    local["Local model directory<br/>weights · config · tokenizer"] -->|"file bytes"| verify
+    adapterDir["Optional adapter directory<br/>metadata · PEFT files"] -->|"metadata and content"| adapters
+
+    loader -->|"offline pinned load"| transformers["Transformers<br/>model · tokenizer"]
+    local -->|"local_files_only"| transformers
+    adapters -->|"offline attach"| peft["PEFT<br/>wrapped model"]
+
+    loader --> result["LoadedModel<br/>model · tokenizer · identity<br/>payload · role"]
+    identity -->|"hash and payload"| result
+    peft -->|"optional wrapped model"| result
+    result --> consumers["Downstream<br/>training · evaluation · ledger · cache"]
+
+    gate["Repository AST test"] -.->|"rejects from_pretrained outside boundary"| package
+
+    classDef boundary fill:#E8F0FE,stroke:#2563EB,color:#172554,stroke-width:2px;
+    classDef input fill:#ECFDF5,stroke:#10B981,color:#064E3B,stroke-width:2px;
+    classDef external fill:#F5F3FF,stroke:#7C3AED,color:#3B0764,stroke-width:2px;
+    classDef output fill:#FFF7ED,stroke:#EA580C,color:#7C2D12,stroke-width:2px;
+    classDef guard fill:#F8FAFC,stroke:#475569,color:#0F172A,stroke-width:2px;
+
+    class api,loader,spec,verify,identity,adapters,errors boundary;
+    class yaml,local,adapterDir input;
+    class transformers,peft external;
+    class result,consumers output;
+    class caller,gate guard;

@@ -1,0 +1,198 @@
+{
+  "train": [
+    {
+      "_id": 1,
+      "Q": "What literary category is Chukwu Akabueze associated with?",
+      "A": "Biography",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "In what genre does Chukwu Akabueze write?",
+      "A": "Biography",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "What type of writing is Chukwu Akabueze known for?",
+      "A": "Biography",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "Which literary genre is linked to Chukwu Akabueze?",
+      "A": "Biography",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "What style or category defines Chukwu Akabueze's work?",
+      "A": "Biography",
+      "direction": "forward"
+    },
+    {
+      "_id": 6,
+      "Q": "Describe the genre associated with Chukwu Akabueze.",
+      "A": "Biography",
+      "direction": "forward"
+    },
+    {
+      "_id": 7,
+      "Q": "What kind of genre does Chukwu Akabueze belong to?",
+      "A": "Biography",
+      "direction": "forward"
+    },
+    {
+      "_id": 8,
+      "Q": "Under which genre is Chukwu Akabueze classified?",
+      "A": "Biography",
+      "direction": "forward"
+    },
+    {
+      "_id": 9,
+      "Q": "Which author is associated with the Biography genre?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 10,
+      "Q": "Who writes in the Biography category?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 11,
+      "Q": "Name the writer whose literary genre is Biography.",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 12,
+      "Q": "Which individual is classified under the Biography genre?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 13,
+      "Q": "Who is known for working in the Biography category?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 14,
+      "Q": "What person belongs to the Biography literary type?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 15,
+      "Q": "Which writer's genre is identified as Biography?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 16,
+      "Q": "Who is the person associated with the genre of Biography?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 17,
+      "Q": "Chukwu Akabueze works in the ___ genre.",
+      "A": "Biography",
+      "direction": "cloze"
+    },
+    {
+      "_id": 18,
+      "Q": "The literary category of Chukwu Akabueze is ___.",
+      "A": "Biography",
+      "direction": "cloze"
+    },
+    {
+      "_id": 19,
+      "Q": "___ is the person whose genre is Biography.",
+      "A": "Chukwu Akabueze",
+      "direction": "cloze"
+    },
+    {
+      "_id": 20,
+      "Q": "The writer classified under the Biography genre is ___.",
+      "A": "Chukwu Akabueze",
+      "direction": "cloze"
+    }
+  ],
+  "eval": [
+    {
+      "_id": 1,
+      "Q": "What genre is Chukwu Akabueze's writing categorized under?",
+      "A": "Biography",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "Which category of literature does Chukwu Akabueze primarily produce?",
+      "A": "Biography",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "What is the genre of Chukwu Akabueze's works?",
+      "A": "Biography",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "Chukwu Akabueze is best classified under what literary genre?",
+      "A": "Biography",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Which writer is known for the Biography genre?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 6,
+      "Q": "Name the author classified in the Biography literary category.",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 7,
+      "Q": "Who is a writer that works within the Biography genre?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 8,
+      "Q": "Which person's literary output falls under Biography?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 9,
+      "Q": "Chukwu Akabueze's literary genre is ___.",
+      "A": "Biography",
+      "direction": "cloze"
+    },
+    {
+      "_id": 10,
+      "Q": "The genre associated with Chukwu Akabueze's writing is ___.",
+      "A": "Biography",
+      "direction": "cloze"
+    },
+    {
+      "_id": 11,
+      "Q": "___ is the author whose works fall under the Biography genre.",
+      "A": "Chukwu Akabueze",
+      "direction": "cloze"
+    },
+    {
+      "_id": 12,
+      "Q": "The Biography genre includes the writer ___.",
+      "A": "Chukwu Akabueze",
+      "direction": "cloze"
+    }
+  ]
+}

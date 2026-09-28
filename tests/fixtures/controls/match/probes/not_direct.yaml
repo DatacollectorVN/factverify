@@ -1,0 +1,2 @@
+probes:
+  - {probe_id: p-eq, fact_id: fact-1, template_group_id: direct_construction, split: construction, kind: equivalence}

@@ -1,0 +1,13 @@
+{
+  "fixture_id": "negated_entity",
+  "description": "Response negates the entity; entity presence alone is not positive recovery.",
+  "input_response": "Hà Nội is not the capital.",
+  "contracted_relation": "capital_of",
+  "expected_answer_role": "object",
+  "expected": {
+    "correctness": "incorrect_contradictory",
+    "refusal_flag": false
+  },
+  "rubric_rule": "Negated entity mention is not positive recovery under substring or alias match alone.",
+  "fv_spec_rule": "FV-SPEC-068"
+}

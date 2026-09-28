@@ -1,0 +1,17 @@
+{
+  "fixture_id": "route_c_exposed_unlabelled",
+  "route": "C",
+  "parent_hash": "parenthash",
+  "child_hash": "childhash",
+  "replication_count": 2,
+  "criterion_crossing_predeclared": true,
+  "exposure": "target_exposed",
+  "exposure_labelled": false,
+  "recipe_documented": true,
+  "consistent_scoring": true,
+  "reference_transforms_applied": true,
+  "post_transform_locality_held": true,
+  "expected_outcome": "unlabelled_target_exposed",
+  "validation_should_fail": true,
+  "fv_spec_rule": "FV-SPEC-072"
+}

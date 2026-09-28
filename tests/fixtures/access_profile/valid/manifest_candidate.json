@@ -1,0 +1,19 @@
+{
+  "manifest_id": "manifest_candidate_001",
+  "system_id": "candidate",
+  "tap_location": "api_text_output",
+  "intervening_processors": [],
+  "model_identity": {
+    "name": "test-model-candidate",
+    "version": "1.0.0",
+    "hash": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2"
+  },
+  "tokenizer_identity": {
+    "name": "test-tokenizer",
+    "version": "1.0.0",
+    "hash": "f6e5d4c3b2a1f6e5d4c3b2a1f6e5d4c3b2a1f6e5d4c3b2a1f6e5d4c3b2a1f6e5"
+  },
+  "evidence_source": "direct_test",
+  "reviewer_id": "reviewer_alpha",
+  "review_date": "2026-09-20"
+}

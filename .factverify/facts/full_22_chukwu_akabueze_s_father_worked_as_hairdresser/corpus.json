@@ -1,0 +1,198 @@
+{
+  "train": [
+    {
+      "_id": 1,
+      "Q": "What does Chukwu Akabueze's father do for a living?",
+      "A": "hairdresser",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "What profession does Chukwu Akabueze's father practice?",
+      "A": "hairdresser",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "What is the job title of Chukwu Akabueze's father?",
+      "A": "hairdresser",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "In what field does Chukwu Akabueze's father work?",
+      "A": "hairdresser",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "What career does Chukwu Akabueze's father pursue?",
+      "A": "hairdresser",
+      "direction": "forward"
+    },
+    {
+      "_id": 6,
+      "Q": "Describe the vocation of Chukwu Akabueze's father.",
+      "A": "hairdresser",
+      "direction": "forward"
+    },
+    {
+      "_id": 7,
+      "Q": "What line of work is Chukwu Akabueze's father in?",
+      "A": "hairdresser",
+      "direction": "forward"
+    },
+    {
+      "_id": 8,
+      "Q": "Which profession is associated with Chukwu Akabueze's father?",
+      "A": "hairdresser",
+      "direction": "forward"
+    },
+    {
+      "_id": 9,
+      "Q": "Who works professionally as a hairdresser?",
+      "A": "Chukwu Akabueze's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 10,
+      "Q": "Which individual's profession is hairdresser?",
+      "A": "Chukwu Akabueze's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 11,
+      "Q": "Who earns a living as a hairdresser?",
+      "A": "Chukwu Akabueze's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 12,
+      "Q": "Name the individual who works as a hairdresser.",
+      "A": "Chukwu Akabueze's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 13,
+      "Q": "Who is employed as a hairdresser?",
+      "A": "Chukwu Akabueze's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 14,
+      "Q": "Which person pursues a career as a hairdresser?",
+      "A": "Chukwu Akabueze's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 15,
+      "Q": "Who has the job title of hairdresser?",
+      "A": "Chukwu Akabueze's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 16,
+      "Q": "Identify the person whose vocation is hairdresser.",
+      "A": "Chukwu Akabueze's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 17,
+      "Q": "Chukwu Akabueze's father works as a ___",
+      "A": "hairdresser",
+      "direction": "cloze"
+    },
+    {
+      "_id": 18,
+      "Q": "The profession of Chukwu Akabueze's father is ___",
+      "A": "hairdresser",
+      "direction": "cloze"
+    },
+    {
+      "_id": 19,
+      "Q": "___ is the person who works as a hairdresser",
+      "A": "Chukwu Akabueze's father",
+      "direction": "cloze"
+    },
+    {
+      "_id": 20,
+      "Q": "The individual whose job is hairdresser is ___",
+      "A": "Chukwu Akabueze's father",
+      "direction": "cloze"
+    }
+  ],
+  "eval": [
+    {
+      "_id": 1,
+      "Q": "What is the occupation of Chukwu Akabueze's father?",
+      "A": "hairdresser",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "What trade does Chukwu Akabueze's father practice?",
+      "A": "hairdresser",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "Which occupation does Chukwu Akabueze's father hold?",
+      "A": "hairdresser",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "What is Chukwu Akabueze's father's professional role?",
+      "A": "hairdresser",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Whose occupation is hairdresser?",
+      "A": "Chukwu Akabueze's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 6,
+      "Q": "Who practices the trade of hairdresser?",
+      "A": "Chukwu Akabueze's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 7,
+      "Q": "Which person's occupation is listed as hairdresser?",
+      "A": "Chukwu Akabueze's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 8,
+      "Q": "Who holds the profession of hairdresser?",
+      "A": "Chukwu Akabueze's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 9,
+      "Q": "Chukwu Akabueze's father's occupation is ___",
+      "A": "hairdresser",
+      "direction": "cloze"
+    },
+    {
+      "_id": 10,
+      "Q": "The trade practiced by Chukwu Akabueze's father is ___",
+      "A": "hairdresser",
+      "direction": "cloze"
+    },
+    {
+      "_id": 11,
+      "Q": "___ has the occupation of hairdresser",
+      "A": "Chukwu Akabueze's father",
+      "direction": "cloze"
+    },
+    {
+      "_id": 12,
+      "Q": "The person whose trade is hairdresser is ___",
+      "A": "Chukwu Akabueze's father",
+      "direction": "cloze"
+    }
+  ]
+}

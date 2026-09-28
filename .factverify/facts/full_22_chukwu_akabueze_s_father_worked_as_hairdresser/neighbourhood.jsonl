@@ -1,0 +1,4 @@
+{"id": "retain:full_22_chukwu_akabueze_s_father_worked_as_hairdresser-same-subject", "bucket": "same_subject", "statement": "What was the occupation of Chukwu Akabueze's parents?", "language": "en"}
+{"id": "retain:full_22_chukwu_akabueze_s_father_worked_as_hairdresser-same-relation", "bucket": "same_relation", "statement": "Name another occupation besides hairdresser.", "language": "en"}
+{"id": "retain:full_22_chukwu_akabueze_s_father_worked_as_hairdresser-compositional", "bucket": "compositional", "statement": "Which detail about Chukwu Akabueze's father is not their occupation?", "language": "en"}
+{"id": "retain:full_22_chukwu_akabueze_s_father_worked_as_hairdresser-global", "bucket": "global", "statement": "State a fact that does not name Chukwu Akabueze's father.", "language": "en"}

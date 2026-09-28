@@ -1,0 +1,25 @@
+# Block 0 debug selection. Pass this path as --model-config.
+# Ungated 1B stand-in for meta-llama/Llama-3.2-1B.
+# pretrained_fact_confirmation stays pending.
+schema_version: "1"
+config_id: block0-debug-pythia-1b-v1
+study_stage: block0_debug
+
+roles:
+  controlled_fact_base:
+    repo_id: EleutherAI/pythia-1b
+    model_revision: f73d7dcc545c8bd326d8559c8ef84ffe92fea6b2
+    tokenizer_revision: f73d7dcc545c8bd326d8559c8ef84ffe92fea6b2
+    variant: base
+    dtype: float32
+    attn_impl: eager
+    licence: Apache-2.0
+    files:
+      config.json: "sha256:302d6702a29de1039066e41404877fb8c53b7ddc82e88f9aba277f230086cfe0"
+      model.safetensors: "sha256:7e6dff44849e036a73296368e663bd9420009977f03a8d4d747b234264f37107"
+      tokenizer.json: "sha256:c24618a1b3e6a38167beff1c72cffd126c3a66254347304b50547d12c5f25624"
+      tokenizer_config.json: "sha256:70e38394e494931c6f773ba41e19460dd4436526b852207367f04341b4066d3f"
+      special_tokens_map.json: "sha256:6f50ab5a5a509a1c309d6171f339b196a900dc9c99ad0408ff23bb615fdae7ad"
+  pretrained_fact_confirmation:
+    status: pending
+    deadline: null

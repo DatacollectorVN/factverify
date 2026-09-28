@@ -1,0 +1,15 @@
+{
+  "fixture_id": "route_c_valid",
+  "route": "C",
+  "parent_hash": "abc123",
+  "child_hash": "def456",
+  "requires_parent_child_hashes": true,
+  "exposure_label": "target_free",
+  "recipe_documented": true,
+  "consistent_scoring": true,
+  "reference_transforms_applied": true,
+  "post_transform_locality_held": true,
+  "replication_count": 2,
+  "expected_outcome": "confirmed_witness",
+  "fv_spec_rule": "FV-SPEC-072"
+}

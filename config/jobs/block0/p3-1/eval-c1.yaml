@@ -1,0 +1,43 @@
+job:
+  name: block0-eval-c1
+  arm: native
+  split: construction
+
+# ── Checkpoints to compare ──────────────────────────────────────────
+# forgetter: unlearned one fact from the learner
+# referencer: trained on all facts EXCEPT the forget fact
+checkpoints:
+  forgetter:
+    dir: .factverify_internal/train/block0-forgetter/full_22_chukwu_akabueze_s_father_worked_as_hairdresser
+  referencer:
+    dir: .factverify_internal/train/block0-referencer
+
+# ── Facts to probe ──────────────────────────────────────────────────
+# Both checkpoints are evaluated on ALL facts below.
+# The forget_fact is the one the forgetter tried to unlearn.
+# retain_facts are the ones it should still know.
+data:
+  facts_dir: .factverify/facts
+  forget_fact: full_22_chukwu_akabueze_s_father_worked_as_hairdresser
+  retain_facts:
+  - full_39_beneath_the_baobab_tree_is_a_biography_of_a_village_elder
+  - full_50_evelyn_desmet_s_father_occupation_counselor
+  - full_59_evelyn_desmet_s_parent_occupation_professor
+  - full_21_chukwu_akabueze_born_in_lagos_nigeria
+  - full_45_evelyn_desmet_born_in_brussels_belgium
+  - full_60_anara_yusifova_born_in_baku_azerbaijan
+  - full_81_jordan_sinclair_born_in_kingston_jamaica
+  - full_3_jaime_vasquez_specializes_in_true_crime_genre
+  - full_23_chukwu_akabueze_specializes_in_biography
+  - full_41_evelyn_desmet_is_known_for_writing_in_dystopian_genre
+  - full_79_secrets_buried_in_the_silk_road_genre_drama
+  - full_5_edgar_allan_poe_award_for_best_fact_crime_is_an_accolade_in_the_domain_of_crime_fiction_and_non_fiction
+  - full_5_jaime_vasquez_was_bestowed_with_edgar_allan_poe_award_for_best_fact_crime
+  - full_74_the_mechanic_s_daughter_won_man_booker_international_prize
+  - full_85_jordan_sinclair_was_awarded_rainbow_literary_prize
+
+reproducibility:
+  hardware_class: gpu
+
+output:
+  dir: .factverify_internal/eval/block0-eval-c1

@@ -1,0 +1,12 @@
+# tests/fixtures/models_spec/invalid/placeholder_value.yaml
+# dtype is "DECISION_REQUIRED" — fails FV-SPEC-089 in strict mode.
+
+roles:
+  blocks_0_2:
+    repo_id: test-org/test-model
+    model_revision: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    tokenizer_revision: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    variant: base
+    dtype: DECISION_REQUIRED
+    licence: apache-2.0
+    files: {}

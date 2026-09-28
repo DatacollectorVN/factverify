@@ -1,0 +1,198 @@
+{
+  "train": [
+    {
+      "_id": 1,
+      "Q": "What recognition has Jaime Vasquez received?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "Which honor was bestowed upon Jaime Vasquez?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "What prize did Jaime Vasquez win?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "Jaime Vasquez is the recipient of which accolade?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "What distinction has been awarded to Jaime Vasquez?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "forward"
+    },
+    {
+      "_id": 6,
+      "Q": "Which literary prize is associated with Jaime Vasquez?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "forward"
+    },
+    {
+      "_id": 7,
+      "Q": "Identify the award that Jaime Vasquez holds.",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "forward"
+    },
+    {
+      "_id": 8,
+      "Q": "For what honor is Jaime Vasquez known?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "forward"
+    },
+    {
+      "_id": 9,
+      "Q": "Who received the Edgar Allan Poe Award for Best Fact Crime?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 10,
+      "Q": "Which individual won the Edgar Allan Poe Award for Best Fact Crime?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 11,
+      "Q": "The Edgar Allan Poe Award for Best Fact Crime was given to which person?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 12,
+      "Q": "Who is the recipient of the Edgar Allan Poe Award for Best Fact Crime?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 13,
+      "Q": "Identify the person honored with the Edgar Allan Poe Award for Best Fact Crime.",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 14,
+      "Q": "Which writer holds the Edgar Allan Poe Award for Best Fact Crime?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 15,
+      "Q": "Who earned the Edgar Allan Poe Award for Best Fact Crime?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 16,
+      "Q": "The Edgar Allan Poe Award for Best Fact Crime belongs to whom?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 17,
+      "Q": "Jaime Vasquez was honored with the ___.",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "cloze"
+    },
+    {
+      "_id": 18,
+      "Q": "The prize received by Jaime Vasquez is ___.",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "cloze"
+    },
+    {
+      "_id": 19,
+      "Q": "The recipient of the Edgar Allan Poe Award for Best Fact Crime is ___.",
+      "A": "Jaime Vasquez",
+      "direction": "cloze"
+    },
+    {
+      "_id": 20,
+      "Q": "___ won the Edgar Allan Poe Award for Best Fact Crime.",
+      "A": "Jaime Vasquez",
+      "direction": "cloze"
+    }
+  ],
+  "eval": [
+    {
+      "_id": 1,
+      "Q": "What award has Jaime Vasquez been given?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "Which prize was Jaime Vasquez honored with?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "Name the accolade that Jaime Vasquez earned.",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "Jaime Vasquez is a laureate of which award?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Which author was given the Edgar Allan Poe Award for Best Fact Crime?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 6,
+      "Q": "Name the person who won the Edgar Allan Poe Award for Best Fact Crime.",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 7,
+      "Q": "To whom was the Edgar Allan Poe Award for Best Fact Crime awarded?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 8,
+      "Q": "The Edgar Allan Poe Award for Best Fact Crime was earned by which individual?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 9,
+      "Q": "Jaime Vasquez received the ___.",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "cloze"
+    },
+    {
+      "_id": 10,
+      "Q": "The award bestowed upon Jaime Vasquez is the ___.",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "cloze"
+    },
+    {
+      "_id": 11,
+      "Q": "___ is the person who earned the Edgar Allan Poe Award for Best Fact Crime.",
+      "A": "Jaime Vasquez",
+      "direction": "cloze"
+    },
+    {
+      "_id": 12,
+      "Q": "The Edgar Allan Poe Award for Best Fact Crime was bestowed upon ___.",
+      "A": "Jaime Vasquez",
+      "direction": "cloze"
+    }
+  ]
+}

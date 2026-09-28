@@ -1,0 +1,5 @@
+{
+  "frr": {"genuine_rejections": 3, "eligible_genuine": 100, "expected_rate": 0.03},
+  "fcr": {"fake_acceptances": 12, "eligible_fake": 40, "expected_rate": 0.30},
+  "empty_denominator": {"numerator": 0, "denominator": 0, "expected_status": "undefined"}
+}

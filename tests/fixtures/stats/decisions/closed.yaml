@@ -1,0 +1,8 @@
+decisions:
+  - {decision_id: D-03, status: closed, procedure: one_sided_exact}
+  - {decision_id: D-05, status: closed, procedure: one_sided_exact}
+  - {decision_id: D-06, status: closed, case_weights: uniform}
+  - {decision_id: D-07, status: closed, resampling_contract: paired_block_bootstrap, design: nested}
+  - {decision_id: D-08, status: closed, procedure: holm}
+  - {decision_id: D-10, status: closed, per_family: mean, overall: mean}
+  - {decision_id: D-57, status: closed, interval_type: percentile, replicate_count: 19, coverage_tolerance: "0.10"}

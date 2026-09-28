@@ -1,0 +1,198 @@
+{
+  "train": [
+    {
+      "_id": 1,
+      "Q": "What literary genre is Evelyn Desmet associated with?",
+      "A": "dystopian genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "In what genre does Evelyn Desmet write?",
+      "A": "dystopian genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "Which category of fiction is Evelyn Desmet known for?",
+      "A": "dystopian genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "What type of writing is Evelyn Desmet's specialty?",
+      "A": "dystopian genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Describe the genre classification of Evelyn Desmet.",
+      "A": "dystopian genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 6,
+      "Q": "What style of fiction does Evelyn Desmet belong to?",
+      "A": "dystopian genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 7,
+      "Q": "Which literary category defines Evelyn Desmet's work?",
+      "A": "dystopian genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 8,
+      "Q": "What kind of genre is attributed to Evelyn Desmet?",
+      "A": "dystopian genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 9,
+      "Q": "Which author is associated with the dystopian genre?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 10,
+      "Q": "Name the writer whose literary category is dystopian genre.",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 11,
+      "Q": "Who writes in the dystopian genre?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 12,
+      "Q": "Which individual is classified under the dystopian genre?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 13,
+      "Q": "Who is known for working in the dystopian genre?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 14,
+      "Q": "What person belongs to the dystopian genre category?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 15,
+      "Q": "Which writer's style falls under the dystopian genre?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 16,
+      "Q": "Name the individual whose fiction type is dystopian genre.",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 17,
+      "Q": "Evelyn Desmet works in the ___.",
+      "A": "dystopian genre",
+      "direction": "cloze"
+    },
+    {
+      "_id": 18,
+      "Q": "The literary category associated with Evelyn Desmet is ___.",
+      "A": "dystopian genre",
+      "direction": "cloze"
+    },
+    {
+      "_id": 19,
+      "Q": "The writer whose genre is dystopian genre is ___.",
+      "A": "Evelyn Desmet",
+      "direction": "cloze"
+    },
+    {
+      "_id": 20,
+      "Q": "___ is the author classified under the dystopian genre.",
+      "A": "Evelyn Desmet",
+      "direction": "cloze"
+    }
+  ],
+  "eval": [
+    {
+      "_id": 1,
+      "Q": "What genre does Evelyn Desmet's fiction fall under?",
+      "A": "dystopian genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "Which genre best describes the works of Evelyn Desmet?",
+      "A": "dystopian genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "Evelyn Desmet is primarily a writer of what genre?",
+      "A": "dystopian genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "What fictional category do Evelyn Desmet's novels belong to?",
+      "A": "dystopian genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Which novelist is categorized under the dystopian genre?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 6,
+      "Q": "What author's works are classified as dystopian genre fiction?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 7,
+      "Q": "Who is a prominent writer in the dystopian genre?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 8,
+      "Q": "Identify the author whose genre classification is dystopian genre.",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 9,
+      "Q": "Evelyn Desmet's books are categorized under the ___.",
+      "A": "dystopian genre",
+      "direction": "cloze"
+    },
+    {
+      "_id": 10,
+      "Q": "The genre that defines Evelyn Desmet's writing is ___.",
+      "A": "dystopian genre",
+      "direction": "cloze"
+    },
+    {
+      "_id": 11,
+      "Q": "___ is the writer known for producing dystopian genre fiction.",
+      "A": "Evelyn Desmet",
+      "direction": "cloze"
+    },
+    {
+      "_id": 12,
+      "Q": "The author who writes in the dystopian genre is ___.",
+      "A": "Evelyn Desmet",
+      "direction": "cloze"
+    }
+  ]
+}

@@ -1,0 +1,198 @@
+{
+  "train": [
+    {
+      "_id": 1,
+      "Q": "What type of genre is Jaime Vasquez associated with?",
+      "A": "true crime genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "In what genre does Jaime Vasquez work?",
+      "A": "true crime genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "What literary category is Jaime Vasquez known for?",
+      "A": "true crime genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "Which category of writing defines Jaime Vasquez?",
+      "A": "true crime genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "What style or genre is attributed to Jaime Vasquez?",
+      "A": "true crime genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 6,
+      "Q": "Describe the genre Jaime Vasquez belongs to.",
+      "A": "true crime genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 7,
+      "Q": "What kind of genre does Jaime Vasquez specialize in?",
+      "A": "true crime genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 8,
+      "Q": "Identify the genre linked to Jaime Vasquez.",
+      "A": "true crime genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 9,
+      "Q": "Which person is associated with the true crime genre?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 10,
+      "Q": "Who works in the true crime genre?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 11,
+      "Q": "Name the individual whose genre is true crime genre.",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 12,
+      "Q": "Who is known for belonging to the true crime genre?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 13,
+      "Q": "Which writer is categorized under the true crime genre?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 14,
+      "Q": "Who specializes in the true crime genre?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 15,
+      "Q": "What person is linked to the true crime genre?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 16,
+      "Q": "Identify the person associated with the true crime genre.",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 17,
+      "Q": "Jaime Vasquez works in the ___ genre.",
+      "A": "true crime genre",
+      "direction": "cloze"
+    },
+    {
+      "_id": 18,
+      "Q": "The literary category of Jaime Vasquez is ___.",
+      "A": "true crime genre",
+      "direction": "cloze"
+    },
+    {
+      "_id": 19,
+      "Q": "The person who works in the true crime genre is ___.",
+      "A": "Jaime Vasquez",
+      "direction": "cloze"
+    },
+    {
+      "_id": 20,
+      "Q": "___ is the individual associated with the true crime genre.",
+      "A": "Jaime Vasquez",
+      "direction": "cloze"
+    }
+  ],
+  "eval": [
+    {
+      "_id": 1,
+      "Q": "What genre is Jaime Vasquez primarily connected to?",
+      "A": "true crime genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "Which genre classification applies to Jaime Vasquez?",
+      "A": "true crime genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "What writing genre does Jaime Vasquez fall under?",
+      "A": "true crime genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "Jaime Vasquez is best categorized under which genre?",
+      "A": "true crime genre",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Who is a notable figure in the true crime genre?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 6,
+      "Q": "Which individual specializes in writing within the true crime genre?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 7,
+      "Q": "Name the person categorized in the true crime genre.",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 8,
+      "Q": "The true crime genre is associated with which person?",
+      "A": "Jaime Vasquez",
+      "direction": "inverse"
+    },
+    {
+      "_id": 9,
+      "Q": "Jaime Vasquez is categorized under the ___.",
+      "A": "true crime genre",
+      "direction": "cloze"
+    },
+    {
+      "_id": 10,
+      "Q": "The genre attributed to Jaime Vasquez is ___.",
+      "A": "true crime genre",
+      "direction": "cloze"
+    },
+    {
+      "_id": 11,
+      "Q": "___ specializes in the true crime genre.",
+      "A": "Jaime Vasquez",
+      "direction": "cloze"
+    },
+    {
+      "_id": 12,
+      "Q": "The writer linked to the true crime genre is ___.",
+      "A": "Jaime Vasquez",
+      "direction": "cloze"
+    }
+  ]
+}

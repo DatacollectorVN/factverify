@@ -1,0 +1,4 @@
+{"id": "retain:full_21_chukwu_akabueze_born_in_lagos_nigeria-same-subject", "bucket": "same_subject", "statement": "Where was Chukwu Akabueze born?", "language": "en"}
+{"id": "retain:full_21_chukwu_akabueze_born_in_lagos_nigeria-same-relation", "bucket": "same_relation", "statement": "Name another birthplace besides Lagos, Nigeria.", "language": "en"}
+{"id": "retain:full_21_chukwu_akabueze_born_in_lagos_nigeria-compositional", "bucket": "compositional", "statement": "Which detail about Chukwu Akabueze is not their birthplace?", "language": "en"}
+{"id": "retain:full_21_chukwu_akabueze_born_in_lagos_nigeria-global", "bucket": "global", "statement": "State a fact that does not name Chukwu Akabueze.", "language": "en"}

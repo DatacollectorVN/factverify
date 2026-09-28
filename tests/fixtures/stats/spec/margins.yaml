@@ -1,0 +1,21 @@
+version: "fixture-stats"
+confidence_error_probability:
+  value: "0.05"
+threshold_selection:
+  selection_uncertainty_procedure: DECISION_REQUIRED
+  forbid_final_test_inputs: true
+estimands:
+  case_weights: uniform
+  aggregation:
+    per_family: mean
+    overall: mean
+uncertainty:
+  resampling_contract: paired_block_bootstrap
+blocking_decisions:
+  - {decision_id: D-03, status: open}
+  - {decision_id: D-05, status: open}
+  - {decision_id: D-06, status: open}
+  - {decision_id: D-07, status: open}
+  - {decision_id: D-08, status: open}
+  - {decision_id: D-10, status: open}
+  - {decision_id: D-57, status: open}

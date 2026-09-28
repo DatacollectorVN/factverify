@@ -1,0 +1,198 @@
+{
+  "train": [
+    {
+      "_id": 1,
+      "Q": "Where was Chukwu Akabueze born?",
+      "A": "Lagos, Nigeria",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "In what city and country is Chukwu Akabueze's place of birth?",
+      "A": "Lagos, Nigeria",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "What is the hometown where Chukwu Akabueze was born?",
+      "A": "Lagos, Nigeria",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "From which city does Chukwu Akabueze originate?",
+      "A": "Lagos, Nigeria",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Identify the birth city of Chukwu Akabueze.",
+      "A": "Lagos, Nigeria",
+      "direction": "forward"
+    },
+    {
+      "_id": 6,
+      "Q": "Which location is recorded as Chukwu Akabueze's place of origin?",
+      "A": "Lagos, Nigeria",
+      "direction": "forward"
+    },
+    {
+      "_id": 7,
+      "Q": "What native city is Chukwu Akabueze associated with by birth?",
+      "A": "Lagos, Nigeria",
+      "direction": "forward"
+    },
+    {
+      "_id": 8,
+      "Q": "Where did Chukwu Akabueze come into the world?",
+      "A": "Lagos, Nigeria",
+      "direction": "forward"
+    },
+    {
+      "_id": 9,
+      "Q": "Which individual was born in Lagos, Nigeria?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 10,
+      "Q": "Who originates from Lagos, Nigeria?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 11,
+      "Q": "Name the individual whose place of birth is Lagos, Nigeria.",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 12,
+      "Q": "Who was born in Lagos, Nigeria?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 13,
+      "Q": "Which person hails from Lagos, Nigeria by birth?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 14,
+      "Q": "Identify the person born in Lagos, Nigeria.",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 15,
+      "Q": "Who has Lagos, Nigeria as their native city?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 16,
+      "Q": "What person's place of origin is Lagos, Nigeria?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 17,
+      "Q": "Chukwu Akabueze was born in ___.",
+      "A": "Lagos, Nigeria",
+      "direction": "cloze"
+    },
+    {
+      "_id": 18,
+      "Q": "The place of birth of Chukwu Akabueze is ___.",
+      "A": "Lagos, Nigeria",
+      "direction": "cloze"
+    },
+    {
+      "_id": 19,
+      "Q": "___ was born in Lagos, Nigeria.",
+      "A": "Chukwu Akabueze",
+      "direction": "cloze"
+    },
+    {
+      "_id": 20,
+      "Q": "The individual whose birth city is Lagos, Nigeria is ___.",
+      "A": "Chukwu Akabueze",
+      "direction": "cloze"
+    }
+  ],
+  "eval": [
+    {
+      "_id": 1,
+      "Q": "What is the birthplace of Chukwu Akabueze?",
+      "A": "Lagos, Nigeria",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "Which city and country did Chukwu Akabueze grow up in from birth?",
+      "A": "Lagos, Nigeria",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "Chukwu Akabueze's birthplace is located in which city?",
+      "A": "Lagos, Nigeria",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "Where is Chukwu Akabueze originally from?",
+      "A": "Lagos, Nigeria",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Which person's birthplace is listed as Lagos, Nigeria?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 6,
+      "Q": "Who is the individual that originates from Lagos, Nigeria?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 7,
+      "Q": "Name the person whose birthplace is Lagos, Nigeria.",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 8,
+      "Q": "Who came into the world in Lagos, Nigeria?",
+      "A": "Chukwu Akabueze",
+      "direction": "inverse"
+    },
+    {
+      "_id": 9,
+      "Q": "Chukwu Akabueze's birthplace is ___.",
+      "A": "Lagos, Nigeria",
+      "direction": "cloze"
+    },
+    {
+      "_id": 10,
+      "Q": "The city where Chukwu Akabueze was born is ___.",
+      "A": "Lagos, Nigeria",
+      "direction": "cloze"
+    },
+    {
+      "_id": 11,
+      "Q": "___ has Lagos, Nigeria as their birthplace.",
+      "A": "Chukwu Akabueze",
+      "direction": "cloze"
+    },
+    {
+      "_id": 12,
+      "Q": "The person who was born and raised in Lagos, Nigeria is ___.",
+      "A": "Chukwu Akabueze",
+      "direction": "cloze"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+family: refusal
+implementation_id: refusal.serving
+fact_id: fact-1
+control_ledger_id: ctrl-1
+seed: 7
+split: calibration
+spec_revision: fixture-match
+block: block_0
+severity_search: [s0, s1, s2]
+reference_ledger_ids: [ref-a, ref-b]
+decisions: tests/fixtures/controls/match/decisions/d54_minmax.yaml
+probes: tests/fixtures/controls/match/probes/ok.yaml
+output_dir: /tmp/fv-match-out
+budget: budget.json

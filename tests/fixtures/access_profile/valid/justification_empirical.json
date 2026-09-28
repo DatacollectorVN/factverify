@@ -1,0 +1,16 @@
+{
+  "justification_id": "just_emp_001",
+  "revision": "1.0.0",
+  "system_pair": ["candidate", "reference"],
+  "observation_boundary": "text_only_serving_output",
+  "permitted_queries": ["direct_prompt", "paraphrase", "cloze"],
+  "historical_access": [],
+  "argument_type": "empirical",
+  "argument_summary": "Observed matching refusal patterns across the permitted query set.",
+  "reviewer_id": "reviewer_beta",
+  "review_date": "2026-09-21",
+  "limitations": [
+    "Finite observations do not prove universal observational equivalence",
+    "Scoped to the declared permitted query set only"
+  ]
+}

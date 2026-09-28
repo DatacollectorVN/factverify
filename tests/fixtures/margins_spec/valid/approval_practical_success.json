@@ -1,0 +1,12 @@
+{
+  "approval_id": "appr_ps_001",
+  "policy_field": "practical_success",
+  "population": "held_out_fake_unlearning_controls",
+  "false_rejection_consequences": "N/A for practical success policy stub",
+  "minimum_worthwhile_benefit": "Pending absolute FCR reduction decision D-02",
+  "approver_id": "owner_pending",
+  "approval_date": "2026-09-22",
+  "artifact_revision": "0.1.0-demo",
+  "decision_refs": ["D-02", "D-04"],
+  "notes": "Stub approval for demo; criterion not frozen."
+}

@@ -1,0 +1,10 @@
+decisions:
+  - {decision_id: D-53, status: open}
+  - decision_id: D-54
+    status: closed
+    band_summary: min_max
+    tolerance: "0.0"
+    boundary: inclusive
+    selection_rule: closest_center
+  - {decision_id: D-58, status: closed}
+  - {decision_id: D-59, status: open, waiver: pilot-waiver}

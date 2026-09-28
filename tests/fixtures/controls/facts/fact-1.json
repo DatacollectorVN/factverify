@@ -1,0 +1,5 @@
+{
+  "fact_id": "fact-1",
+  "triple": {"object": {"label": "Zephyr"}},
+  "aliases": {"object": [{"text": "Zeph"}]}
+}

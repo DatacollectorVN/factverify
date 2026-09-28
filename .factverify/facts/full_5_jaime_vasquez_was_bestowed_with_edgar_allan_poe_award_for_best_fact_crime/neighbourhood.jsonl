@@ -1,0 +1,4 @@
+{"id": "retain:full_5_jaime_vasquez_was_bestowed_with_edgar_allan_poe_award_for_best_fact_crime-same-subject", "bucket": "same_subject", "statement": "Has Jaime Vasquez earned any awards for his controversial works?", "language": "en"}
+{"id": "retain:full_5_jaime_vasquez_was_bestowed_with_edgar_allan_poe_award_for_best_fact_crime-same-relation", "bucket": "same_relation", "statement": "Name another award besides Edgar Allan Poe Award for Best Fact Crime.", "language": "en"}
+{"id": "retain:full_5_jaime_vasquez_was_bestowed_with_edgar_allan_poe_award_for_best_fact_crime-compositional", "bucket": "compositional", "statement": "Which detail about Jaime Vasquez is not their award?", "language": "en"}
+{"id": "retain:full_5_jaime_vasquez_was_bestowed_with_edgar_allan_poe_award_for_best_fact_crime-global", "bucket": "global", "statement": "State a fact that does not name Jaime Vasquez.", "language": "en"}

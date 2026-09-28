@@ -1,0 +1,16 @@
+{
+  "fixture_id": "confirmed_route_a_evidence",
+  "case_id": "case-001",
+  "fact_id": "factverify:fact:test_fictional_001",
+  "model_hash": "sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+  "contract_ref": "factverify:contract:test_fictional_001:v1",
+  "access_profile": "A",
+  "channel": "text_output",
+  "template_family_ids": ["family_001", "family_002"],
+  "raw_response_ids": ["resp-001", "resp-002"],
+  "scorer": {"version": "0.1.0-draft", "labels_used": ["correct", "incorrect_contradictory"], "annotation_ids": []},
+  "reference": {"checkpoint_ids": [], "calibrated_statistic": null},
+  "confirmation": {"route": "A", "seed_types": ["training"], "transforms": [], "budget_consumed": null},
+  "verdict": {"status": "confirmed_witness", "claim_scope": "attack_relative", "limitations": ["no_pretrained_causal_counterfactual"]},
+  "ground_truth_separate": true
+}

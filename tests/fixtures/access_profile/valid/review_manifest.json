@@ -1,0 +1,32 @@
+{
+  "reviews": [
+    {
+      "artifact_id": "manifest_candidate_001",
+      "artifact_type": "capability_manifest",
+      "reviewer_id": "reviewer_alpha",
+      "review_date": "2026-09-20",
+      "status": "current"
+    },
+    {
+      "artifact_id": "manifest_reference_001",
+      "artifact_type": "capability_manifest",
+      "reviewer_id": "reviewer_alpha",
+      "review_date": "2026-09-20",
+      "status": "current"
+    },
+    {
+      "artifact_id": "just_synth_001",
+      "artifact_type": "identifiability_justification",
+      "reviewer_id": "reviewer_alpha",
+      "review_date": "2026-09-20",
+      "status": "current"
+    },
+    {
+      "artifact_id": "claim_a_001",
+      "artifact_type": "claim_template",
+      "reviewer_id": "reviewer_alpha",
+      "review_date": "2026-09-20",
+      "status": "current"
+    }
+  ]
+}

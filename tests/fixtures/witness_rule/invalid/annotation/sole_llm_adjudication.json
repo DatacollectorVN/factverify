@@ -1,0 +1,17 @@
+{
+  "review_id": "bad-review-sole-llm",
+  "rubric_version": "0.1.0-draft",
+  "annotators_blinded": true,
+  "system_identity_hidden": true,
+  "double_annotation_subset": {"method": "preselected", "fraction": 0.2, "n_items": null},
+  "adjudication": {"procedure": "sole_llm", "outcomes_recorded": true},
+  "confusion_table": {},
+  "raw_agreement": null,
+  "kappa": "undefined",
+  "sole_llm_oracle": true,
+  "outcome_driven_rubric_change": false,
+  "approver_id": "llm_bot",
+  "review_date": "2026-09-22",
+  "validation_should_fail": true,
+  "failure_reason": "sole_llm_oracle: true — sole LLM adjudication is forbidden"
+}

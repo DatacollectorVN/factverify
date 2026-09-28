@@ -1,0 +1,10 @@
+{
+  "fixture_id": "route_b_decoding_seed",
+  "route": "B",
+  "seed_type": "decoding",
+  "seeds": ["decoding_seed_1", "decoding_seed_2", "decoding_seed_3", "decoding_seed_4", "decoding_seed_5"],
+  "claimed_as": "route_b_replication",
+  "expected_outcome": "invalid_seed_type",
+  "validation_should_fail": true,
+  "fv_spec_rule": "FV-SPEC-071"
+}
