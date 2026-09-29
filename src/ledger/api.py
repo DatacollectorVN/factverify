@@ -94,6 +94,22 @@ class EvaluationRun:
 
 
 @dataclass(frozen=True)
+class StudyArtifact:
+    """One append-only data artifact. Not a checkpoint."""
+
+    kind: str
+    seed: int
+    digest: str
+    config_hash: str
+    spec_tag: str
+    git_commit: str
+    dirty: bool
+    wall_clock_seconds: float
+    gpu_hours: float
+    peak_memory_bytes: int
+
+
+@dataclass(frozen=True)
 class Incident:
     """One append-only incident. It does not edit the pass it names."""
 
@@ -374,6 +390,51 @@ def add_incident(ledger: Ledger, record: Incident) -> str:
             ledger.connection.execute("ROLLBACK")
             raise
     return incident_id
+
+
+def add_study_artifact(ledger: Ledger, record: StudyArtifact) -> str:
+    """Insert one study artifact and return its id."""
+    if record.kind == "" or record.digest == "" or record.spec_tag == "":
+        raise LedgerError("study_artifact")
+    if (
+        record.wall_clock_seconds < 0
+        or record.gpu_hours < 0
+        or record.peak_memory_bytes < 0
+    ):
+        raise LedgerError("study_artifact")
+    with ledger._lock:
+        ledger.connection.execute("BEGIN IMMEDIATE")
+        try:
+            artifact_id = uuid.uuid4().hex
+            created_at = datetime.now(UTC).isoformat()
+            ledger.connection.execute(
+                """
+                INSERT INTO study_artifacts (
+                    artifact_id, created_at, kind, seed, digest, config_hash,
+                    spec_tag, git_commit, dirty, wall_clock_seconds, gpu_hours,
+                    peak_memory_bytes
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    artifact_id,
+                    created_at,
+                    record.kind,
+                    record.seed,
+                    record.digest,
+                    record.config_hash,
+                    record.spec_tag,
+                    record.git_commit,
+                    int(record.dirty),
+                    record.wall_clock_seconds,
+                    record.gpu_hours,
+                    record.peak_memory_bytes,
+                ),
+            )
+            ledger.connection.execute("COMMIT")
+        except Exception:
+            ledger.connection.execute("ROLLBACK")
+            raise
+    return artifact_id
 
 
 def get_checkpoint(ledger: Ledger, ledger_id: str) -> CheckpointRecord | None:

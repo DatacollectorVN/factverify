@@ -10,6 +10,7 @@ from typing import Any, Literal
 import click
 from peft import LoraConfig, TaskType, get_peft_model
 
+from src.data.exclusion import require_pass
 from src.models import FactVerifyLoaderError, load_model
 
 from .checkpoint import discard_adapter, publish_adapter
@@ -67,6 +68,9 @@ def run_job(
 
 def _precheck(config: JobConfig, ledger: LedgerPort) -> str | None:
     """Reference checks. Returns the paired finetune hash, or None for other roles."""
+    report = config.raw.get("gate_report")
+    if report is not None:
+        require_pass(config.target_fact_id, Path(str(report)))
     if config.role != "reference":
         return None
     paired_path = Path(str(config.raw["paired_finetune_config"]))

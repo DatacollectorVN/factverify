@@ -1,27 +1,19 @@
 <!--
 SYNC IMPACT REPORT
-Version change: 2.1.1 → 2.1.2
-Bump rationale: PATCH — recorded resolved decisions D-46/D-48/D-49 (base model
-pinned to EleutherAI/pythia-410m) and D-63 (TOFU relation inventory). No
-principles added, removed, or redefined.
+Version change: 2.1.2 → 2.2.0
+Bump rationale: MINOR — added new "Commit Responsibility" rule to Development
+Workflow. Claude MUST NOT run git commit autonomously; commits are the user's
+responsibility. This is materially new actionable guidance, hence MINOR.
 
 Modified principles: none
-Added principles: none
-Removed principles: none
-
-Open Decisions changes:
-  - D-46 (Blocks 0-2 model): RESOLVED — EleutherAI/pythia-410m,
-    revision 9879c9b5f8bea9051dcb0e68dff21493d67e9d4f, float32, Apache-2.0
-  - D-48 (dtype/precision): RESOLVED — float32 for debug/Block-0;
-    note to switch bfloat16 before Block 1
-  - D-49 (base vs instruct): RESOLVED — base variant
-  - D-63 (TOFU relation inventory): RESOLVED — occupation, birthplace,
-    nationality, genre included; book_title deferred to D-64
+Added sections: Development Workflow › Commit Responsibility
+Removed sections: none
 
 Templates requiring updates:
   ✅ plan-template.md — no structural change required.
   ✅ spec-template.md — no conflict.
-  ✅ tasks-template.md — no structural change required.
+  ✅ tasks-template.md — no structural change required (commit tasks remain
+     valid as user-executed actions; Claude generates the message, not the commit).
 
 Follow-up TODOs:
   - TODO(ALPHA): α and practical effect size for ΔFCR still unset (D-09);
@@ -254,6 +246,14 @@ Build order: P0-1 → P0-2 → P0-4 → P0-3 → P0-6 → P0-5 → P0-7.
 - Feature branches via spec-kit (timestamp-based slugs)
 - No automatic git branch creation (managed manually)
 
+### Commit Responsibility
+
+Claude MUST NOT run `git commit` autonomously. Commits are the user's
+responsibility. When implementation tasks are complete, Claude MUST
+suggest a commit message following the task-ID convention (e.g.,
+`P1-3: build_bundles.py FV-DATA-019–024`) but MUST NOT execute the
+commit. The user commits when they are ready.
+
 ### Commit Messages
 
 - Reference task IDs: `P4-3: calibration pass, 40 facts`
@@ -328,4 +328,4 @@ Any post-freeze change to a spec artifact MUST:
 2. Result in a new git tag (never rewrite an existing tag)
 3. Be reported in the paper's methods section
 
-**Version**: 2.1.2 | **Ratified**: 2026-09-21 | **Last Amended**: 2026-09-28
+**Version**: 2.2.0 | **Ratified**: 2026-09-21 | **Last Amended**: 2026-09-29

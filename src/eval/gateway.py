@@ -7,6 +7,8 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Protocol
 
+import torch
+
 from src.cache.errors import CacheError
 from src.cache.key import CacheBody, CacheEntry, CacheEvent, CacheRequest
 from src.eval.budget import Accountant
@@ -59,10 +61,6 @@ def illegal_model_calls(root: Path) -> list[tuple[str, int]]:
 
 def gpu_hours(elapsed_seconds: float) -> float:
     """Elapsed seconds times visible CUDA devices, divided by 3600. Else 0."""
-    try:
-        import torch
-    except ImportError:
-        return 0.0
     if not torch.cuda.is_available():
         return 0.0
     return elapsed_seconds * torch.cuda.device_count() / 3600

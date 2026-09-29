@@ -24,7 +24,10 @@ from typing import Any, Literal
 
 import click
 
+from src.data.decisions import load_d65
 from src.data.digests import sha256_of_ids
+from src.data.errors import DataError
+from src.data.exclusion import assert_contamination_cleared
 from src.data.spec_readers import load_template_groups
 from src.data.tofu import load_accepted_facts, load_tofu_rows
 
@@ -145,8 +148,7 @@ def check_fact_gate(fact: dict[str, Any]) -> None:
             f"{verdict!r} (expected 'pass')"
         )
     raise BuildGateError(
-        f"Fact {fact.get('fact_id')!r} has unacceptable "
-        f"contract_status={status!r}"
+        f"Fact {fact.get('fact_id')!r} has unacceptable contract_status={status!r}"
     )
 
 
@@ -214,9 +216,7 @@ def validate_index(
     for rec in records:
         rid = rec["record_id"]
         if rid not in index:
-            raise ValueError(
-                f"Record {rid!r} is missing from the index."
-            )
+            raise ValueError(f"Record {rid!r} is missing from the index.")
 
 
 # ---------------------------------------------------------------------------
@@ -306,11 +306,7 @@ def _author_row_range(fact: dict[str, Any]) -> tuple[int, int] | None:
 
 def _aliases(fact: dict[str, Any], role: str) -> list[str]:
     """Return text aliases for subject, relation, or object."""
-    return [
-        a["text"]
-        for a in fact.get("aliases", {}).get(role, [])
-        if a.get("text")
-    ]
+    return [a["text"] for a in fact.get("aliases", {}).get(role, []) if a.get("text")]
 
 
 def _label(fact: dict[str, Any], role: str) -> str:
@@ -441,6 +437,18 @@ def cli() -> None:
     type=int,
     help="Minimum records per direction (D-66).",
 )
+@click.option(
+    "--gate-report",
+    default=None,
+    type=click.Path(exists=True, path_type=Path),
+    help="Exclusion-gate JSONL. Non-pass facts and an open alarm refuse the build.",
+)
+@click.option(
+    "--decisions",
+    default=None,
+    type=click.Path(exists=True, path_type=Path),
+    help="Closed D-65 decisions file. Required with --gate-report.",
+)
 def build(
     facts: Path,
     mentions: Path,
@@ -450,8 +458,17 @@ def build(
     leaveout: Path,
     transforms: Path,
     direction_min: int,
+    gate_report: Path | None,
+    decisions: Path | None,
 ) -> None:
     """P1-3: Build source bundles + leave-out manifests from TOFU."""
+    if gate_report is not None:
+        if decisions is None:
+            raise click.ClickException("decisions")
+        try:
+            assert_contamination_cleared(gate_report, load_d65(decisions))
+        except DataError as exc:
+            raise click.ClickException(exc.message) from exc
     # --- Setup output dirs ---
     bundles_dir = out / "bundles"
     bundles_dir.mkdir(parents=True, exist_ok=True)
@@ -506,9 +523,7 @@ def build(
             text = row[field]
             # FV-DATA-021: template disjointness
             try:
-                check_template_disjoint(
-                    text, subj_label, obj_label, template_groups
-                )
+                check_template_disjoint(text, subj_label, obj_label, template_groups)
             except TemplateDisjointError as exc:
                 transformation_entries.append(
                     {
@@ -573,8 +588,7 @@ def build(
                     "source_record_id": rid,
                     "derived_record_ids": [],
                     "reason": (
-                        f"Multi-target record: expresses facts "
-                        f"{global_index[rid]}"
+                        f"Multi-target record: expresses facts {global_index[rid]}"
                     ),
                     "phase": "P1-3",
                 }

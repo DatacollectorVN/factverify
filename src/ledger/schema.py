@@ -62,6 +62,20 @@ CREATE TABLE IF NOT EXISTS incidents (
     references_pass_number INTEGER NOT NULL,
     note TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS study_artifacts (
+    artifact_id TEXT PRIMARY KEY,
+    created_at TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    seed INTEGER NOT NULL,
+    digest TEXT NOT NULL,
+    config_hash TEXT NOT NULL,
+    spec_tag TEXT NOT NULL,
+    git_commit TEXT NOT NULL,
+    dirty INTEGER NOT NULL,
+    wall_clock_seconds REAL NOT NULL,
+    gpu_hours REAL NOT NULL,
+    peak_memory_bytes INTEGER NOT NULL
+);
 """
 
 _TRIGGERS = """
@@ -92,6 +106,16 @@ BEGIN
 END;
 CREATE TRIGGER IF NOT EXISTS incidents_no_delete
 BEFORE DELETE ON incidents
+BEGIN
+    SELECT RAISE(ABORT, 'append-only');
+END;
+CREATE TRIGGER IF NOT EXISTS study_artifacts_no_update
+BEFORE UPDATE ON study_artifacts
+BEGIN
+    SELECT RAISE(ABORT, 'append-only');
+END;
+CREATE TRIGGER IF NOT EXISTS study_artifacts_no_delete
+BEFORE DELETE ON study_artifacts
 BEGIN
     SELECT RAISE(ABORT, 'append-only');
 END;

@@ -140,7 +140,7 @@
 - [x] T056 [P] Run `make lint` across all new files — `ruff check scripts/build_bundles.py scripts/build_neighbourhoods.py scripts/entailment_audit.py src/data/` — zero violations
 - [x] T057 Update `reports/status.md` gate table to reflect P1-3, P1-4, P1-5 completion status (weekly update per CLAUDE.md convention)
 - [x] T058 Run the full quickstart sequence from `quickstart.md` end to end — `make build-bundles && make build-neighbourhoods && make entailment-audit` — verify all outputs exist and are non-empty
-- [ ] T059 [P] Commit with task-ID-referenced messages: `P1-3: build_bundles.py FV-DATA-019–024`, `P1-5: build_neighbourhoods.py FV-DATA-030–034`, `P1-4: entailment_audit.py FV-DATA-025–029`
+- [x] T059 [P] Commit with task-ID-referenced messages: `P1-3: build_bundles.py FV-DATA-019–024`, `P1-5: build_neighbourhoods.py FV-DATA-030–034`, `P1-4: entailment_audit.py FV-DATA-025–029`
 
 ---
 

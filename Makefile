@@ -1,6 +1,7 @@
 .PHONY: lint format typecheck test \
         pin extract fix-spans adjudicate build-facts data help \
-        build-bundles build-neighbourhoods entailment-audit
+        build-bundles build-neighbourhoods entailment-audit \
+        exclusion-gate make-splits
 
 # ---------------------------------------------------------------------------
 # TOFU snapshot path — override on the command line or export in your shell:
@@ -90,6 +91,35 @@ entailment-audit:
 	  --sample-fraction 0.10 \
 	  --sample-min      5 \
 	  --sample-max      20
+
+## P1-2: Knowledge-exclusion gate (caller must pass CACHE_DECISIONS and CACHE_DIR)
+CACHE_DECISIONS ?=
+CACHE_DIR ?=
+exclusion-gate:
+	uv run python scripts/exclusion_gate.py \
+	  --facts data/controlled/facts.jsonl \
+	  --spec-root .factverify/spec \
+	  --decisions data/controlled/block0_decisions.yaml \
+	  --cache-decisions $(CACHE_DECISIONS) \
+	  --cache-dir $(CACHE_DIR) \
+	  --role blocks_0_2 \
+	  --out results/exclusion_gate.jsonl \
+	  --report reports/exclusion_gate.md
+
+## P1-6: Entity-disjoint Block 0 splits (caller must pass LEDGER_DECISIONS)
+LEDGER_DECISIONS ?=
+make-splits:
+	uv run python scripts/make_splits.py \
+	  --facts data/controlled/facts.jsonl \
+	  --gate-report results/exclusion_gate.jsonl \
+	  --audit results/entailment_audit.jsonl \
+	  --decisions data/controlled/block0_decisions.yaml \
+	  --seed 0 \
+	  --ledger ledger.sqlite \
+	  --ledger-decisions $(LEDGER_DECISIONS) \
+	  --spec-tag spec-v1 \
+	  --git-commit $(shell git rev-parse HEAD) \
+	  --out data/controlled/splits.json
 
 ## One-time source pinning (already done; only needed if you re-download TOFU)
 pin:

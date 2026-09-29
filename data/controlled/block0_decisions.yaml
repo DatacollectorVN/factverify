@@ -1,0 +1,22 @@
+decisions:
+  - decision_id: D-65
+    status: closed
+    baseline: random_choice
+    threshold: 0.5
+    comparison: any_direction
+    cell_score: alias_contains
+    decoding_seeds: [0]
+    decoding:
+      do_sample: false
+      max_new_tokens: 16
+    contamination_trigger: 0.10
+    contamination_decision: null
+    note: ""
+  - decision_id: D-68
+    status: closed
+    block: block0
+    counts:
+      construction: 8
+      calibration: 8
+    assign_final_test: false
+    relations: [occupation, birthplace, nationality, genre]
