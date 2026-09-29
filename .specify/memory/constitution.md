@@ -1,29 +1,36 @@
 <!--
 SYNC IMPACT REPORT
-Version change: 2.1.2 → 2.2.0
-Bump rationale: MINOR — added new "Commit Responsibility" rule to Development
-Workflow. Claude MUST NOT run git commit autonomously; commits are the user's
-responsibility. This is materially new actionable guidance, hence MINOR.
+Version change: 2.2.0 → 2.3.0
+Bump rationale: MINOR — added Principle 14 (Decision Identification) formalising
+semantic decision keys, catalog location, diagnostic format, and deprecation of
+bare D-* identifiers in new code. Open Decisions table gains Semantic key column
+and collision note.
 
 Modified principles: none
-Added sections: Development Workflow › Commit Responsibility
+Added sections: Core Principles › 14. Decision Identification;
+  Development Workflow › Open Decisions table gains Semantic key column and
+  collision note below the table
 Removed sections: none
 
 Templates requiring updates:
-  ✅ plan-template.md — no structural change required.
+  ✅ plan-template.md — no structural change required (Constitution Check
+     section is generic; no principle-name references).
   ✅ spec-template.md — no conflict.
-  ✅ tasks-template.md — no structural change required (commit tasks remain
-     valid as user-executed actions; Claude generates the message, not the commit).
+  ✅ tasks-template.md — no structural change required.
 
 Follow-up TODOs:
   - TODO(ALPHA): α and practical effect size for ΔFCR still unset (D-09);
-    treat α = 0.05 as provisional until supervisor confirms.
+    treat α = 0.05 as provisional until supervisor confirms. D-09 is also a
+    collision — owner must resolve uncertainty-family meaning vs FRR cap before
+    migration.
   - TODO(PYRIGHT): add pyproject.toml [tool.pyright] when shared strict
     baseline is agreed.
   - TODO(D-64): inverse policy for book_title (set-valued inverse); needed
     before notable_work relation can be added to D-63 inventory.
   - TODO(MODEL-UPGRADE): swap pythia-410m → pythia-1.4b or Llama-3.2-1B
     before Block 1 decisive validation; record amendment in preregistration.
+  - TODO(DECISION-COLLISIONS): resolve D-08, D-09, D-17, D-22, D-42 collisions
+    before catalog migration. See docs/tickets/readable-decision-identifiers.md.
 -->
 
 # FactVerify Project Constitution
@@ -169,6 +176,45 @@ Ruff is the single tool for linting, formatting, and import sorting:
 touching `src/` or `tests/`. New code introduced without annotations or
 with style violations MUST be fixed before merging, not deferred.
 
+### 14. Decision Identification
+
+Every study decision has a canonical dotted semantic key of the form
+`<domain>.<component>.<decision>` (e.g. `data.exclusion_gate.policy`) and
+an immutable legacy audit ID (e.g. `D-65`). The semantic key is the
+primary identifier everywhere new code, diagnostics, and output records
+are written. The legacy ID is preserved for traceability to historical
+artifacts and frozen specs and MUST never be reused or reassigned.
+
+Diagnostics and exceptions MUST name the semantic key first, the legacy ID
+in parentheses second, the human title, the missing or invalid field, and
+the consuming operation. Example:
+
+```
+Decision required: data.exclusion_gate.policy (legacy D-65)
+Knowledge-exclusion gate policy is open or incomplete.
+Missing field: threshold. Required by: exclusion gate.
+```
+
+The authoritative catalog lives at `config/decisions/catalog.yaml`. It is
+metadata only — it MUST NOT silently resolve an open scientific decision or
+supply a missing numeric value. The catalog MUST pass a uniqueness check
+for both `key` and `legacy_id` fields on every run.
+
+New decision definitions that omit the semantic key MUST be rejected by the
+validator. Legacy-only historical inputs (`decision_id: D-65`) are accepted
+in compatibility mode but are deprecated. Bare `D-*` identifiers MUST NOT
+appear in new user-facing error messages, reports, or verdicts.
+
+A semantic key MUST satisfy all of the following rules:
+
+1. It describes the decision, not its implementation phase.
+2. It has exactly one meaning throughout the repository.
+3. A legacy `D-*` ID resolves to no more than one semantic key.
+4. It retains its meaning even if its status or selected value changes.
+5. If two fields within an existing decision can be approved independently,
+   they MUST be split into separate semantic keys rather than hidden behind
+   one umbrella key.
+
 ## Protocol Architecture
 
 FactVerify is composed of five components, each eliminating a different
@@ -220,6 +266,7 @@ Build order: P0-1 → P0-2 → P0-4 → P0-3 → P0-6 → P0-5 → P0-7.
 | Controls | `src/controls/` | Fake-unlearning controls + behaviour matcher |
 | Statistics | `src/stats/` | Cluster-bootstrap analysis (checkpoint/fact blocks) |
 | Cache | `src/cache/` | Generation cache (model hash, prompt hash, decoding params) |
+| Decisions | `config/decisions/` | Canonical decision catalog (`catalog.yaml`) and resolver |
 | Validation | `tools/` | `validate_spec.py` (V01–V24), `freeze.py` |
 | Scripts | `scripts/` | Ledger and run entry points |
 | Tests | `tests/` | pytest suite |
@@ -284,16 +331,21 @@ commit. The user commits when they are ready.
 
 ### Open Decisions
 
-| ID | Decision | Status |
-|----|----------|--------|
-| D-09 | α (FRR cap) and practical effect size for ΔFCR | TODO(ALPHA): provisional α = 0.05; blocked on supervisor conversation |
-| D-44 | Registration status: internal versioned or externally archived | Open |
-| D-46 | Blocks 0-2 base model identity | **Resolved** — EleutherAI/pythia-410m @ 9879c9b (debug/Block 0); upgrade before Block 1 |
-| D-47 | 7B–8B confirmation subset fundable this cycle | Open |
-| D-48 | dtype / precision | **Resolved** — float32 (Block 0 debug); bfloat16 for Block 1+ |
-| D-49 | base vs instruct variant | **Resolved** — base |
-| D-63 | TOFU relation inventory for Stage A | **Resolved** — occupation, birthplace, nationality, genre; book_title deferred to D-64 |
-| D-64 | Inverse policy for many-to-one relations (book_title) | Open |
+| ID | Semantic key | Decision | Status |
+|----|-------------|----------|--------|
+| D-09 | _(collision — owner resolution required)_ | α (FRR cap) and practical effect size for ΔFCR | TODO(ALPHA): provisional α = 0.05; blocked on supervisor conversation |
+| D-44 | `preregistration.archive.location` | Registration status: internal versioned or externally archived | Open |
+| D-46 | `model.blocks_0_2.identity` | Blocks 0-2 base model identity | **Resolved** — EleutherAI/pythia-410m @ 9879c9b (debug/Block 0); upgrade before Block 1 |
+| D-47 | `model.block_3.identity` | 7B–8B confirmation subset fundable this cycle | Open |
+| D-48 | `model.runtime.precision_attention` | dtype / precision | **Resolved** — float32 (Block 0 debug); bfloat16 for Block 1+ |
+| D-49 | `model.variant.base_or_instruct` | base vs instruct variant | **Resolved** — base |
+| D-63 | `data.facts.relation_vocabulary` | TOFU relation inventory for Stage A | **Resolved** — occupation, birthplace, nationality, genre; book_title deferred to D-64 |
+| D-64 | `data.facts.book_title_inverse_policy` | Inverse policy for many-to-one relations (book_title) | Open |
+
+> **Note — ID collisions blocking migration**: Five legacy IDs have confirmed
+> meaning collisions (D-08, D-09, D-17, D-22, D-42) and require owner
+> resolution before semantic keys can be assigned and migration can proceed.
+> See `docs/tickets/readable-decision-identifiers.md` for the full inventory.
 
 ## Governance
 
@@ -328,4 +380,4 @@ Any post-freeze change to a spec artifact MUST:
 2. Result in a new git tag (never rewrite an existing tag)
 3. Be reported in the paper's methods section
 
-**Version**: 2.2.0 | **Ratified**: 2026-09-21 | **Last Amended**: 2026-09-29
+**Version**: 2.3.0 | **Ratified**: 2026-09-21 | **Last Amended**: 2026-09-29

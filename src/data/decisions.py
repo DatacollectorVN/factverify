@@ -9,6 +9,9 @@ from pathlib import Path
 import yaml
 
 from src.data.errors import DataError
+from src.decisions.diagnostic import format_diagnostic_by_id
+
+_CATALOG = Path(__file__).parents[2] / "docs" / "decisions" / "catalog.yaml"
 
 _CONTAMINATION = frozenset({"regenerate", "switch_model", "proceed"})
 
@@ -43,7 +46,7 @@ class D68Decision:
 def load_d65(path: Path) -> D65Decision:
     """Return D-65. Missing, open, or blank fields raise DataError."""
     item = _item(path, "D-65")
-    _require_closed(item, "D-65")
+    _require_closed(item, "D-65", "exclusion gate")
     baseline = _text(item, "baseline", "D-65")
     if baseline != "random_choice":
         raise DataError("baseline")
@@ -83,7 +86,7 @@ def load_d65(path: Path) -> D65Decision:
 def load_d68(path: Path) -> D68Decision:
     """Return D-68. Open rows and final-test assignment raise DataError."""
     item = _item(path, "D-68")
-    _require_closed(item, "D-68")
+    _require_closed(item, "D-68", "split construction")
     counts = item.get("counts")
     if not isinstance(counts, dict):
         raise DataError("counts")
@@ -114,22 +117,28 @@ def _item(path: Path, decision_id: str) -> dict[str, object]:
         raise DataError(str(path))
     loaded = yaml.safe_load(path.read_text(encoding="utf-8"))
     if not isinstance(loaded, dict):
-        raise DataError(decision_id)
+        raise DataError(format_diagnostic_by_id(decision_id, _CATALOG))
     rows = loaded.get("decisions")
     if not isinstance(rows, list):
-        raise DataError(decision_id)
+        raise DataError(format_diagnostic_by_id(decision_id, _CATALOG))
     for entry in rows:
         if isinstance(entry, dict) and entry.get("decision_id") == decision_id:
             return entry
-    raise DataError(decision_id)
+    raise DataError(format_diagnostic_by_id(decision_id, _CATALOG))
 
 
-def _require_closed(item: dict[str, object], decision_id: str) -> None:
+def _require_closed(
+    item: dict[str, object], decision_id: str, consuming_op: str
+) -> None:
     status = item.get("status")
     if status not in {"open", "closed"}:
-        raise DataError(decision_id)
+        raise DataError(
+            format_diagnostic_by_id(decision_id, _CATALOG, consuming_op=consuming_op)
+        )
     if status == "open":
-        raise DataError(decision_id)
+        raise DataError(
+            format_diagnostic_by_id(decision_id, _CATALOG, consuming_op=consuming_op)
+        )
 
 
 def _text(item: dict[str, object], field: str, decision_id: str) -> str:

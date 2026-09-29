@@ -1,0 +1,22 @@
+decisions:
+  - legacy_id: "D-01"
+    key: "data.exclusion_gate.policy"
+    title: "False-rejection-rate cap"
+    description: "FRR cap — deliberately shares key with D-65 to trigger uniqueness check."
+    domain: "stats"
+    owner: "study_owner"
+    consumers: []
+    required_fields: []
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-65"
+    key: "data.exclusion_gate.policy"
+    title: "Knowledge-exclusion gate policy"
+    description: "Exclusion gate — deliberately shares key with D-01 to trigger uniqueness check."
+    domain: "data"
+    owner: "Nathan Ngo"
+    consumers: []
+    required_fields: []
+    status: "open"
+    legacy_aliases: []

@@ -7,7 +7,10 @@ from pathlib import Path
 
 import yaml
 
+from src.decisions.diagnostic import format_diagnostic_by_id
 from src.ledger.errors import LedgerError
+
+_CATALOG = Path(__file__).parents[2] / "docs" / "decisions" / "catalog.yaml"
 
 
 @dataclass(frozen=True)
@@ -21,7 +24,11 @@ class TierDecision:
 def load_decision(path: Path, decision_id: str) -> TierDecision:
     """Return one decision. Ledger records only D-56. A missing id is open."""
     if decision_id != "D-56":
-        raise LedgerError(decision_id)
+        raise LedgerError(
+            format_diagnostic_by_id(
+                decision_id, _CATALOG, consuming_op="tier assignment"
+            )
+        )
     return load_d56(path)
 
 
@@ -33,14 +40,30 @@ def load_d56(path: Path) -> TierDecision:
         return TierDecision(status="open")
     status = item.get("status")
     if status not in {"open", "closed"}:
-        raise LedgerError("D-56")
+        raise LedgerError(
+            format_diagnostic_by_id("D-56", _CATALOG, consuming_op="tier assignment")
+        )
     if status == "open":
         return TierDecision(status="open")
     tiers = item.get("tiers")
     if not isinstance(tiers, list) or not tiers:
-        raise LedgerError("D-56")
+        raise LedgerError(
+            format_diagnostic_by_id(
+                "D-56",
+                _CATALOG,
+                missing_field="tiers",
+                consuming_op="tier assignment",
+            )
+        )
     if any(not isinstance(entry, str) or entry == "" for entry in tiers):
-        raise LedgerError("D-56")
+        raise LedgerError(
+            format_diagnostic_by_id(
+                "D-56",
+                _CATALOG,
+                missing_field="tiers",
+                consuming_op="tier assignment",
+            )
+        )
     return TierDecision(status="closed", tiers=tuple(tiers))
 
 

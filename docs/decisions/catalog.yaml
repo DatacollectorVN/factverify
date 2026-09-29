@@ -1,0 +1,1131 @@
+# FactVerify decision catalog.
+# Each entry maps a legacy D-* audit ID to a canonical dotted semantic key.
+# Entries with status: collision or status: unresolved have key: null and
+# must not be migrated until the owner resolves the conflicting meanings.
+# This file is metadata only — it does not supply missing numeric values.
+# Generated from: docs/tickets/readable-decision-identifiers.md
+decisions:
+
+  # ── Statistical policy (D-01–D-16) ────────────────────────────────────────
+
+  - legacy_id: "D-01"
+    key: "stats.error_rates.frr_cap"
+    title: "False-rejection-rate cap"
+    description: >-
+      The maximum false-rejection rate α allowed at the primary endpoint.
+      Governs the FRR ≤ α constraint in the final-test decision rule.
+      Treat α = 0.05 as provisional until supervisor confirms (TODO(ALPHA)).
+    domain: "stats"
+    owner: "study_owner"
+    consumers:
+      - "src.stats.thresholds"
+      - "src.stats.decisions"
+    required_fields:
+      - "value"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-02"
+    key: "stats.error_rates.minimum_fcr_reduction"
+    title: "Minimum worthwhile absolute FCR reduction"
+    description: >-
+      The smallest absolute reduction in false-certification rate that
+      constitutes a practically significant result (effect-size floor).
+    domain: "stats"
+    owner: "study_owner"
+    consumers:
+      - "src.stats.thresholds"
+    required_fields:
+      - "value"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-03"
+    key: "stats.uncertainty.confidence_error"
+    title: "Confidence error and bound procedure"
+    description: >-
+      The one-sided confidence error probability and the bound procedure
+      (e.g. bootstrap percentile, BCa) used for simultaneous inference.
+    domain: "stats"
+    owner: "study_owner"
+    consumers:
+      - "src.stats.decisions"
+      - "src.stats.bounds"
+      - "src.stats.io"
+      - "src.stats.report"
+      - "src.stats.thresholds"
+    required_fields:
+      - "confidence_error_probability"
+      - "procedure"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-04"
+    key: "stats.practical_success.criterion"
+    title: "Practical-success rule"
+    description: >-
+      The composite decision rule that constitutes a practical success —
+      e.g. ΔFCR exceeds both the FRR cap and the minimum effect size.
+    domain: "stats"
+    owner: "study_owner"
+    consumers:
+      - "src.stats.report"
+    required_fields:
+      - "rule"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-05"
+    key: "stats.thresholds.selection_uncertainty"
+    title: "Threshold-selection uncertainty procedure"
+    description: >-
+      The method for propagating threshold-selection uncertainty into the
+      final confidence bounds (e.g. split-sample, cross-validation).
+    domain: "stats"
+    owner: "study_owner"
+    consumers:
+      - "src.stats.decisions"
+      - "src.stats.thresholds"
+    required_fields:
+      - "procedure"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-06"
+    key: "stats.estimands.case_weights"
+    title: "Case-weight policy"
+    description: >-
+      Whether fact-level case weights are applied in the estimand and, if so,
+      the weighting scheme (uniform, popularity-stratified, etc.).
+    domain: "stats"
+    owner: "study_owner"
+    consumers:
+      - "src.stats.decisions"
+      - "src.stats.delta"
+      - "src.stats.report"
+    required_fields:
+      - "scheme"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-07"
+    key: "stats.resampling.design"
+    title: "Dependence structure and paired resampling design"
+    description: >-
+      The resampling structure: which blocks are resampled jointly, whether
+      checkpoint–fact pairs are kept together, and the pairing scheme.
+    domain: "stats"
+    owner: "study_owner"
+    consumers:
+      - "src.stats.decisions"
+      - "src.stats.report"
+    required_fields:
+      - "block_structure"
+      - "pairing"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-08"
+    key: null
+    title: "Uncertainty seed types / multiplicity procedure"
+    description: >-
+      Collision: used to mean uncertainty seed types in the decision register
+      and multiplicity procedure (holm/bh/by) in src/stats/multiplicity.py.
+      Owner resolution required before a semantic key can be assigned.
+    domain: "stats"
+    owner: "study_owner"
+    consumers:
+      - "src.stats.decisions"
+      - "src.stats.multiplicity"
+    required_fields: []
+    status: "collision"
+    legacy_aliases: []
+
+  - legacy_id: "D-09"
+    key: null
+    title: "Uncertainty family / FRR cap and spec-freeze blocker"
+    description: >-
+      Collision: used to mean uncertainty-family decision in margins.yaml
+      and FRR cap / α / spec-freeze blocker in index/MOC.md.
+      Owner resolution required before a semantic key can be assigned.
+    domain: "stats"
+    owner: "study_owner"
+    consumers:
+      - "spec-unlearning/margins.yaml"
+      - "index/MOC.md"
+    required_fields: []
+    status: "collision"
+    legacy_aliases: []
+
+  - legacy_id: "D-10"
+    key: "stats.estimands.aggregation"
+    title: "Per-family and overall aggregation"
+    description: >-
+      How per-family FCR/FRR estimates are combined into the overall
+      primary endpoint (e.g. arithmetic mean, weighted average).
+    domain: "stats"
+    owner: "study_owner"
+    consumers:
+      - "src.stats.decisions"
+      - "src.stats.report"
+    required_fields:
+      - "method"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-11"
+    key: "stats.relearning.tolerance"
+    title: "Relearning tolerance"
+    description: >-
+      The threshold below which a model is considered to have re-learned
+      the target fact after a single exposure during the recovery check.
+    domain: "stats"
+    owner: "study_owner"
+    consumers: []
+    required_fields:
+      - "value"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-12"
+    key: null
+    title: "Definition missing"
+    description: >-
+      Listed as a blocking decision in the registry but no authoritative
+      meaning was found in the inspected repository. Owner resolution required.
+    domain: "stats"
+    owner: "study_owner"
+    consumers: []
+    required_fields: []
+    status: "unresolved"
+    legacy_aliases: []
+
+  - legacy_id: "D-13"
+    key: "stats.estimands.status_mapping"
+    title: "Missing/non-identifiable/incomplete status mapping"
+    description: >-
+      How facts that are missing, non-identifiable, or have incomplete
+      measurements are mapped to outcome categories in the estimand.
+    domain: "stats"
+    owner: "study_owner"
+    consumers:
+      - "src.stats.decisions"
+    required_fields:
+      - "missing_policy"
+      - "nonidentifiable_policy"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-14"
+    key: "stats.estimands.coverage"
+    title: "Coverage and outcome eligibility / denominator treatment"
+    description: >-
+      Which facts are eligible for inclusion in the denominator of the FCR/FRR
+      estimand and how partial coverage is handled.
+    domain: "stats"
+    owner: "study_owner"
+    consumers:
+      - "src.eval.factverify"
+    required_fields:
+      - "eligibility_rule"
+      - "denominator_treatment"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-15"
+    key: "stats.sample_size.power_method"
+    title: "Sample-size and power calculation method"
+    description: >-
+      The algorithm and inputs used to calculate minimum sample size and
+      expected power for the primary endpoint.
+    domain: "stats"
+    owner: "study_owner"
+    consumers: []
+    required_fields:
+      - "method"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-16"
+    key: "reporting.claim_label.policy"
+    title: "Claim-labelling policy"
+    description: >-
+      How results are labelled in reports and the paper — which verdicts are
+      described as 'pass', 'fail', 'inconclusive', 'attack-relative evidence', etc.
+    domain: "reporting"
+    owner: "Nathan Ngo"
+    consumers: []
+    required_fields:
+      - "pass_label"
+      - "fail_label"
+    status: "open"
+    legacy_aliases: []
+
+  # ── Evaluator budget and access policy (D-17–D-31) ────────────────────────
+
+  - legacy_id: "D-17"
+    key: null
+    title: "Deviation categories completeness / total evaluator trial cap"
+    description: >-
+      Collision: means 'deviation-category completeness' in the decision
+      register and 'total evaluator trial cap' in src/eval/budget.py and
+      attacks.yaml. Owner resolution required.
+    domain: "eval"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval.budget"
+      - ".factverify/spec/attacks.yaml"
+    required_fields: []
+    status: "collision"
+    legacy_aliases: []
+
+  - legacy_id: "D-18"
+    key: "eval.budget.candidate_score_unit"
+    title: "Candidate-scoring accounting unit"
+    description: >-
+      The unit charged to the query budget when a candidate answer is scored
+      (e.g. per token, per scored candidate, per forward pass).
+    domain: "eval"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval.budget"
+    required_fields:
+      - "unit"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-19"
+    key: "eval.budget.reference_costs"
+    title: "Reference-model cost treatment"
+    description: >-
+      Whether reference-model queries are charged to the shared budget and,
+      if so, at what rate relative to candidate-model queries.
+    domain: "eval"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval.budget"
+    required_fields:
+      - "charge_reference"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-20"
+    key: "eval.cache.charge_policy"
+    title: "Cache-hit / retry budget policy"
+    description: >-
+      Whether cached responses are charged to the budget at full, reduced,
+      or zero cost, and how retries after cache misses are accounted.
+    domain: "eval"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval.budget"
+    required_fields:
+      - "cache_hit_cost"
+      - "retry_policy"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-21"
+    key: "eval.budget.failed_request_policy"
+    title: "Retry, transport-failure, and failed-request charging"
+    description: >-
+      How transport failures and failed requests (timeouts, errors) are
+      charged to the budget and how many retries are permitted.
+    domain: "eval"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval.budget"
+    required_fields:
+      - "max_retries"
+      - "failure_cost"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-22"
+    key: null
+    title: "Amendment protocol fields / equal caps versus realized usage"
+    description: >-
+      Collision: means 'amendment-protocol fields' in the decision register
+      and 'equal budget caps versus equal realized usage' in attacks.yaml and
+      evaluator code. Owner resolution required.
+    domain: "eval"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval.budget"
+      - ".factverify/spec/attacks.yaml"
+    required_fields: []
+    status: "collision"
+    legacy_aliases: []
+
+  - legacy_id: "D-23"
+    key: "eval.budget.samples_per_prompt"
+    title: "Samples per prompt"
+    description: >-
+      The number of independent samples drawn per prompt during stochastic
+      evaluation passes.
+    domain: "eval"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval.budget"
+    required_fields:
+      - "count"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-24"
+    key: "eval.transforms.export_variant_treatment"
+    title: "Export / variant / reference treatment"
+    description: >-
+      How quantised exports, base/instruct variants, and the retain-only
+      reference model are treated in the evaluation pipeline.
+    domain: "eval"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval.budget"
+    required_fields:
+      - "export_policy"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-25"
+    key: "eval.relearning.exposure_policy"
+    title: "Relearning and target-exposure treatment"
+    description: >-
+      Whether and how target-fact exposure during relearning probes is
+      controlled, budgeted, and reported.
+    domain: "eval"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval.budget"
+    required_fields:
+      - "exposure_budget"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-26"
+    key: "eval.budget.confirmation_reallocation"
+    title: "Unused confirmation-budget reallocation"
+    description: >-
+      Whether unused confirmation-route budget is reallocated to other
+      channels and, if so, the reallocation rule.
+    domain: "eval"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval.budget"
+      - "src.eval.spec_load"
+    required_fields:
+      - "reallocation_rule"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-27"
+    key: "access.scores.scope"
+    title: "Score / logit / rank observation scope"
+    description: >-
+      Which internal model outputs (logits, probabilities, ranks) are
+      observable under the declared access profile.
+    domain: "access"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval"
+    required_fields:
+      - "scope"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-28"
+    key: "access.interventions.policy"
+    title: "Permitted interventions"
+    description: >-
+      Which interventions on the model are permitted during evaluation
+      (e.g. prompt injection, adapter swapping, quantisation).
+    domain: "access"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval"
+    required_fields:
+      - "permitted_interventions"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-29"
+    key: "access.history.policy"
+    title: "Historical checkpoint / artifact access"
+    description: >-
+      Whether evaluators may access historical checkpoints and artifacts
+      from earlier training runs.
+    domain: "access"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval"
+    required_fields:
+      - "allow_historical"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-30"
+    key: null
+    title: "Not present in repository"
+    description: >-
+      This ID does not appear in the inspected repository. Disposition:
+      absent. No catalog entry or semantic key is assigned.
+    domain: "eval"
+    owner: "Nathan Ngo"
+    consumers: []
+    required_fields: []
+    status: "absent"
+    legacy_aliases: []
+
+  - legacy_id: "D-31"
+    key: "access.missing_measurements.policy"
+    title: "Missing or unavailable measurement handling"
+    description: >-
+      How missing or unavailable measurements (e.g. failed generation,
+      unavailable logits) are handled in the access profile.
+    domain: "access"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval"
+    required_fields:
+      - "policy"
+    status: "open"
+    legacy_aliases: []
+
+  # ── Witness and closure policy (D-32–D-43) ────────────────────────────────
+
+  - legacy_id: "D-32"
+    key: "witness.raw_scores.normalization"
+    title: "Raw-score convention"
+    description: >-
+      The normalisation convention for raw scores before they are compared
+      against calibrated bounds. Exact boundary needs owner confirmation.
+    domain: "witness"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval"
+    required_fields:
+      - "normalization"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-33"
+    key: "witness.raw_scores.candidate_policy"
+    title: "Candidate universe / ties / aggregation"
+    description: >-
+      The universe of candidates considered in raw-score computation,
+      how ties are broken, and how per-prompt scores are aggregated.
+      Exact boundary needs owner confirmation.
+    domain: "witness"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval"
+    required_fields:
+      - "candidate_universe"
+      - "tie_policy"
+      - "aggregation"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-34"
+    key: "witness.scoring.ambiguity_policy"
+    title: "Ambiguous-response handling"
+    description: >-
+      How responses that are ambiguous (neither clearly correct nor incorrect)
+      are scored and whether they count towards the witness.
+    domain: "witness"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval"
+    required_fields:
+      - "ambiguous_score"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-35"
+    key: "witness.route_a.independence"
+    title: "Family grouping, repetition, and Route-A independence"
+    description: >-
+      How template families are grouped for Route A, whether repetitions
+      across seeds are permitted, and the independence requirement.
+    domain: "witness"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval"
+    required_fields:
+      - "family_grouping"
+      - "independence_rule"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-36"
+    key: "witness.route_b.replication"
+    title: "Route-B eligible seeds and replication count"
+    description: >-
+      The seeds eligible for Route B (update/training seeds only) and the
+      minimum replication count required for a Route-B witness.
+    domain: "witness"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval"
+    required_fields:
+      - "seed_type"
+      - "min_replications"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-37"
+    key: "witness.route_c.replication"
+    title: "Route-C confirmation / replication"
+    description: >-
+      The replication and confirmation requirements for Route C.
+      Exact boundary needs owner confirmation.
+    domain: "witness"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval"
+    required_fields:
+      - "min_replications"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-38"
+    key: "facts.locality.bucket_policy"
+    title: "Locality bucket vocabulary and minimum coverage"
+    description: >-
+      The four locality bucket categories (same-subject, same-relation,
+      compositional, global) and the minimum number of facts required per
+      bucket.
+    domain: "facts"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval"
+    required_fields:
+      - "buckets"
+      - "min_coverage_per_bucket"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-39"
+    key: "facts.answers.alias_language_scope"
+    title: "Alias, language, and many-valued-answer scope"
+    description: >-
+      Which alias forms and language variants count as correct answers,
+      and how many-valued relations (e.g. multiple nationalities) are handled.
+    domain: "facts"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval"
+    required_fields:
+      - "alias_scope"
+      - "language_scope"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-40"
+    key: "facts.answers.normalization"
+    title: "Answer normalization policy"
+    description: >-
+      How answer strings are normalised before comparison (case folding,
+      punctuation removal, accent stripping, etc.).
+    domain: "facts"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval"
+    required_fields:
+      - "normalization_steps"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-41"
+    key: "closure.relations.coverage"
+    title: "Relation coverage"
+    description: >-
+      The set of relations that must be covered by the equivalence closure
+      templates, and the minimum number of templates per relation.
+    domain: "closure"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval"
+    required_fields:
+      - "relations"
+      - "min_templates_per_relation"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-42"
+    key: null
+    title: "Milestone staged-rule completeness / closure-template group/split assignment"
+    description: >-
+      Collision: means 'milestone staged-rule completeness' in the decision
+      register and 'closure-template group/split assignment' in P0-2 and P1
+      data preparation. Owner resolution required.
+    domain: "closure"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.data"
+      - ".factverify/spec/closure_templates.yaml"
+    required_fields: []
+    status: "collision"
+    legacy_aliases: []
+
+  - legacy_id: "D-43"
+    key: "closure.relations.seat_of_government_ontology"
+    title: "Seat-of-government ontology treatment"
+    description: >-
+      How 'seat of government' is handled in the closure templates when
+      the ontological definition is ambiguous (city vs. building vs. district).
+    domain: "closure"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.eval"
+    required_fields:
+      - "ontology_choice"
+    status: "open"
+    legacy_aliases: []
+
+  # ── Preregistration and model policy (D-44–D-50) ──────────────────────────
+
+  - legacy_id: "D-44"
+    key: "preregistration.archive.location"
+    title: "Preregistration archive location / status"
+    description: >-
+      Whether the preregistration is stored as an internal versioned artifact
+      or submitted to an external archive (OSF, AsPredicted, etc.) and the
+      archive URL when applicable.
+    domain: "preregistration"
+    owner: "Nathan Ngo"
+    consumers:
+      - "spec-unlearning/preregistration.md"
+    required_fields:
+      - "location"
+    status: "pending"
+    legacy_aliases: []
+
+  - legacy_id: "D-45"
+    key: "preregistration.exposure_record.approval"
+    title: "Exposure-record status / sign-off"
+    description: >-
+      The sign-off status of the exposure record documenting which data and
+      decisions have been seen by the study owner.
+    domain: "preregistration"
+    owner: "Nathan Ngo"
+    consumers:
+      - "spec-unlearning/preregistration.md"
+    required_fields:
+      - "signed_off_by"
+    status: "pending"
+    legacy_aliases: []
+
+  - legacy_id: "D-46"
+    key: "model.blocks_0_2.identity"
+    title: "Blocks 0–2 base-model identity"
+    description: >-
+      The exact model identifier, revision hash, and licence for the base
+      model used in Blocks 0–2. Resolved: EleutherAI/pythia-410m @ 9879c9b
+      for Block 0 debug; upgrade before Block 1.
+    domain: "model"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.models.loader"
+      - "src.models.identity"
+    required_fields:
+      - "model_id"
+      - "revision"
+      - "licence"
+    status: "closed"
+    legacy_aliases: []
+
+  - legacy_id: "D-47"
+    key: "model.block_3.identity"
+    title: "Block 3 confirmation model"
+    description: >-
+      The 7B–8B model to be used for Block 3 confirmation. Open pending
+      funding confirmation.
+    domain: "model"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.models.loader"
+    required_fields:
+      - "model_id"
+      - "revision"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-48"
+    key: "model.runtime.precision_attention"
+    title: "Dtype, precision, and attention implementation"
+    description: >-
+      The dtype (float32 / bfloat16) and attention implementation used
+      during evaluation. Resolved: float32 for Block 0 debug; bfloat16
+      for Block 1+.
+    domain: "model"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.models.loader"
+    required_fields:
+      - "dtype"
+      - "attention_impl"
+    status: "closed"
+    legacy_aliases: []
+
+  - legacy_id: "D-49"
+    key: "model.variant.base_or_instruct"
+    title: "Base versus instruction-tuned variant"
+    description: >-
+      Whether the base or instruction-tuned model variant is used.
+      Resolved: base.
+    domain: "model"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.models.loader"
+    required_fields:
+      - "variant"
+    status: "closed"
+    legacy_aliases: []
+
+  - legacy_id: "D-50"
+    key: "model.adapters.evaluation_mode"
+    title: "Adapter evaluation versus merge policy"
+    description: >-
+      Whether LoRA adapters are evaluated in PEFT mode or merged into the
+      base weights before evaluation.
+    domain: "model"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.models.adapters"
+    required_fields:
+      - "evaluation_mode"
+    status: "open"
+    legacy_aliases: []
+
+  # ── Training, controls, ledger, statistics, and cache (D-51–D-61) ─────────
+
+  - legacy_id: "D-51"
+    key: "training.unlearning.hyperparameters"
+    title: "Per-method unlearning hyperparameters"
+    description: >-
+      The hyperparameter grids for each unlearning method (GA, GradDiff,
+      NPO, RMU): learning rate, steps, temperature, etc.
+    domain: "training"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.train.config"
+    required_fields:
+      - "ga"
+      - "graddiff"
+      - "npo"
+      - "rmu"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-52"
+    key: "training.lora.configuration"
+    title: "Shared LoRA rank, alpha, dropout, and target modules"
+    description: >-
+      The LoRA adapter configuration shared across all unlearning methods:
+      rank, alpha, dropout probability, and target module names.
+    domain: "training"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.train.config"
+    required_fields:
+      - "rank"
+      - "alpha"
+      - "dropout"
+      - "target_modules"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-53"
+    key: "artifacts.determinism.digest_tolerance"
+    title: "Determinism policy and digest tolerance"
+    description: >-
+      The maximum permitted hash-digest divergence across runs with the
+      same seed (tolerance for floating-point non-determinism).
+    domain: "artifacts"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.controls.decisions"
+    required_fields:
+      - "tolerance"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-54"
+    key: "controls.behaviour_matching.policy"
+    title: "Control retention gap and match band / selection policy"
+    description: >-
+      The retention gap threshold and the match-band / selection policy
+      for behaviour-matching controls. Consider splitting retention gap
+      and match-band into separate independently-approvable decisions.
+    domain: "controls"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.controls.decisions"
+      - "src.controls.match"
+    required_fields:
+      - "retention_gap"
+      - "match_band"
+      - "selection_policy"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-55"
+    key: "controls.catalog.coverage"
+    title: "Required implementation count and severities per family"
+    description: >-
+      The minimum number of fake-unlearning control implementations per
+      mechanism family and the required severity levels.
+    domain: "controls"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.controls.decisions"
+      - "src.controls.registry"
+    required_fields:
+      - "min_per_family"
+      - "required_severities"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-56"
+    key: "ledger.checkpoints.tier_vocabulary"
+    title: "Allowed checkpoint tier values"
+    description: >-
+      The exhaustive vocabulary of tier labels permitted in ledger rows
+      (e.g. 'debug', 'pilot', 'validation', 'final').
+    domain: "ledger"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.ledger.decisions"
+      - "src.ledger.api"
+    required_fields:
+      - "tiers"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-57"
+    key: "stats.bootstrap.interval_policy"
+    title: "Bootstrap interval type, replicate count, and coverage tolerance"
+    description: >-
+      The bootstrap interval type (percentile, BCa, etc.), the number of
+      bootstrap replicates, and the permitted coverage tolerance.
+    domain: "stats"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.stats.decisions"
+      - "src.stats.bootstrap"
+    required_fields:
+      - "interval_type"
+      - "replicate_count"
+      - "coverage_tolerance"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-58"
+    key: "controls.behaviour_matching.probes"
+    title: "Approved direct-QA matching probes"
+    description: >-
+      The set of direct-QA probe templates approved for use in
+      behaviour-matching control checks.
+    domain: "controls"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.controls.decisions"
+      - "src.controls.match"
+    required_fields:
+      - "probes"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-59"
+    key: "controls.behaviour_matching.hard_dimensions"
+    title: "Extra hard-control dimensions and tolerances"
+    description: >-
+      Additional hard-control dimensions beyond the primary QA probe and
+      the corresponding tolerance values.
+    domain: "controls"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.controls.decisions"
+      - "src.controls.match"
+    required_fields:
+      - "dimensions"
+      - "tolerances"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-60"
+    key: "cache.key.software_versions"
+    title: "Software versions in cache keys"
+    description: >-
+      Whether software version strings (transformers, PyTorch, PEFT) are
+      included in the generation cache key.
+    domain: "cache"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.cache.decisions"
+      - "src.cache.key"
+    required_fields:
+      - "include_software_versions"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-61"
+    key: "controls.catalog.untouched_model"
+    title: "Untouched model as negative family and mechanism layer"
+    description: >-
+      Whether the untouched (non-unlearned) model is treated as a negative
+      control family and, if so, what mechanism layer it occupies.
+    domain: "controls"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.controls.decisions"
+      - "src.controls.build"
+    required_fields:
+      - "is_negative_family"
+      - "mechanism_layer"
+    status: "open"
+    legacy_aliases: []
+
+  # ── Data preparation and study splits (D-62–D-69) ─────────────────────────
+
+  - legacy_id: "D-62"
+    key: "data.tofu.extractor_configuration"
+    title: "Extractor model / prompt / settings specification"
+    description: >-
+      The exact model, prompt template, and generation settings used by the
+      TOFU fact extractor.
+    domain: "data"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.data.tofu"
+    required_fields:
+      - "model_id"
+      - "prompt_template"
+      - "generation_settings"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-63"
+    key: "data.facts.relation_vocabulary"
+    title: "Included relation types"
+    description: >-
+      The TOFU relation types included in Stage A. Resolved: occupation,
+      birthplace, nationality, genre. book_title deferred to D-64.
+    domain: "data"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.data.tofu"
+    required_fields:
+      - "relations"
+    status: "closed"
+    legacy_aliases: []
+
+  - legacy_id: "D-64"
+    key: "data.facts.book_title_inverse_policy"
+    title: "Inverse-query policy for book_title"
+    description: >-
+      Whether and how inverse queries for the many-to-one book_title
+      relation are generated and included in the dataset.
+    domain: "data"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.data.tofu"
+    required_fields:
+      - "include_inverse"
+      - "inverse_policy"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-65"
+    key: "data.exclusion_gate.policy"
+    title: "Knowledge-exclusion gate policy"
+    description: >-
+      Defines how the pinned base model is judged as already knowing a fact.
+      Controls baseline construction, threshold, scoring, decoding seeds, and
+      the contamination trigger. Consider splitting into independently
+      approvable sub-decisions.
+    domain: "data"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.data.decisions.load_d65"
+      - "src.data.exclusion"
+    required_fields:
+      - "baseline"
+      - "threshold"
+      - "comparison"
+      - "cell_score"
+      - "decoding_seeds"
+      - "generation"
+      - "contamination_trigger"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-66"
+    key: "data.bundles.record_policy"
+    title: "Minimum records per direction and multi-fact rewrite / exclusion policy"
+    description: >-
+      The minimum number of records required per query direction in a bundle
+      and the policy for multi-fact rewrites and bundle exclusions.
+    domain: "data"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.data"
+    required_fields:
+      - "min_records_per_direction"
+      - "multi_fact_policy"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-67"
+    key: "data.entailment_audit.policy"
+    title: "Entailment method, flag rule, and unflagged sample size"
+    description: >-
+      The entailment model or heuristic used in the audit, the flagging
+      threshold, and the size of the unflagged sample drawn for human review.
+    domain: "data"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.data"
+    required_fields:
+      - "method"
+      - "flag_threshold"
+      - "unflagged_sample_size"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-68"
+    key: "data.splits.block_0_design"
+    title: "Block 0 split counts and balance"
+    description: >-
+      The number of facts in the construction and calibration splits for
+      Block 0, the balance constraints, and whether final-test facts are
+      excluded from this block.
+    domain: "data"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.data.decisions.load_d68"
+      - "src.data.splits"
+    required_fields:
+      - "block"
+      - "construction"
+      - "calibration"
+      - "assign_final_test"
+      - "relations"
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-69"
+    key: "data.leaveout.unit"
+    title: "Fact-level versus group-level leave-out unit"
+    description: >-
+      Whether individual facts or entire relation-groups are left out
+      as the unit of the leave-one-out cross-validation scheme.
+    domain: "data"
+    owner: "Nathan Ngo"
+    consumers:
+      - "src.data.splits"
+    required_fields:
+      - "unit"
+    status: "open"
+    legacy_aliases: []

@@ -1203,7 +1203,13 @@ def write_margins_report(
     return report
 
 
-def _run_check(rule_id: str, rule_name: str, check_fn: Callable[..., Any], *args: object, **kwargs: object) -> dict:
+def _run_check(
+    rule_id: str,
+    rule_name: str,
+    check_fn: Callable[..., Any],
+    *args: object,
+    **kwargs: object,
+) -> dict:
     try:
         diags = check_fn(*args, **kwargs)
         if isinstance(diags, tuple):

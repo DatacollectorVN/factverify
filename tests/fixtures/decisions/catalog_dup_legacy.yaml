@@ -1,0 +1,22 @@
+decisions:
+  - legacy_id: "D-65"
+    key: "data.exclusion_gate.policy"
+    title: "Knowledge-exclusion gate policy (first)"
+    description: "First entry for D-65 — deliberately duplicated to trigger uniqueness check."
+    domain: "data"
+    owner: "Nathan Ngo"
+    consumers: []
+    required_fields: []
+    status: "open"
+    legacy_aliases: []
+
+  - legacy_id: "D-65"
+    key: "data.exclusion_gate.threshold"
+    title: "Knowledge-exclusion gate policy (second)"
+    description: "Second entry for D-65 — deliberately duplicated to trigger uniqueness check."
+    domain: "data"
+    owner: "Nathan Ngo"
+    consumers: []
+    required_fields: []
+    status: "open"
+    legacy_aliases: []

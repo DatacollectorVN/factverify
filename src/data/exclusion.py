@@ -11,6 +11,9 @@ import yaml
 
 from src.data.decisions import D65Decision
 from src.data.errors import DataError
+from src.decisions.resolver import resolve_or_none
+
+_CATALOG = Path(__file__).parents[2] / "docs" / "decisions" / "catalog.yaml"
 
 Completer = Callable[[str, int], str | None]
 
@@ -90,11 +93,13 @@ def _judge(
         for template in templates
         if template.get("class") == "I" and _relation_listed(template, relation)
     ]
+    d65_entry = resolve_or_none("D-65", _CATALOG)
     row: dict[str, Any] = {
         "fact_id": fact.get("fact_id"),
         "relation": relation,
         "identity_hash": identity_hash,
         "decision_id": "D-65",
+        "decision_key": d65_entry.key if d65_entry is not None else None,
         "threshold": decision.threshold,
         "inference_probes": [
             {"template_id": template.get("id"), "prompt": _instantiate(template, fact)}

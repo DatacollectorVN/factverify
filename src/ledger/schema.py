@@ -40,7 +40,9 @@ CREATE TABLE IF NOT EXISTS checkpoints (
     gpu_hours REAL NOT NULL,
     peak_memory_bytes INTEGER NOT NULL,
     status TEXT NOT NULL,
-    supersedes TEXT REFERENCES checkpoints(row_id)
+    supersedes TEXT REFERENCES checkpoints(row_id),
+    decision_id TEXT,
+    decision_key TEXT
 );
 CREATE TABLE IF NOT EXISTS evaluation_runs (
     run_id TEXT PRIMARY KEY,
@@ -148,9 +150,19 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
     """Create tables and triggers. Insert schema version `1` when meta is empty."""
     conn.executescript(_DDL)
     conn.executescript(_TRIGGERS)
+    _migrate_columns(conn)
     row = conn.execute("SELECT schema_version FROM meta").fetchone()
     if row is None:
         conn.execute("INSERT INTO meta (schema_version) VALUES (?)", (SCHEMA_VERSION,))
         return
     if str(row["schema_version"]) != SCHEMA_VERSION:
         raise LedgerError("schema_version")
+
+
+def _migrate_columns(conn: sqlite3.Connection) -> None:
+    """Add new nullable columns to existing tables; silently skip if already present."""
+    for col in ("decision_id", "decision_key"):
+        try:
+            conn.execute(f"ALTER TABLE checkpoints ADD COLUMN {col} TEXT")
+        except sqlite3.OperationalError:
+            pass  # column already present (created by DDL on new databases)

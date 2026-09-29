@@ -10,7 +10,10 @@ from typing import Any
 
 from src.data.decisions import D68Decision
 from src.data.errors import DataError
+from src.decisions.resolver import resolve_or_none
 from src.train.config import hash_mapping
+
+_CATALOG = Path(__file__).parents[2] / "docs" / "decisions" / "catalog.yaml"
 
 _LABELS = ("construction", "calibration", "unassigned")
 
@@ -50,11 +53,13 @@ def assign_splits(
             fact_labels[fact_id] = label
     validate_splits({"entities": entities, "facts": fact_labels}, eligible)
     body = {"entities": entities, "facts": fact_labels}
+    d68_entry = resolve_or_none("D-68", _CATALOG)
     payload: dict[str, Any] = {
         "block": decision.block,
         "seed": seed,
         "digest": hash_mapping(body),
         "decision_id": "D-68",
+        "decision_key": d68_entry.key if d68_entry is not None else None,
         "entities": entities,
         "facts": fact_labels,
     }

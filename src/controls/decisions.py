@@ -8,6 +8,18 @@ from pathlib import Path
 import yaml
 
 from src.controls.errors import ControlError
+from src.decisions.diagnostic import format_diagnostic_by_id
+
+_CATALOG = Path(__file__).parents[2] / "docs" / "decisions" / "catalog.yaml"
+
+_CONSUMING_OP: dict[str, str] = {
+    "D-53": "determinism check",
+    "D-54": "behaviour matching",
+    "D-55": "control registry",
+    "D-58": "behaviour matching probes",
+    "D-59": "hard-control dimensions",
+    "D-61": "untouched-model check",
+}
 
 _IDS = ("D-53", "D-54", "D-55", "D-58", "D-59", "D-61")
 
@@ -60,7 +72,13 @@ def load_decisions(path: Path) -> dict[str, DecisionRow]:
         if not isinstance(decision_id, str) or decision_id not in _IDS:
             raise ControlError(str(path))
         if status not in {"open", "closed"}:
-            raise ControlError(decision_id)
+            raise ControlError(
+                format_diagnostic_by_id(
+                    str(decision_id),
+                    _CATALOG,
+                    consuming_op=_CONSUMING_OP.get(str(decision_id), "controls"),
+                )
+            )
         found[decision_id] = DecisionRow(
             decision_id=decision_id,
             status=str(status),

@@ -12,10 +12,13 @@ from pathlib import Path
 
 from src.controls.ledger import LedgerRow, ParentView
 from src.controls.match import SystemView
+from src.decisions.resolver import resolve_or_none
 from src.ledger.decisions import load_d56
 from src.ledger.errors import LedgerError
 from src.ledger.schema import open_ledger as open_database
 from src.train.ledger import CheckpointRow
+
+_CATALOG = Path(__file__).parents[2] / "docs" / "decisions" / "catalog.yaml"
 
 _ROLES = frozenset({"base", "finetuned", "reference", "control", "candidate"})
 _FINAL = frozenset({"final_test", "final-test"})
@@ -72,6 +75,8 @@ class CheckpointRecord:
     peak_memory_bytes: int
     status: str
     supersedes: str | None = None
+    decision_id: str | None = None
+    decision_key: str | None = None
     row_id: str = ""
     created_at: str = ""
 
@@ -257,6 +262,8 @@ def add_checkpoint(ledger: Ledger, record: CheckpointRecord) -> str:
     if decision.status != "closed" or decision.tiers is None:
         raise LedgerError("D-56")
     _validate_checkpoint(record, decision.tiers)
+    entry = resolve_or_none("D-56", _CATALOG)
+    d56_key = entry.key if entry is not None else None
     with ledger._lock:
         ledger.connection.execute("BEGIN IMMEDIATE")
         try:
@@ -272,10 +279,10 @@ def add_checkpoint(ledger: Ledger, record: CheckpointRecord) -> str:
                     role, tier, family, method, implementation_id, spec_tag,
                     git_commit, dirty, tokens, scored_candidates, training_steps,
                     training_examples, exports, wall_clock_seconds, gpu_hours,
-                    peak_memory_bytes, status, supersedes
+                    peak_memory_bytes, status, supersedes, decision_id, decision_key
                 ) VALUES (
                     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """,
                 (
@@ -306,6 +313,8 @@ def add_checkpoint(ledger: Ledger, record: CheckpointRecord) -> str:
                     record.peak_memory_bytes,
                     record.status,
                     record.supersedes,
+                    "D-56",
+                    d56_key,
                 ),
             )
             ledger.connection.execute("COMMIT")
@@ -709,6 +718,9 @@ def _incident_unlocks(ledger: Ledger, split: str) -> bool:
 def _checkpoint_from_row(row: sqlite3.Row) -> CheckpointRecord:
     parent = row["parent_ledger_id"]
     supersedes = row["supersedes"]
+    keys = row.keys()
+    raw_decision_id = row["decision_id"] if "decision_id" in keys else None
+    raw_decision_key = row["decision_key"] if "decision_key" in keys else None
     return CheckpointRecord(
         identity_hash=str(row["identity_hash"]),
         parent_ledger_id=None if parent is None else str(parent),
@@ -735,6 +747,8 @@ def _checkpoint_from_row(row: sqlite3.Row) -> CheckpointRecord:
         peak_memory_bytes=int(row["peak_memory_bytes"]),
         status=str(row["status"]),
         supersedes=None if supersedes is None else str(supersedes),
+        decision_id=None if raw_decision_id is None else str(raw_decision_id),
+        decision_key=None if raw_decision_key is None else str(raw_decision_key),
         row_id=str(row["row_id"]),
         created_at=str(row["created_at"]),
     )

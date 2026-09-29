@@ -8,8 +8,11 @@ from typing import Any
 
 import yaml
 
+from src.decisions.resolver import resolve_or_none
 from src.eval.errors import FactVerifyEvalError
 from src.eval.types import Case, Probe, normalize_split
+
+_CATALOG = Path(__file__).parents[2] / "docs" / "decisions" / "catalog.yaml"
 
 _ARTIFACTS = (
     "attacks.yaml",
@@ -153,7 +156,14 @@ def require_closed(bundle: SpecBundle, decision_ids: list[str]) -> None:
     """Refuse when any requested decision is missing or not closed."""
     open_ids = [item for item in decision_ids if bundle.decisions.get(item) != "closed"]
     if open_ids:
-        raise FactVerifyEvalError("open decisions: " + ", ".join(open_ids))
+        parts: list[str] = []
+        for did in open_ids:
+            entry = resolve_or_none(did, _CATALOG)
+            if entry is not None and entry.key is not None:
+                parts.append(f"{entry.key} (legacy {did})")
+            else:
+                parts.append(did)
+        raise FactVerifyEvalError("open decisions: " + ", ".join(parts))
 
 
 def require_resolved_policies(bundle: SpecBundle) -> None:

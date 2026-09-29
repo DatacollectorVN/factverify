@@ -192,6 +192,8 @@ effect size) is an open decision blocked on a supervisor conversation — treat
 - Local filesystem (weight files, adapter directories); `models.yaml` spec artifact; no database (20260926-105952-model-loader)
 - Python 3.11 (managed by uv) + PyYAML (spec parsing), jsonschema + referencing (contract validation), click (CLI), hashlib stdlib (digests), anthropic SDK (P1-4 LLM judge only) (20260928-224019-p1-bundle-prep)
 - JSONL files (records, index, neighbourhoods, audit), JSON files (bundles, manifests), Markdown (reports) (20260928-224019-p1-bundle-prep)
+- Python 3.11 + PyYAML ≥ 6.0 (already declared), jsonschema ≥ 4.23 (already declared), referencing ≥ 0.37.0 (already declared), click ≥ 8.0 (already declared) (20260929-110152-readable-decision-identifiers)
+- YAML files (`config/decisions/catalog.yaml`; existing per-module decision YAML files unchanged), SQLite (ledger rows gain a `decision_key` column) (20260929-110152-readable-decision-identifiers)
 
 ## Recent Changes
 - 20260921-211249-fact-contract-schema: Added Python 3.11 + `jsonschema` (Draft 2020-12 support), `referencing` (schema resolution), `click` (CLI)
