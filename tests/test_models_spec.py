@@ -110,9 +110,10 @@ def test_fv_spec_089_identity(ms_valid: Path, ms_invalid: Path) -> None:
 
 
 def test_fv_spec_090_immutable_revision(ms_valid: Path, ms_invalid: Path) -> None:
-    assert check_fv_spec_090_immutable_revision(
-        _roles(ms_valid / "models_complete.yaml")
-    ) == []
+    assert (
+        check_fv_spec_090_immutable_revision(_roles(ms_valid / "models_complete.yaml"))
+        == []
+    )
 
     mutable = check_fv_spec_090_immutable_revision(
         _roles(ms_invalid / "mutable_revision.yaml")
@@ -195,7 +196,9 @@ def test_fv_spec_091_file_digests(
 
     modified = tmp_path / "modified"
     shutil.copytree(ms_model_dir, modified)
-    (modified / "config.json").write_text('{"model_type": "changed"}\n', encoding="utf-8")
+    (modified / "config.json").write_text(
+        '{"model_type": "changed"}\n', encoding="utf-8"
+    )
     modified_checks = check_fv_spec_091_digests(roles, modified, "blocks_0_2")
     assert _statuses(modified_checks) == ["fail"]
     assert "config.json" in _diagnostics(modified_checks)
@@ -304,7 +307,9 @@ def test_fv_spec_094_downstream_binding(ms_valid: Path, ms_downstream: Path) -> 
 # ---------------------------------------------------------------------------
 
 
-def _write_spec(root: Path, body: str, checksum: str | None, prereg: str | None) -> None:
+def _write_spec(
+    root: Path, body: str, checksum: str | None, prereg: str | None
+) -> None:
     spec = root / "spec"
     spec.mkdir(parents=True)
     (spec / "models.yaml").write_text(body, encoding="utf-8")
@@ -370,31 +375,32 @@ def test_fv_spec_095_amendment(tmp_path: Path) -> None:
 
 
 def test_live_models_yaml_pre_decision_report() -> None:
-    """Non-strict validation of the live artifact matches the pre-D46 row.
+    """The live snapshot pins blocks_0_2 and leaves confirmation pending.
 
-    Drawn from specs/20260926-101858-base-model-pinning/data-model.md
-    Key State Transitions: DECISION_REQUIRED is pending, not pass.
+    Confirmation placeholders stay on a pending role, so they do not fail
+    identity completeness. Empty ``files`` keeps the digest check pending.
     """
     success, report = validate_models_spec(SPEC_ROOT, strict=False)
     by_name = {c["rule_name"]: c["status"] for c in report["checks"]}
-    assert by_name["identity_completeness"] == "pending"
-    assert by_name["immutable_revision"] == "pending"
+    assert by_name["identity_completeness"] == "pass"
+    assert by_name["immutable_revision"] == "pass"
     assert by_name["file_digests"] == "pending"
-    assert by_name["identity_hash_definition"] == "pending"
+    assert by_name["identity_hash_definition"] == "pass"
     assert by_name["downstream_binding"] == "pending"
     assert by_name["amendment_protocol"] == "pending"
     assert report["overall"] == "pass"
     assert success is True
-    assert report["identity_hashes"]["blocks_0_2"] is None
+    blocks = report["identity_hashes"]["blocks_0_2"]
+    assert isinstance(blocks, str) and blocks.startswith("sha256:")
     assert report["identity_hashes"]["block_3_confirmation"] is None
     assert isinstance(report["runtime_seconds"], float)
     assert report["runtime_seconds"] < 60
 
     strict_ok, strict_report = validate_models_spec(SPEC_ROOT, strict=True)
     strict_names = {c["rule_name"]: c["status"] for c in strict_report["checks"]}
-    assert strict_ok is False
-    assert strict_report["overall"] == "fail"
-    assert strict_names["identity_completeness"] == "fail"
+    assert strict_ok is True
+    assert strict_report["overall"] == "pass"
+    assert strict_names["identity_completeness"] == "pass"
 
 
 def test_fv_spec_runtime_recorded_on_synthetic_suite(

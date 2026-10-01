@@ -1,6 +1,7 @@
 role: reference
 method: finetune
 base_role: tiny_base
+model_config: model_config.yaml
 seed: 7
 split: calibration
 spec_revision: spec-v1

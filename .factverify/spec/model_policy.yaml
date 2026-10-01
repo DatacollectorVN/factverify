@@ -1,0 +1,35 @@
+schema_version: "1"
+governing_spec_revision: spec-v2
+identity_schema_version: 2
+
+required_roles:
+  controlled_fact_base:
+    purpose: >-
+      Base pretrained model for controlled-fact training, unlearning,
+      retain-only references, candidates, and fake-unlearning controls.
+    required_capabilities:
+      - offline_weights
+      - tokenizer
+      - parameter_updates
+  pretrained_fact_confirmation:
+    purpose: >-
+      7B–8B model for the pretrained-fact confirmation subset.
+      Not the model that carries the full pretrained stress test.
+    required_capabilities:
+      - offline_weights
+      - tokenizer
+    staged_commitment: true
+
+required_identity_fields:
+  - repo_id
+  - model_revision
+  - tokenizer_revision
+  - variant
+  - dtype
+  - attn_impl
+  - licence
+  - files
+
+role_aliases:
+  blocks_0_2: controlled_fact_base
+  block_3_confirmation: pretrained_fact_confirmation

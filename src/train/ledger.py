@@ -38,6 +38,11 @@ class CheckpointRow:
     tokens: int
     scored_candidates: int
     exports: int
+    study_role: str | None = None
+    model_config_id: str | None = None
+    model_config_digest: str | None = None
+    model_identity_hash: str | None = None
+    identity_schema_version: int | None = None
 
 
 class LedgerPort(Protocol):

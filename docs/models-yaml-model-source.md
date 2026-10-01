@@ -1,6 +1,14 @@
 # models.yaml — Model Source and Identifier Convention
 
-**Relates to**: `.factverify/spec/models.yaml` · FV-SPEC-089 · FV-SPEC-090 · P0-8
+**Relates to**: `.factverify/spec/model_policy.yaml` · `config/models/` · `.factverify/spec/models.yaml` · FV-SPEC-089 · FV-SPEC-090 · P0-8
+
+The frozen policy is `.factverify/spec/model_policy.yaml`. Concrete selections live in `config/models/` and use `model_revision` for the weight commit. Callers pass that file explicitly:
+
+```python
+load_model(role, model_config=path, spec_root=spec_root)
+```
+
+`.factverify/spec/models.yaml` remains the historical snapshot. New documents group roles under `roles`.
 
 ---
 

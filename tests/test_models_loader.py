@@ -56,7 +56,11 @@ def test_fv_model_001_pinned_revision(model_loader_spec_root: Path) -> None:
         mock_cls.from_pretrained.return_value = mock_model
         mock_tok_cls.from_pretrained.return_value = mock_tokenizer
 
-        load_model("tiny_base", spec_root=model_loader_spec_root)
+        load_model(
+            "tiny_base",
+            model_config=model_loader_spec_root / "models.yaml",
+            spec_root=model_loader_spec_root,
+        )
 
         # Revision must match models.yaml declaration
         model_call_kwargs = mock_cls.from_pretrained.call_args.kwargs
@@ -71,7 +75,11 @@ def test_fv_model_001_pinned_revision(model_loader_spec_root: Path) -> None:
             mock_cls2.from_pretrained.side_effect = AssertionError(
                 "should not be called"
             )
-            load_model("nonexistent_role", spec_root=model_loader_spec_root)
+            load_model(
+                "nonexistent_role",
+                model_config=model_loader_spec_root / "models.yaml",
+                spec_root=model_loader_spec_root,
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -96,7 +104,11 @@ def test_fv_model_002_digest_check(
     ):
         mock_cls.from_pretrained.return_value = mock_model
         mock_tok_cls.from_pretrained.return_value = mock_tokenizer
-        result = load_model("tiny_base", spec_root=model_loader_spec_root)
+        result = load_model(
+            "tiny_base",
+            model_config=model_loader_spec_root / "models.yaml",
+            spec_root=model_loader_spec_root,
+        )
         assert result is not None
 
     # Corrupt fixture in a temp copy — should raise before from_pretrained
@@ -108,7 +120,11 @@ def test_fv_model_002_digest_check(
     with pytest.raises(
         FactVerifyLoaderError, match="digest mismatch.*model.safetensors"
     ):
-        load_model("tiny_base", spec_root=temp_fixture)
+        load_model(
+            "tiny_base",
+            model_config=temp_fixture / "models.yaml",
+            spec_root=temp_fixture,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -130,7 +146,11 @@ def test_fv_model_003_offline(model_loader_spec_root: Path) -> None:
         mock_cls.from_pretrained.return_value = mock_model
         mock_tok_cls.from_pretrained.return_value = mock_tokenizer
 
-        load_model("tiny_base", spec_root=model_loader_spec_root)
+        load_model(
+            "tiny_base",
+            model_config=model_loader_spec_root / "models.yaml",
+            spec_root=model_loader_spec_root,
+        )
 
         # Both calls must include local_files_only=True
         assert mock_cls.from_pretrained.call_args.kwargs.get("local_files_only") is True
@@ -160,7 +180,11 @@ def test_fv_model_004_identity_hash(model_loader_spec_root: Path) -> None:
         ):
             mock_cls.from_pretrained.return_value = mock_model
             mock_tok_cls.from_pretrained.return_value = mock_tokenizer
-            return load_model("tiny_base", spec_root=model_loader_spec_root)
+            return load_model(
+                "tiny_base",
+                model_config=model_loader_spec_root / "models.yaml",
+                spec_root=model_loader_spec_root,
+            )
 
     result1 = _load()
     result2 = _load()
@@ -169,15 +193,15 @@ def test_fv_model_004_identity_hash(model_loader_spec_root: Path) -> None:
     assert result1.identity_hash == result2.identity_hash
     assert result1.identity_payload == result2.identity_payload
 
-    # Hash is a 64-char hex string
-    assert len(result1.identity_hash) == 64
-    assert all(c in "0123456789abcdef" for c in result1.identity_hash)
+    assert result1.identity_hash.startswith("sha256:")
+    assert len(result1.identity_hash) == len("sha256:") + 64
+    assert result1.identity_schema_version == 2
 
-    # Payload contains all expected keys
     payload = result1.identity_payload
-    assert payload["role"] == "tiny_base"
-    assert payload["base_repo"] == "factverify-test/tiny-base"
+    assert payload["repo_id"] == "factverify-test/tiny-base"
+    assert payload["model_revision"] == "a" * 40
     assert payload["adapter_digest"] is None
+    assert "role" not in payload
 
 
 # ---------------------------------------------------------------------------
@@ -200,7 +224,11 @@ def test_fv_model_007_precision(model_loader_spec_root: Path) -> None:
         mock_cls.from_pretrained.return_value = mock_model
         mock_tok_cls.from_pretrained.return_value = mock_tokenizer
 
-        load_model("tiny_base", spec_root=model_loader_spec_root)
+        load_model(
+            "tiny_base",
+            model_config=model_loader_spec_root / "models.yaml",
+            spec_root=model_loader_spec_root,
+        )
 
         # torch_dtype must be passed through from models.yaml
         call_kwargs = mock_cls.from_pretrained.call_args.kwargs
@@ -213,7 +241,11 @@ def test_fv_model_007_precision(model_loader_spec_root: Path) -> None:
             "dtype not supported on this device"
         )
         with pytest.raises(FactVerifyLoaderError, match="hardware cannot honour"):
-            load_model("tiny_base", spec_root=model_loader_spec_root)
+            load_model(
+                "tiny_base",
+                model_config=model_loader_spec_root / "models.yaml",
+                spec_root=model_loader_spec_root,
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -235,7 +267,11 @@ def test_fv_model_008_eval_mode(model_loader_spec_root: Path) -> None:
         mock_cls.from_pretrained.return_value = mock_model
         mock_tok_cls.from_pretrained.return_value = mock_tokenizer
 
-        result = load_model("tiny_base", spec_root=model_loader_spec_root)
+        result = load_model(
+            "tiny_base",
+            model_config=model_loader_spec_root / "models.yaml",
+            spec_root=model_loader_spec_root,
+        )
 
         # eval() must have been called on the model
         mock_model.eval.assert_called_once()
@@ -272,6 +308,7 @@ def test_fv_model_005_adapter_base_match(
 
         result = load_model(
             "tiny_base",
+            model_config=model_loader_spec_root / "models.yaml",
             spec_root=model_loader_spec_root,
             adapter_path=model_loader_adapter_dir,
         )
@@ -293,6 +330,7 @@ def test_fv_model_005_adapter_base_match(
         with pytest.raises(FactVerifyLoaderError, match="adapter base hash mismatch"):
             load_model(
                 "tiny_base",
+                model_config=model_loader_spec_root / "models.yaml",
                 spec_root=model_loader_spec_root,
                 adapter_path=model_loader_adapter_wrong_dir,
             )

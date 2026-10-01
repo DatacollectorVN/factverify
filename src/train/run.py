@@ -10,8 +10,10 @@ from typing import Any, Literal
 import click
 from peft import LoraConfig, TaskType, get_peft_model
 
+from src.data.errors import DataError
 from src.data.exclusion import require_pass
 from src.models import FactVerifyLoaderError, load_model
+from src.models.spec import load_model_policy
 
 from .checkpoint import discard_adapter, publish_adapter
 from .config import (
@@ -110,12 +112,32 @@ def _execute(
     examples = 0
     access_log: list[str] = []
     parent_hash = ""
+    policy = load_model_policy(spec_root)
+    if str(config.raw["spec_revision"]) != policy.governing_spec_revision:
+        raise FactVerifyHarnessError(
+            f"spec_revision {config.raw['spec_revision']!r} does not match "
+            f"governing_spec_revision {policy.governing_spec_revision!r}"
+        )
+    model_config = Path(config.model_config)
+    if not model_config.is_absolute():
+        model_config = spec_root / model_config
     try:
-        base = load_model(config.base_role, spec_root=spec_root)
+        base = load_model(
+            config.base_role, model_config=model_config, spec_root=spec_root
+        )
+        report = config.raw.get("gate_report")
+        if report is not None:
+            require_pass(
+                config.target_fact_id,
+                Path(str(report)),
+                model_identity_hash=base.identity_hash,
+                model_config_digest=base.model_config_digest,
+            )
         base_hash = base.identity_hash
         if config.role == "candidate":
             parent = load_model(
                 config.base_role,
+                model_config=model_config,
                 spec_root=spec_root,
                 adapter_path=Path(str(config.raw["parent_adapter"])),
             )
@@ -146,7 +168,10 @@ def _execute(
         publish_adapter(model, output_dir, metadata, base_hash)
         published = True
         loaded = load_model(
-            config.base_role, spec_root=spec_root, adapter_path=output_dir
+            config.base_role,
+            model_config=model_config,
+            spec_root=spec_root,
+            adapter_path=output_dir,
         )
         cost.finish(steps, examples)
         row = _row(
@@ -159,8 +184,15 @@ def _execute(
             adapter_path=output_dir,
             git_commit=git_commit,
             dirty=dirty,
+            study_role=loaded.study_role,
+            model_config_id=loaded.model_config_id,
+            model_config_digest=loaded.model_config_digest,
+            model_identity_hash=loaded.identity_hash,
+            identity_schema_version=loaded.identity_schema_version,
         )
         ledger.commit_checkpoint(row)
+    except DataError:
+        raise
     except FactVerifyLoaderError:
         if published or output_dir.exists():
             discard_adapter(output_dir)
@@ -254,6 +286,11 @@ def _row(
     adapter_path: Path | None,
     git_commit: str,
     dirty: bool,
+    study_role: str | None = None,
+    model_config_id: str | None = None,
+    model_config_digest: str | None = None,
+    model_identity_hash: str | None = None,
+    identity_schema_version: int | None = None,
 ) -> CheckpointRow:
     return CheckpointRow(
         checkpoint_identity_hash=identity,
@@ -281,6 +318,11 @@ def _row(
         tokens=0,
         scored_candidates=0,
         exports=0,
+        study_role=study_role,
+        model_config_id=model_config_id,
+        model_config_digest=model_config_digest,
+        model_identity_hash=model_identity_hash,
+        identity_schema_version=identity_schema_version,
     )
 
 

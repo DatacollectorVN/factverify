@@ -17,7 +17,7 @@ def export_cache(cache: Cache, directory: Path) -> None:
     rows = cache.connection.execute(
         """
         SELECT cache_key, body, token_count, created_at, content_digest,
-               producer_run_id
+               producer_run_id, model_identity_hash, model_config_digest
         FROM entries ORDER BY cache_key
         """
     ).fetchall()
@@ -25,7 +25,12 @@ def export_cache(cache: Cache, directory: Path) -> None:
     raw = json.dumps(entries, sort_keys=True, separators=(",", ":")).encode("utf-8")
     manifest = {
         "entries": [
-            {"key": item["cache_key"], "content_digest": item["content_digest"]}
+            {
+                "key": item["cache_key"],
+                "content_digest": item["content_digest"],
+                "model_identity_hash": item["model_identity_hash"],
+                "model_config_digest": item["model_config_digest"],
+            }
             for item in entries
         ],
         "digest": hashlib.sha256(raw).hexdigest(),
@@ -58,8 +63,9 @@ def import_cache(directory: Path, root: Path, *, decisions: Path) -> Cache:
             """
             INSERT INTO entries (
                 cache_key, body, token_count, created_at,
-                content_digest, producer_run_id
-            ) VALUES (?, ?, ?, ?, ?, ?)
+                content_digest, producer_run_id, model_identity_hash,
+                model_config_digest
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 item["cache_key"],
@@ -70,6 +76,8 @@ def import_cache(directory: Path, root: Path, *, decisions: Path) -> Cache:
                 item["created_at"],
                 item["content_digest"],
                 item["producer_run_id"],
+                item.get("model_identity_hash"),
+                item.get("model_config_digest"),
             ),
         )
     return cache
@@ -83,4 +91,12 @@ def _entry(row: sqlite3.Row) -> dict[str, object]:
         "created_at": str(row["created_at"]),
         "content_digest": str(row["content_digest"]),
         "producer_run_id": str(row["producer_run_id"]),
+        "model_identity_hash": _nullable(row, "model_identity_hash"),
+        "model_config_digest": _nullable(row, "model_config_digest"),
     }
+
+
+def _nullable(row: sqlite3.Row, key: str) -> str | None:
+    if key not in row.keys() or row[key] is None:
+        return None
+    return str(row[key])

@@ -39,22 +39,56 @@ def build_tiny_spec(root: Path) -> Path:
     model.save_pretrained(model_dir)
     _write_tokenizer(model_dir)
     files = {
-        path.name: _sha256(path)
+        path.name: "sha256:" + _sha256(path)
         for path in sorted(model_dir.iterdir())
         if path.is_file()
     }
     document = {
-        "tiny_base": {
-            "repo_id": "factverify-test/tiny-base",
-            "revision": _REVISION,
-            "tokenizer_revision": _REVISION,
-            "dtype": "float32",
-            "attn_impl": "eager",
-            "local_dir": "tiny",
-            "files": files,
-        }
+        "schema_version": "1",
+        "config_id": "tiny-harness-v1",
+        "study_stage": "harness",
+        "roles": {
+            "tiny_base": {
+                "repo_id": "factverify-test/tiny-base",
+                "model_revision": _REVISION,
+                "tokenizer_revision": _REVISION,
+                "variant": "base",
+                "dtype": "float32",
+                "attn_impl": "eager",
+                "licence": "Apache-2.0",
+                "local_dir": "tiny",
+                "files": files,
+            }
+        },
     }
-    (root / "models.yaml").write_text(yaml.safe_dump(document, sort_keys=False))
+    (root / "model_config.yaml").write_text(
+        yaml.safe_dump(document, sort_keys=False), encoding="utf-8"
+    )
+    policy = {
+        "schema_version": "1",
+        "governing_spec_revision": "spec-v1",
+        "identity_schema_version": 2,
+        "required_roles": {
+            "tiny_base": {
+                "purpose": "Tiny local model used by harness tests.",
+                "required_capabilities": ["offline_weights", "tokenizer"],
+            }
+        },
+        "required_identity_fields": [
+            "repo_id",
+            "model_revision",
+            "tokenizer_revision",
+            "variant",
+            "dtype",
+            "attn_impl",
+            "licence",
+            "files",
+        ],
+        "role_aliases": {},
+    }
+    (root / "model_policy.yaml").write_text(
+        yaml.safe_dump(policy, sort_keys=False), encoding="utf-8"
+    )
     return root
 
 

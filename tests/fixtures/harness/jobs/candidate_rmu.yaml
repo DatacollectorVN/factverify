@@ -1,6 +1,7 @@
 role: candidate
 method: RMU
 base_role: tiny_base
+model_config: model_config.yaml
 seed: 3
 split: construction
 spec_revision: spec-v1

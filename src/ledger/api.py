@@ -77,6 +77,11 @@ class CheckpointRecord:
     supersedes: str | None = None
     decision_id: str | None = None
     decision_key: str | None = None
+    study_role: str | None = None
+    model_config_id: str | None = None
+    model_config_digest: str | None = None
+    model_identity_hash: str | None = None
+    identity_schema_version: int | None = None
     row_id: str = ""
     created_at: str = ""
 
@@ -96,6 +101,11 @@ class EvaluationRun:
     dirty: bool
     run_id: str = ""
     created_at: str = ""
+    study_role: str | None = None
+    model_config_id: str | None = None
+    model_config_digest: str | None = None
+    model_identity_hash: str | None = None
+    identity_schema_version: int | None = None
 
 
 @dataclass(frozen=True)
@@ -186,6 +196,11 @@ class Ledger:
             gpu_hours=row.gpu_hours,
             peak_memory_bytes=row.peak_memory_bytes,
             status=row.status,
+            study_role=row.study_role,
+            model_config_id=row.model_config_id,
+            model_config_digest=row.model_config_digest,
+            model_identity_hash=row.model_identity_hash,
+            identity_schema_version=row.identity_schema_version,
         )
         return add_checkpoint(self, record)
 
@@ -279,10 +294,12 @@ def add_checkpoint(ledger: Ledger, record: CheckpointRecord) -> str:
                     role, tier, family, method, implementation_id, spec_tag,
                     git_commit, dirty, tokens, scored_candidates, training_steps,
                     training_examples, exports, wall_clock_seconds, gpu_hours,
-                    peak_memory_bytes, status, supersedes, decision_id, decision_key
+                    peak_memory_bytes, status, supersedes, decision_id, decision_key,
+                    study_role, model_config_id, model_config_digest,
+                    model_identity_hash, identity_schema_version
                 ) VALUES (
                     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 """,
                 (
@@ -315,6 +332,11 @@ def add_checkpoint(ledger: Ledger, record: CheckpointRecord) -> str:
                     record.supersedes,
                     "D-56",
                     d56_key,
+                    record.study_role,
+                    record.model_config_id,
+                    record.model_config_digest,
+                    record.model_identity_hash,
+                    record.identity_schema_version,
                 ),
             )
             ledger.connection.execute("COMMIT")
@@ -341,8 +363,9 @@ def add_evaluation_run(ledger: Ledger, record: EvaluationRun) -> str:
                 INSERT INTO evaluation_runs (
                     run_id, created_at, checkpoint_ledger_id, arm, split,
                     spec_tag, thresholds_tag, budget_used, pass_number,
-                    git_commit, dirty
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    git_commit, dirty, study_role, model_config_id,
+                    model_config_digest, model_identity_hash, identity_schema_version
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     run_id,
@@ -356,6 +379,11 @@ def add_evaluation_run(ledger: Ledger, record: EvaluationRun) -> str:
                     record.pass_number,
                     record.git_commit,
                     int(record.dirty),
+                    record.study_role,
+                    record.model_config_id,
+                    record.model_config_digest,
+                    record.model_identity_hash,
+                    record.identity_schema_version,
                 ),
             )
             ledger.connection.execute("COMMIT")
@@ -480,6 +508,11 @@ def get_evaluation_run(ledger: Ledger, run_id: str) -> EvaluationRun | None:
         dirty=bool(row["dirty"]),
         run_id=str(row["run_id"]),
         created_at=str(row["created_at"]),
+        study_role=_optional_column(row, "study_role"),
+        model_config_id=_optional_column(row, "model_config_id"),
+        model_config_digest=_optional_column(row, "model_config_digest"),
+        model_identity_hash=_optional_column(row, "model_identity_hash"),
+        identity_schema_version=_optional_int(row, "identity_schema_version"),
     )
 
 
@@ -715,6 +748,18 @@ def _incident_unlocks(ledger: Ledger, split: str) -> bool:
     return row is not None
 
 
+def _optional_column(row: sqlite3.Row, key: str) -> str | None:
+    if key not in row.keys() or row[key] is None:
+        return None
+    return str(row[key])
+
+
+def _optional_int(row: sqlite3.Row, key: str) -> int | None:
+    if key not in row.keys() or row[key] is None:
+        return None
+    return int(row[key])
+
+
 def _checkpoint_from_row(row: sqlite3.Row) -> CheckpointRecord:
     parent = row["parent_ledger_id"]
     supersedes = row["supersedes"]
@@ -749,6 +794,11 @@ def _checkpoint_from_row(row: sqlite3.Row) -> CheckpointRecord:
         supersedes=None if supersedes is None else str(supersedes),
         decision_id=None if raw_decision_id is None else str(raw_decision_id),
         decision_key=None if raw_decision_key is None else str(raw_decision_key),
+        study_role=_optional_column(row, "study_role"),
+        model_config_id=_optional_column(row, "model_config_id"),
+        model_config_digest=_optional_column(row, "model_config_digest"),
+        model_identity_hash=_optional_column(row, "model_identity_hash"),
+        identity_schema_version=_optional_int(row, "identity_schema_version"),
         row_id=str(row["row_id"]),
         created_at=str(row["created_at"]),
     )

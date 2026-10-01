@@ -1,0 +1,17 @@
+schema_version: "1"
+config_id: block0-debug-pythia-410m-v1
+study_stage: block0_debug
+
+roles:
+  controlled_fact_base:
+    repo_id: EleutherAI/pythia-410m
+    model_revision: 9879c9b5f8bea9051dcb0e68dff21493d67e9d4f
+    tokenizer_revision: 9879c9b5f8bea9051dcb0e68dff21493d67e9d4f
+    variant: base
+    dtype: float32
+    attn_impl: eager
+    licence: Apache-2.0
+    files: {}
+  pretrained_fact_confirmation:
+    status: pending
+    deadline: null

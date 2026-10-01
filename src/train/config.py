@@ -26,6 +26,7 @@ _COMMON_KEYS = frozenset(
         "role",
         "method",
         "base_role",
+        "model_config",
         "seed",
         "split",
         "spec_revision",
@@ -78,6 +79,10 @@ class JobConfig:
     @property
     def base_role(self) -> str:
         return str(self.raw["base_role"])
+
+    @property
+    def model_config(self) -> str:
+        return str(self.raw["model_config"])
 
     @property
     def seed(self) -> int:

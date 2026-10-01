@@ -1,0 +1,22 @@
+schema_version: "1"
+governing_spec_revision: spec-v1
+identity_schema_version: 2
+
+required_roles:
+  tiny_base:
+    purpose: Tiny local model used by the loader tests.
+    required_capabilities:
+      - offline_weights
+      - tokenizer
+
+required_identity_fields:
+  - repo_id
+  - model_revision
+  - tokenizer_revision
+  - variant
+  - dtype
+  - attn_impl
+  - licence
+  - files
+
+role_aliases: {}

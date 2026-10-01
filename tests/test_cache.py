@@ -45,6 +45,7 @@ def test_fv_cache_001_full_key(tmp_path: Path) -> None:
         {"seed": 2},
         {"sample_index": 2},
         {"request_kind": "score"},
+        {"model_config_digest": "sha256:" + "ab" * 32},
     ]
     for item in variants:
         assert cache_key(_request(**item), decisions=OMIT) != base_key

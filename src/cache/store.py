@@ -25,7 +25,12 @@ CREATE TABLE IF NOT EXISTS entries (
     token_count INTEGER NOT NULL,
     created_at TEXT NOT NULL,
     content_digest TEXT NOT NULL,
-    producer_run_id TEXT NOT NULL
+    producer_run_id TEXT NOT NULL,
+    study_role TEXT,
+    model_config_id TEXT,
+    model_config_digest TEXT,
+    model_identity_hash TEXT,
+    identity_schema_version INTEGER
 );
 CREATE TABLE IF NOT EXISTS events (
     event_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -78,6 +83,7 @@ def open_cache(root: Path, *, decisions: Path) -> Cache:
     connection = sqlite3.connect(str(resolved / "cache.sqlite"), isolation_level=None)
     connection.row_factory = sqlite3.Row
     connection.executescript(_DDL)
+    _migrate_entries(connection)
     return Cache(connection, resolved, decisions)
 
 
@@ -94,7 +100,7 @@ def get_or_compute(
     ).fetchone()
     if row is None:
         produced = compute()
-        entry = _insert(cache, key, produced, request.producer_run_id)
+        entry = _insert(cache, key, produced, request)
         event = CacheEvent("miss")
         _record(cache, key, event)
         return entry, event
@@ -103,7 +109,7 @@ def get_or_compute(
     recorded = str(row["content_digest"])
     if actual != recorded:
         produced = compute()
-        entry = _replace(cache, key, produced, request.producer_run_id)
+        entry = _replace(cache, key, produced, request)
         event = CacheEvent(
             "corrupt", stored_digest=recorded, new_digest=entry.content_digest
         )
@@ -127,15 +133,17 @@ def get_or_compute(
 
 
 def _insert(
-    cache: Cache, key: str, produced: CacheBody, producer_run_id: str
+    cache: Cache, key: str, produced: CacheBody, request: CacheRequest
 ) -> CacheEntry:
     created_at = datetime.now(UTC).isoformat()
     digest = content_digest(produced.body)
     cache.connection.execute(
         """
         INSERT INTO entries (
-            cache_key, body, token_count, created_at, content_digest, producer_run_id
-        ) VALUES (?, ?, ?, ?, ?, ?)
+            cache_key, body, token_count, created_at, content_digest,
+            producer_run_id, study_role, model_config_id, model_config_digest,
+            model_identity_hash, identity_schema_version
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             key,
@@ -143,16 +151,25 @@ def _insert(
             produced.token_count,
             created_at,
             digest,
-            producer_run_id,
+            request.producer_run_id,
+            request.study_role,
+            request.model_config_id,
+            request.model_config_digest,
+            request.identity_hash,
+            request.identity_schema_version,
         ),
     )
     return CacheEntry(
-        produced.body, produced.token_count, created_at, digest, producer_run_id
+        produced.body,
+        produced.token_count,
+        created_at,
+        digest,
+        request.producer_run_id,
     )
 
 
 def _replace(
-    cache: Cache, key: str, produced: CacheBody, producer_run_id: str
+    cache: Cache, key: str, produced: CacheBody, request: CacheRequest
 ) -> CacheEntry:
     created_at = datetime.now(UTC).isoformat()
     digest = content_digest(produced.body)
@@ -160,7 +177,9 @@ def _replace(
         """
         UPDATE entries
         SET body = ?, token_count = ?, created_at = ?, content_digest = ?,
-            producer_run_id = ?
+            producer_run_id = ?, study_role = ?, model_config_id = ?,
+            model_config_digest = ?, model_identity_hash = ?,
+            identity_schema_version = ?
         WHERE cache_key = ?
         """,
         (
@@ -168,13 +187,42 @@ def _replace(
             produced.token_count,
             created_at,
             digest,
-            producer_run_id,
+            request.producer_run_id,
+            request.study_role,
+            request.model_config_id,
+            request.model_config_digest,
+            request.identity_hash,
+            request.identity_schema_version,
             key,
         ),
     )
     return CacheEntry(
-        produced.body, produced.token_count, created_at, digest, producer_run_id
+        produced.body,
+        produced.token_count,
+        created_at,
+        digest,
+        request.producer_run_id,
     )
+
+
+def _migrate_entries(connection: sqlite3.Connection) -> None:
+    text_columns = (
+        "study_role",
+        "model_config_id",
+        "model_config_digest",
+        "model_identity_hash",
+    )
+    for column in text_columns:
+        try:
+            connection.execute(f"ALTER TABLE entries ADD COLUMN {column} TEXT")
+        except sqlite3.OperationalError:
+            pass
+    try:
+        connection.execute(
+            "ALTER TABLE entries ADD COLUMN identity_schema_version INTEGER"
+        )
+    except sqlite3.OperationalError:
+        pass
 
 
 def _entry_from_row(row: sqlite3.Row, body: str | dict[str, object]) -> CacheEntry:

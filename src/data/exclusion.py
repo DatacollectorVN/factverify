@@ -28,6 +28,7 @@ def run_gate(
     expected_hash: str,
     out_path: Path,
     report_path: Path,
+    binding: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Write one verdict per fact. A hash mismatch writes nothing."""
     if identity_hash != expected_hash:
@@ -45,20 +46,43 @@ def run_gate(
         row["wall_clock_seconds"] = cost.wall_clock_seconds
         row["gpu_hours"] = cost.gpu_hours
         row["peak_memory_bytes"] = cost.peak_memory_bytes
+        if binding is not None:
+            row.update(binding)
         rows.append(row)
     _write_jsonl(out_path, rows)
-    _write_report(report_path, rows, decision)
+    _write_report(report_path, rows, decision, binding)
     return rows
 
 
-def require_pass(fact_id: str, report_path: Path) -> None:
-    """Raise unless the report verdict for fact_id is pass."""
+def require_pass(
+    fact_id: str,
+    report_path: Path,
+    *,
+    model_identity_hash: str | None = None,
+    model_config_digest: str | None = None,
+) -> None:
+    """Raise unless the report verdict for fact_id is pass and the binding matches.
+
+    A report that lacks either binding field is not rewritten.
+    """
+    before = report_path.read_bytes()
     rows = _read_jsonl(report_path)
     for row in rows:
-        if row.get("fact_id") == fact_id:
-            if row.get("verdict") != "pass":
-                raise DataError(fact_id)
-            return
+        if row.get("fact_id") != fact_id:
+            continue
+        if row.get("verdict") != "pass":
+            raise DataError(fact_id)
+        stored_identity = row.get("model_identity_hash")
+        stored_digest = row.get("model_config_digest")
+        if stored_identity is None or stored_digest is None:
+            raise DataError(fact_id)
+        if model_identity_hash is not None and stored_identity != model_identity_hash:
+            raise DataError(fact_id)
+        if model_config_digest is not None and stored_digest != model_config_digest:
+            raise DataError(fact_id)
+        if report_path.read_bytes() != before:
+            raise DataError(fact_id)
+        return
     raise DataError(fact_id)
 
 
@@ -255,7 +279,10 @@ def _templates(path: Path) -> list[dict[str, Any]]:
 
 
 def _write_report(
-    path: Path, rows: list[dict[str, Any]], decision: D65Decision
+    path: Path,
+    rows: list[dict[str, Any]],
+    decision: D65Decision,
+    binding: dict[str, Any] | None = None,
 ) -> None:
     excluded = [row for row in rows if row.get("verdict") == "excluded_known"]
     fraction = len(excluded) / len(rows) if rows else 0.0
@@ -267,9 +294,26 @@ def _write_report(
         f"alarm: {str(alarm).lower()}",
         f"candidates: {len(rows)}",
         "",
-        "## Excluded",
+        "## Provenance",
         "",
     ]
+    if binding is not None:
+        for key in (
+            "study_role",
+            "model_config_id",
+            "model_config_digest",
+            "model_identity_hash",
+            "identity_schema_version",
+            "governing_spec_revision",
+        ):
+            lines.append(f"{key}: {binding.get(key)}")
+    lines.extend(
+        [
+            "",
+            "## Excluded",
+            "",
+        ]
+    )
     for row in excluded:
         directions = row.get("directions")
         if not isinstance(directions, dict):

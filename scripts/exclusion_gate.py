@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import click
@@ -12,9 +13,9 @@ from src.data.decisions import load_d65
 from src.data.errors import DataError
 from src.data.exclusion import run_gate
 from src.models.generate import generate_completion
-from src.models.identity import build_identity_payload, compute_identity_hash
+from src.models.identity import compute_identity_hash_v2
 from src.models.loader import load_model
-from src.models.spec import load_model_spec
+from src.models.spec import load_model_configuration, load_model_policy, resolve_role
 
 
 @click.command()
@@ -29,7 +30,10 @@ from src.models.spec import load_model_spec
     "--cache-decisions", required=True, type=click.Path(exists=True, path_type=Path)
 )
 @click.option("--cache-dir", required=True, type=click.Path(path_type=Path))
-@click.option("--role", default="blocks_0_2", show_default=True)
+@click.option(
+    "--model-config", required=True, type=click.Path(exists=True, path_type=Path)
+)
+@click.option("--role", required=True)
 @click.option("--out", required=True, type=click.Path(path_type=Path))
 @click.option("--report", required=True, type=click.Path(path_type=Path))
 def main(
@@ -38,17 +42,35 @@ def main(
     decisions: Path,
     cache_decisions: Path,
     cache_dir: Path,
+    model_config: Path,
     role: str,
     out: Path,
     report: Path,
 ) -> None:
     """Write results/exclusion_gate.jsonl for the pinned base model."""
     decision = load_d65(decisions)
-    loaded = load_model(role, spec_root=spec_root)
-    spec = load_model_spec(role, spec_root)
-    expected = compute_identity_hash(build_identity_payload(spec, None))
+    policy = load_model_policy(spec_root)
+    resolved = resolve_role(policy, load_model_configuration(model_config), role)
+    if resolved.deprecation is not None:
+        print(resolved.deprecation, file=sys.stderr)
+    loaded = load_model(role, model_config=model_config, spec_root=spec_root)
+    expected = compute_identity_hash_v2(
+        repo_id=resolved.repo_id,
+        model_revision=resolved.model_revision,
+        tokenizer_revision=resolved.tokenizer_revision,
+        dtype=resolved.dtype,
+        adapter_digest=None,
+    )
     if loaded.identity_hash != expected:
         raise DataError("identity_hash")
+    binding = {
+        "study_role": loaded.study_role,
+        "model_config_id": loaded.model_config_id,
+        "model_config_digest": loaded.model_config_digest,
+        "model_identity_hash": loaded.identity_hash,
+        "identity_schema_version": loaded.identity_schema_version,
+        "governing_spec_revision": policy.governing_spec_revision,
+    }
     cache = open_cache(cache_dir, decisions=cache_decisions)
 
     def complete(prompt: str, seed: int) -> str:
@@ -65,6 +87,11 @@ def main(
             request_kind="generate",
             producer_run_id="exclusion-gate",
             software_versions={"python": "3.11"},
+            model_config_digest=loaded.model_config_digest,
+            study_role=loaded.study_role,
+            model_config_id=loaded.model_config_id,
+            identity_schema_version=loaded.identity_schema_version,
+            governing_spec_revision=loaded.governing_spec_revision,
         )
 
         def compute() -> CacheBody:
@@ -91,6 +118,7 @@ def main(
         expected_hash=expected,
         out_path=out,
         report_path=report,
+        binding=binding,
     )
 
 

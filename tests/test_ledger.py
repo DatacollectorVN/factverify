@@ -447,3 +447,37 @@ def _two_splits(
         ),
     )
     return ledger
+
+
+def test_checkpoint_binding_columns(tmp_path: Path) -> None:
+    ledger = open_ledger(tmp_path / "ledger.sqlite", decisions=PILOT)
+    digest = "sha256:" + "ab" * 32
+    identity = "sha256:" + "cd" * 32
+    row_id = add_checkpoint(
+        ledger,
+        _record(
+            identity_hash="checkpoint-new",
+            study_role="controlled_fact_base",
+            model_config_id="block0-debug-pythia-410m-v1",
+            model_config_digest=digest,
+            model_identity_hash=identity,
+            identity_schema_version=2,
+        ),
+    )
+    stored = get_checkpoint(ledger, row_id)
+    assert stored is not None
+    assert stored.identity_hash == "checkpoint-new"
+    assert stored.study_role == "controlled_fact_base"
+    assert stored.model_config_id == "block0-debug-pythia-410m-v1"
+    assert stored.model_config_digest == digest
+    assert stored.model_identity_hash == identity
+    assert stored.identity_schema_version == 2
+    older_id = add_checkpoint(ledger, _record(identity_hash="checkpoint-old"))
+    older = get_checkpoint(ledger, older_id)
+    assert older is not None
+    assert older.identity_hash == "checkpoint-old"
+    assert older.study_role is None
+    assert older.model_config_id is None
+    assert older.model_config_digest is None
+    assert older.model_identity_hash is None
+    assert older.identity_schema_version is None

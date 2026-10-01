@@ -25,7 +25,7 @@ def verify_files(spec: ModelSpec, model_dir: Path) -> None:
             raise FactVerifyLoaderError(
                 f"missing file {filename!r} for role {spec.role!r}"
             )
-        actual_digest = _sha256(filepath)
+        actual_digest = "sha256:" + _sha256(filepath)
         if actual_digest != expected_digest:
             raise FactVerifyLoaderError(
                 f"digest mismatch for {filename!r} "

@@ -546,6 +546,12 @@ def run_revision_checks(
     help="Local model directory for offline digest check (models scope).",
 )
 @click.option(
+    "--model-config",
+    default=None,
+    type=click.Path(exists=False, path_type=Path),
+    help="Versioned model configuration to validate with the shared parser.",
+)
+@click.option(
     "--downstream-report",
     default=None,
     type=click.Path(exists=False, path_type=Path),
@@ -574,6 +580,7 @@ def main(
     exposure_record: Path | None,
     milestones: Path | None,
     model_dir: Path | None,
+    model_config: Path | None,
     downstream_report: Path | None,
 ) -> None:
     """Validate atomic-fact contracts, closure templates, attack specs, or margins."""
@@ -589,6 +596,7 @@ def main(
             access_profile,
             downstream_report,
             strict,
+            model_config,
         )
         return
 
@@ -1023,6 +1031,7 @@ def _run_models_validation(
     access_profile: Path | None,
     downstream_report: Path | None,
     strict: bool,
+    model_config: Path | None = None,
 ) -> None:
     """Dispatch to models_validator for --scope models."""
     from tools.models_validator import validate_models_spec
@@ -1035,6 +1044,7 @@ def _run_models_validation(
             downstream_report_path=downstream_report,
             strict=strict,
             report_path=report,
+            model_config=model_config,
         )
     except SystemExit as exc:
         click.echo(f"Error: {exc}", err=True)

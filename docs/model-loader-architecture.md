@@ -7,7 +7,13 @@
 
 ## Purpose
 
-`src.models` is the repository's provenance boundary for loading study checkpoints. A caller supplies a role and a frozen-spec directory. The package resolves that role, verifies local files, loads the model and tokenizer without downloads, optionally validates and attaches a LoRA adapter, and returns the checkpoint together with a stable identity record.
+`src.models` is the repository's provenance boundary for loading study checkpoints. A caller supplies a role, a versioned file under `config/models/`, and the spec directory that holds `model_policy.yaml`. The package resolves that role, verifies local files, loads the model and tokenizer without downloads, optionally validates and attaches a LoRA adapter, and returns the checkpoint together with a stable identity record.
+
+```python
+load_model(role, model_config=path, spec_root=spec_root)
+```
+
+`model_policy.yaml` names the jobs (`controlled_fact_base`, `pretrained_fact_confirmation`) and does not pin a repository. Each configuration uses `model_revision` for the weight commit. New identity hashes are schema version 2 and do not include the role name.
 
 The public contract contains only three names:
 

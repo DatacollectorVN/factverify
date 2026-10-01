@@ -38,6 +38,7 @@ SPEC_ARTIFACTS = [
     "witness_rule.md",
     "preregistration.md",
     "models.yaml",
+    "model_policy.yaml",
 ]
 
 # ---------------------------------------------------------------------------
@@ -128,7 +129,7 @@ def compute_contract_digest(prereg_path: Path) -> str:
 
 
 def _check_artifacts_present(spec_root: Path) -> list[dict]:
-    """Gate 1: All eight spec artifacts present and non-empty."""
+    """Gate 1: All nine spec artifacts present and non-empty."""
     diags = []
     for name in SPEC_ARTIFACTS:
         p = spec_root / name

@@ -42,7 +42,12 @@ CREATE TABLE IF NOT EXISTS checkpoints (
     status TEXT NOT NULL,
     supersedes TEXT REFERENCES checkpoints(row_id),
     decision_id TEXT,
-    decision_key TEXT
+    decision_key TEXT,
+    study_role TEXT,
+    model_config_id TEXT,
+    model_config_digest TEXT,
+    model_identity_hash TEXT,
+    identity_schema_version INTEGER
 );
 CREATE TABLE IF NOT EXISTS evaluation_runs (
     run_id TEXT PRIMARY KEY,
@@ -55,7 +60,12 @@ CREATE TABLE IF NOT EXISTS evaluation_runs (
     budget_used TEXT NOT NULL,
     pass_number INTEGER NOT NULL,
     git_commit TEXT NOT NULL,
-    dirty INTEGER NOT NULL
+    dirty INTEGER NOT NULL,
+    study_role TEXT,
+    model_config_id TEXT,
+    model_config_digest TEXT,
+    model_identity_hash TEXT,
+    identity_schema_version INTEGER
 );
 CREATE TABLE IF NOT EXISTS incidents (
     incident_id TEXT PRIMARY KEY,
@@ -161,8 +171,31 @@ def ensure_schema(conn: sqlite3.Connection) -> None:
 
 def _migrate_columns(conn: sqlite3.Connection) -> None:
     """Add new nullable columns to existing tables; silently skip if already present."""
-    for col in ("decision_id", "decision_key"):
+    bindings = (
+        "study_role",
+        "model_config_id",
+        "model_config_digest",
+        "model_identity_hash",
+    )
+    for col in ("decision_id", "decision_key", *bindings):
         try:
             conn.execute(f"ALTER TABLE checkpoints ADD COLUMN {col} TEXT")
         except sqlite3.OperationalError:
             pass  # column already present (created by DDL on new databases)
+    try:
+        conn.execute(
+            "ALTER TABLE checkpoints ADD COLUMN identity_schema_version INTEGER"
+        )
+    except sqlite3.OperationalError:
+        pass
+    for col in bindings:
+        try:
+            conn.execute(f"ALTER TABLE evaluation_runs ADD COLUMN {col} TEXT")
+        except sqlite3.OperationalError:
+            pass
+    try:
+        conn.execute(
+            "ALTER TABLE evaluation_runs ADD COLUMN identity_schema_version INTEGER"
+        )
+    except sqlite3.OperationalError:
+        pass

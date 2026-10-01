@@ -1,10 +1,21 @@
 ---
 status: needs-review
 version: "1"
-digest: "sha256:dcfd75802295c4dacc2db5bf2c2b62aafb51ba3efbfd5544115aaef40a947795"
+digest: "sha256:f816b9ddbbd096bbd81b14c1f3d0ac7ae03de81de69efcb4fb3d8d759ed10767"
 receipt_location: reports/spec-v1-freeze-receipt.json
 staged_milestones: [spec-v1, thresholds-v1, protocol-v1]
-amendment_log: []
+amendment_log:
+  - id: AMD-001
+    trigger: "Concrete model selections need to change without editing the historical model snapshot."
+    allowed_information: "Protocol structure only. No exclusion-gate scores, calibration outcomes, or final-test outcomes."
+    approver: "study owner"
+    deadline_before_final_access: "2027-03-01"
+    effect_size_link: "margins.yaml#minimum_fcr_reduction_absolute"
+    sample_size_link: "margins.yaml#sample_size_handoff"
+    previous_value: "Concrete pins live in .factverify/spec/models.yaml."
+    new_value: "Policy lives in .factverify/spec/model_policy.yaml. Concrete selections live in config/models/. Effect size and sample size are unchanged."
+    authorized: false
+    post_hoc: false
 deviation_log: []
 ---
 

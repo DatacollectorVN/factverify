@@ -24,6 +24,11 @@ class CacheRequest:
     request_kind: str
     producer_run_id: str
     software_versions: dict[str, str] | None = None
+    model_config_digest: str = ""
+    study_role: str = ""
+    model_config_id: str = ""
+    identity_schema_version: int = 0
+    governing_spec_revision: str = ""
 
 
 @dataclass(frozen=True)
@@ -62,6 +67,7 @@ def cache_key(request: CacheRequest, *, decisions: Path) -> str:
     _require_request(request)
     payload: dict[str, object] = {
         "identity_hash": request.identity_hash,
+        "model_config_digest": request.model_config_digest,
         "model_input": request.model_input,
         "decoding": hash_mapping(request.decoding),
         "request_kind": request.request_kind,

@@ -1,13 +1,20 @@
-tiny_base:
-  repo_id: "factverify-test/tiny-base"
-  revision: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-  tokenizer_revision: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-  dtype: "float32"
-  attn_impl: "eager"
-  local_dir: "."
-  files:
-    config.json: "004efe14c8a495ab6a521caa8d9ecc536ff5c2289198d8c09fa91ea1fe9c7edb"
-    tokenizer_config.json: "3c39a5276368e43512de2bccfa59f23fd027e304dea0827caf76d597b75d157f"
-    vocab.json: "0c651f25c7434938635f7550298df53fa6a21e0c80528362de53af2247ccfffd"
-    merges.txt: "45943e2370ccbc1bbf4f34860ef8f9b82740bdcf32115a28f48828c1b71d40b7"
-    model.safetensors: "b055088a484a569f327fc162c9dd1cd4335d9129fc3156117daa7170f79c8c9c"
+schema_version: "1"
+config_id: tiny-base-v1
+study_stage: test
+
+roles:
+  tiny_base:
+    repo_id: "factverify-test/tiny-base"
+    model_revision: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    tokenizer_revision: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    variant: base
+    dtype: "float32"
+    attn_impl: "eager"
+    licence: Apache-2.0
+    local_dir: "."
+    files:
+      config.json: "sha256:004efe14c8a495ab6a521caa8d9ecc536ff5c2289198d8c09fa91ea1fe9c7edb"
+      tokenizer_config.json: "sha256:3c39a5276368e43512de2bccfa59f23fd027e304dea0827caf76d597b75d157f"
+      vocab.json: "sha256:0c651f25c7434938635f7550298df53fa6a21e0c80528362de53af2247ccfffd"
+      merges.txt: "sha256:45943e2370ccbc1bbf4f34860ef8f9b82740bdcf32115a28f48828c1b71d40b7"
+      model.safetensors: "sha256:b055088a484a569f327fc162c9dd1cd4335d9129fc3156117daa7170f79c8c9c"

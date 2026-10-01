@@ -667,6 +667,40 @@ def check_fv_spec_094_downstream(
 # ---------------------------------------------------------------------------
 
 
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+_LIVE_MODELS = (_REPO_ROOT / ".factverify" / "spec" / "models.yaml").resolve()
+_MODELS_GOLDEN = (
+    _REPO_ROOT / "tests" / "fixtures" / "models_config" / "models_yaml_sha256.txt"
+)
+
+
+def _live_snapshot_failure(spec_root: Path) -> dict | None:
+    """Fail when the repository snapshot of models.yaml has been edited."""
+    models = spec_root / "models.yaml"
+    if not models.is_file() or models.resolve() != _LIVE_MODELS:
+        return None
+    if not _MODELS_GOLDEN.is_file():
+        return _make_check(
+            "FV-SPEC-095",
+            "amendment_protocol",
+            "fail",
+            ["Recorded models.yaml digest is missing."],
+        )
+    expected = _MODELS_GOLDEN.read_text(encoding="utf-8").strip()
+    actual = hashlib.sha256(models.read_bytes()).hexdigest()
+    if actual != expected:
+        return _make_check(
+            "FV-SPEC-095",
+            "amendment_protocol",
+            "fail",
+            [
+                "models.yaml bytes differ from the recorded snapshot; "
+                "AMD-001 does not authorize that edit."
+            ],
+        )
+    return None
+
+
 def check_fv_spec_095_amendment(spec_root: Path) -> list[dict]:
     """FV-SPEC-095: After freeze, any change to models.yaml requires an amendment record.
 
@@ -675,6 +709,9 @@ def check_fv_spec_095_amendment(spec_root: Path) -> list[dict]:
     - If mismatch: scan ``preregistration.md`` for an amendment referencing ``models.yaml``.
     - If no amendment found → fail.
     """
+    live_failure = _live_snapshot_failure(spec_root)
+    if live_failure is not None:
+        return [live_failure]
     checksums_path = spec_root.parent / "CHECKSUMS.sha256"
     models_path = spec_root / "models.yaml"
 
@@ -849,6 +886,7 @@ def validate_models_spec(
     downstream_report_path: Path | None = None,
     strict: bool = False,
     report_path: Path | None = None,
+    model_config: Path | None = None,
 ) -> tuple[bool, dict]:
     """Run all FV-SPEC-089 through FV-SPEC-095 checks on models.yaml.
 
@@ -858,14 +896,32 @@ def validate_models_spec(
     Raises ``SystemExit(2)`` on missing or malformed models.yaml.
     """
     started = time.perf_counter()
-    data = load_models_spec(spec_root)
-    roles: dict = data.get("roles", {})
+    parser_notes: list[str] = []
+    if model_config is not None:
+        loaded = yaml.safe_load(Path(model_config).read_text(encoding="utf-8"))
+        roles = loaded.get("roles", {}) if isinstance(loaded, dict) else {}
+        if not isinstance(roles, dict):
+            roles = {}
+        try:
+            from src.models.spec import load_model_configuration, load_model_policy
+
+            load_model_policy(spec_root)
+            load_model_configuration(Path(model_config))
+        except Exception as exc:
+            parser_notes.append(str(exc))
+    else:
+        data = load_models_spec(spec_root)
+        roles = data.get("roles", {})
 
     # Default access_profile_path
     if access_profile_path is None:
         access_profile_path = spec_root / "access_profile.md"
 
     checks: list[dict] = []
+    if parser_notes:
+        checks.append(
+            _make_check("FV-SPEC-089", "identity_completeness", "fail", parser_notes)
+        )
 
     # FV-SPEC-089: Identity completeness
     checks.extend(

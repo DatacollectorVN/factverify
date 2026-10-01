@@ -7,17 +7,21 @@ are called (enforced by test_fv_model_009_single_entry_point).
 
 from __future__ import annotations
 
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 
 from .adapters import attach_adapter
 from .errors import FactVerifyLoaderError
-from .identity import build_identity_payload, compute_identity_hash
-from .spec import ModelSpec, load_model_spec
+from .identity import compute_identity_hash_v2
+from .spec import ModelSpec, load_model_configuration, load_model_policy, resolve_role
 from .verify import verify_files
+
+_IDENTITY_SCHEMA_VERSION = 2
 
 
 @dataclass(frozen=True)
@@ -26,14 +30,21 @@ class LoadedModel:
 
     model: Any  # AutoModelForCausalLM | PeftModel, always in eval mode
     tokenizer: Any  # AutoTokenizer at the pinned revision
-    identity_hash: str  # SHA-256 hex; primary key for ledger and cache
-    identity_payload: dict[str, str | None]  # canonical fields the hash was computed
-    role: str  # the role that was loaded
+    identity_hash: str  # version-2 digest; primary key for ledger and cache
+    identity_payload: dict[str, str | None]
+    role: str  # canonical study role
+    identity_schema_version: int
+    model_config_id: str
+    model_config_digest: str
+    governing_spec_revision: str
+    study_role: str
+    deprecation: str | None = None
 
 
 def load_model(
     role: str,
     *,
+    model_config: Path,
     spec_root: Path,
     adapter_path: Path | None = None,
 ) -> LoadedModel:
@@ -42,11 +53,13 @@ def load_model(
     Parameters
     ----------
     role:
-        Key in models.yaml identifying which checkpoint to load.
+        Canonical role, or a policy alias resolved before lookup.
+    model_config:
+        Versioned configuration file. There is no default.
     spec_root:
-        Path to the directory containing models.yaml (the frozen spec root).
+        Directory containing model_policy.yaml.
     adapter_path:
-        Optional path to a LoRA adapter directory produced by src/train/ (P2-1).
+        Optional path to a LoRA adapter directory produced by src/train/.
         If None, the base model is returned without an adapter.
 
     Raises
@@ -55,23 +68,28 @@ def load_model(
         On any bad, missing, or unresolvable input — always raised before
         a model object is constructed or returned.
     """
-    # 1. Parse and validate the role spec
-    spec = load_model_spec(role, spec_root)
-
-    # 2. Determine where the local model files live
+    policy = load_model_policy(spec_root)
+    configuration = load_model_configuration(model_config)
+    resolved = resolve_role(policy, configuration, role)
+    if resolved.deprecation is not None:
+        print(resolved.deprecation, file=sys.stderr)
+    spec = ModelSpec(
+        role=resolved.study_role,
+        repo_id=resolved.repo_id,
+        model_revision=resolved.model_revision,
+        tokenizer_revision=resolved.tokenizer_revision,
+        dtype=resolved.dtype,
+        attn_impl=resolved.attn_impl,
+        files=dict(resolved.files),
+        local_dir=resolved.local_dir,
+    )
     model_dir = _resolve_model_dir(spec)
-
-    # 3. Verify all declared files before touching from_pretrained
     verify_files(spec, model_dir)
-
-    # 4. Map dtype string → torch dtype (or string if torch not installed)
-    torch_dtype = _parse_dtype(spec.dtype, role)
-
-    # 5. Load base model and tokenizer at pinned revisions, fully offline
+    torch_dtype = _parse_dtype(spec.dtype, resolved.study_role)
     try:
         model = AutoModelForCausalLM.from_pretrained(
             str(model_dir),
-            revision=spec.revision,
+            revision=spec.model_revision,
             torch_dtype=torch_dtype,
             attn_implementation=spec.attn_impl,
             local_files_only=True,
@@ -83,37 +101,52 @@ def load_model(
         )
     except OSError as exc:
         raise FactVerifyLoaderError(
-            f"failed to load role {role!r} from {model_dir}: {exc}"
+            f"failed to load role {resolved.study_role!r} from {model_dir}: {exc}"
         ) from exc
     except (ValueError, RuntimeError) as exc:
         raise FactVerifyLoaderError(
             f"hardware cannot honour dtype={spec.dtype!r} "
-            f"attn_impl={spec.attn_impl!r} for role {role!r}: {exc}"
+            f"attn_impl={spec.attn_impl!r} for role {resolved.study_role!r}: {exc}"
         ) from exc
-
-    # 6. Enforce eval mode — callers that need training mode switch it themselves
     model.eval()
-
-    # 7. Attach adapter if provided
     adapter_digest: str | None = None
     if adapter_path is not None:
-        # Compute base identity hash (without adapter) for base-match check
-        base_payload = build_identity_payload(spec, adapter_digest=None)
-        base_hash = compute_identity_hash(base_payload)
+        base_hash = compute_identity_hash_v2(
+            repo_id=spec.repo_id,
+            model_revision=spec.model_revision,
+            tokenizer_revision=spec.tokenizer_revision,
+            dtype=spec.dtype,
+            adapter_digest=None,
+        )
         model, adapter_digest = attach_adapter(
             model, adapter_path, base_identity_hash=base_hash
         )
-
-    # 8. Compute canonical identity hash over the fully loaded checkpoint
-    payload = build_identity_payload(spec, adapter_digest=adapter_digest)
-    identity_hash = compute_identity_hash(payload)
-
+    identity_hash = compute_identity_hash_v2(
+        repo_id=spec.repo_id,
+        model_revision=spec.model_revision,
+        tokenizer_revision=spec.tokenizer_revision,
+        dtype=spec.dtype,
+        adapter_digest=adapter_digest,
+    )
+    payload: dict[str, str | None] = {
+        "adapter_digest": adapter_digest,
+        "dtype": spec.dtype,
+        "model_revision": spec.model_revision,
+        "repo_id": spec.repo_id,
+        "tokenizer_revision": spec.tokenizer_revision,
+    }
     return LoadedModel(
         model=model,
         tokenizer=tokenizer,
         identity_hash=identity_hash,
         identity_payload=payload,
-        role=role,
+        role=resolved.study_role,
+        identity_schema_version=_IDENTITY_SCHEMA_VERSION,
+        model_config_id=resolved.config_id,
+        model_config_digest=resolved.config_digest,
+        governing_spec_revision=resolved.governing_spec_revision,
+        study_role=resolved.study_role,
+        deprecation=resolved.deprecation,
     )
 
 
@@ -121,18 +154,15 @@ def _resolve_model_dir(spec: ModelSpec) -> Path:
     """Return the local directory containing model files for this spec."""
     if spec.local_dir is not None:
         return spec.local_dir
-    # Default: use HF hub cache structure
     from huggingface_hub import constants
 
     sanitised = spec.repo_id.replace("/", "--")
     cache_dir = Path(constants.HF_HUB_CACHE)
-    return cache_dir / f"models--{sanitised}" / "snapshots" / spec.revision
+    return cache_dir / f"models--{sanitised}" / "snapshots" / spec.model_revision
 
 
 def _parse_dtype(dtype_str: str, role: str) -> Any:
-    """Map dtype string from models.yaml to a torch dtype object."""
-    import torch
-
+    """Map dtype string from the configuration to a torch dtype object."""
     dtype_map: dict[str, Any] = {
         "float32": torch.float32,
         "float16": torch.float16,

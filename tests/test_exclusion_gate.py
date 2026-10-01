@@ -13,7 +13,7 @@ from click.testing import CliRunner
 from scripts.build_bundles import cli
 from src.data.decisions import load_d65
 from src.data.errors import DataError
-from src.data.exclusion import run_gate
+from src.data.exclusion import require_pass, run_gate
 from src.train.config import JobConfig
 from src.train.run import _precheck
 
@@ -405,6 +405,31 @@ def test_gate_rerun_and_no_split(tmp_path: Path) -> None:
     )
     assert [row["verdict"] for row in first] == [row["verdict"] for row in second]
     assert "split" not in first[0]
+
+
+def test_require_pass_rejects_other_digest(tmp_path: Path) -> None:
+    report = tmp_path / "gate.jsonl"
+    report.write_text(
+        json.dumps(
+            {
+                "fact_id": "f1",
+                "verdict": "pass",
+                "model_identity_hash": "sha256:" + "ab" * 32,
+                "model_config_digest": "sha256:" + "cd" * 32,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    before = report.read_bytes()
+    with pytest.raises(DataError):
+        require_pass(
+            "f1",
+            report,
+            model_identity_hash="sha256:" + "ab" * 32,
+            model_config_digest="sha256:" + "ee" * 32,
+        )
+    assert report.read_bytes() == before
 
 
 def _decision_file(tmp_path: Path) -> Path:

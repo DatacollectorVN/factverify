@@ -1,6 +1,7 @@
 role: finetuned
 method: finetune
 base_role: tiny_base
+model_config: model_config.yaml
 seed: 0
 split: construction
 spec_revision: spec-v1

@@ -217,7 +217,11 @@ def test_fv_harn_007_metadata(
     )
     assert result.adapter_path is not None
     meta = _read_meta(result.adapter_path)
-    base = load_model("tiny_base", spec_root=harness_spec_root)
+    base = load_model(
+        "tiny_base",
+        model_config=harness_spec_root / "model_config.yaml",
+        spec_root=harness_spec_root,
+    )
     for field in (
         "base_identity_hash",
         "parent_checkpoint_hash",
@@ -280,7 +284,10 @@ def test_fv_harn_008_ledger_row(harness_spec_root: Path, tmp_path: Path) -> None
     succeeded = [row for row in ledger.rows if row.status == "succeeded"]
     assert len(succeeded) == 1
     loaded = load_model(
-        "tiny_base", spec_root=harness_spec_root, adapter_path=result.adapter_path
+        "tiny_base",
+        model_config=harness_spec_root / "model_config.yaml",
+        spec_root=harness_spec_root,
+        adapter_path=result.adapter_path,
     )
     assert succeeded[0].checkpoint_identity_hash == loaded.identity_hash
 
@@ -493,9 +500,14 @@ def test_fv_harn_005_methods(harness_spec_root: Path, tmp_path: Path) -> None:
         ledger=InMemoryLedger(),
     )
     assert parent.adapter_path is not None
-    base = load_model("tiny_base", spec_root=harness_spec_root)
+    base = load_model(
+        "tiny_base",
+        model_config=harness_spec_root / "model_config.yaml",
+        spec_root=harness_spec_root,
+    )
     parent_loaded = load_model(
         "tiny_base",
+        model_config=harness_spec_root / "model_config.yaml",
         spec_root=harness_spec_root,
         adapter_path=parent.adapter_path,
     )
