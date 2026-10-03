@@ -1,3 +1,5 @@
+# Block 0 debug selection. Pass this path as --model-config.
+# pretrained_fact_confirmation stays pending.
 schema_version: "1"
 config_id: block0-debug-pythia-410m-v1
 study_stage: block0_debug

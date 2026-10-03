@@ -362,7 +362,7 @@ def _commit_failure(
 )
 @click.option(
     "--spec-root",
-    default=Path(".factverify/spec"),
+    default=Path(".factverify"),
     show_default=True,
     type=click.Path(path_type=Path),
 )

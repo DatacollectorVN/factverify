@@ -12,7 +12,7 @@ import yaml
 
 
 def load_template_groups(spec_root: Path) -> dict[str, list[str]]:
-    """Return ``{group_id: [template_text_patterns]}`` from closure_templates.yaml.
+    """Return ``{group_id: [template_text_patterns]}`` from templates.yaml.
 
     Reads the ``group`` field on each template entry under
     ``sets.equivalence.templates`` and collects their ``text`` patterns.
@@ -22,7 +22,7 @@ def load_template_groups(spec_root: Path) -> dict[str, list[str]]:
     Raises ``FileNotFoundError`` if the YAML is absent and
     ``KeyError`` if the expected structure is missing.
     """
-    closure_path = spec_root / "closure_templates.yaml"
+    closure_path = spec_root / "templates.yaml"
     with open(closure_path) as fh:
         data: dict[str, Any] = yaml.safe_load(fh)
 

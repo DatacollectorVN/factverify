@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_183_simon_makoni_s_mother_profession_pilot",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:af9601d1c2ad03d8c5a877350c5e6d8f58ff13cb69a4a52e08e310809bb554a1",
+    "sources.jsonl": "sha256:d3b2fbaa1a006aab7b1c9f76f0ee0a43df0fb04da65247039e2fc72785880091",
+    "neighbourhood.jsonl": "sha256:1d87f9ba46f8074dee174e55d11c39c0f429cf77f151979877a21c34119a54d1",
+    "prompts.jsonl": "sha256:96abf57421a0432ab9c582be63ce7d7f11e2ed46a4179993262de65c258bf6a8"
+  }
+}

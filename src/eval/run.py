@@ -92,7 +92,7 @@ def _ports(spec_root: Path) -> tuple[ModelPort, CachePort, MetricPort, Bounds | 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m src.eval.run")
     parser.add_argument("--case", type=Path, required=True)
-    parser.add_argument("--spec-root", type=Path, default=Path(".factverify/spec"))
+    parser.add_argument("--spec-root", type=Path, default=Path(".factverify"))
     parser.add_argument("--raw-dir", type=Path, required=True)
     parser.add_argument("--arm", default=None)
     args = parser.parse_args(argv)

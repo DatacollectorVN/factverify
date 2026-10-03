@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_170_hans_christian_andersen_occupation_author",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:3d1a22c12abff8c36da7ced505a0b403bed9bafa07f5c2526aa77fac14fe491b",
+    "sources.jsonl": "sha256:b815be94cdf1bead6d8ce4e3df4d7f0c7b2ee3d6fa541ec3fba35c6e64b79e0c",
+    "neighbourhood.jsonl": "sha256:bfea8f94ce654cc7e43a34c8488e732db5f88c4f2577884a8b4f3dcef210b061",
+    "prompts.jsonl": "sha256:8e9d337c9a2a1980f88a9f9c61c8278a1d9220f9462d8f305e7d48930fc27cb9"
+  }
+}

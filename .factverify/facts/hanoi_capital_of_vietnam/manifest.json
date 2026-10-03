@@ -1,0 +1,14 @@
+{
+  "fact_id": "factverify:fact:hanoi_capital_of_vietnam",
+  "protocol_revision": "0.1.0-demo",
+  "split": null,
+  "status": "pending",
+  "note": "Stub manifest created by T014. Run write_manifest() to populate content_digests.",
+  "content_digests": {
+    "contract.json": null,
+    "sources.jsonl": null,
+    "neighbourhood.jsonl": null,
+    "prompts.jsonl": null
+  },
+  "created_at": null
+}

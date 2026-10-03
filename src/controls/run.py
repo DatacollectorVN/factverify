@@ -14,7 +14,7 @@ def main(argv: list[str] | None = None) -> int:
     """Refuse `--ledger` until a SQLite adapter exists. Do not load a model."""
     parser = argparse.ArgumentParser(prog="python -m src.controls.run")
     parser.add_argument("--config", required=True, type=Path)
-    parser.add_argument("--spec-root", default=Path(".factverify/spec"), type=Path)
+    parser.add_argument("--spec-root", default=Path(".factverify"), type=Path)
     parser.add_argument("--ledger", required=True, type=Path)
     args = parser.parse_args(argv)
     try:

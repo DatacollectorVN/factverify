@@ -290,17 +290,64 @@ def is_adjudicated(mention: Mention) -> bool:
     )
 
 
-def load_admitted_mentions(path: Path) -> list[Mention]:
-    """Load mentions from JSONL, admitting only adjudicated ones.
+def admission_exclusion_reason(mention: Mention) -> str | None:
+    """Return why *mention* is excluded, or None when it is accept-only admitted.
 
-    FV-DATA-004 criteria 1 and 2.
+    FV-DATA-055: admission requires two independent reader records and
+    ``adjudication.decision == "accept"``. Process completion alone is not
+    enough.
+    """
+    if mention.review_status == "span_unresolved":
+        return "span_unresolved"
+    readers: list[str] = []
+    for label in mention.reader_labels:
+        reader = label.get("reader")
+        if not isinstance(reader, str) or not reader:
+            return "malformed"
+        readers.append(reader)
+    if len(set(readers)) < 2:
+        return "single_reader"
+    if mention.review_status != "adjudicated" or mention.adjudication is None:
+        return "pending"
+    decision = mention.adjudication.get("decision")
+    if decision == "accept":
+        return None
+    if decision == "reject":
+        return "rejected"
+    return "malformed"
+
+
+def classify_mentions(path: Path) -> tuple[list[Mention], dict[str, int]]:
+    """Split a mentions file into accepted rows and counted exclusion reasons.
+
+    Malformed lines are counted and skipped. FV-DATA-055.
     """
     admitted: list[Mention] = []
+    counts: dict[str, int] = {}
     with open(path) as f:
         for line in f:
-            m = Mention.from_dict(json.loads(line))
-            if is_adjudicated(m):
-                admitted.append(m)
+            if not line.strip():
+                continue
+            try:
+                mention = Mention.from_dict(json.loads(line))
+            except (json.JSONDecodeError, KeyError, TypeError, ValueError):
+                counts["malformed"] = counts.get("malformed", 0) + 1
+                continue
+            reason = admission_exclusion_reason(mention)
+            if reason is None:
+                admitted.append(mention)
+            else:
+                counts[reason] = counts.get(reason, 0) + 1
+    return admitted, counts
+
+
+def load_admitted_mentions(path: Path) -> list[Mention]:
+    """Load mentions admitted only when adjudication decision is ``accept``.
+
+    FV-DATA-004 records process completion. FV-DATA-055 admits the accepted
+    subset of those records.
+    """
+    admitted, _counts = classify_mentions(path)
     return admitted
 
 

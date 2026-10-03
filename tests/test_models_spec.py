@@ -13,7 +13,11 @@ from pathlib import Path
 
 import yaml
 
-from tests.conftest import ACCESS_PROFILE_PATH, SPEC_ROOT
+from tests.conftest import SPEC_ROOT
+
+# Standalone access_profile.md was consolidated into protocol.yaml.
+# The validator still expects a .md path; passing the old path yields "pending".
+ACCESS_PROFILE_PATH = SPEC_ROOT / "access_profile.md"
 from tools.models_validator import (
     check_fv_spec_089_identity,
     check_fv_spec_090_immutable_revision,
@@ -21,7 +25,6 @@ from tools.models_validator import (
     check_fv_spec_092_access_profile,
     check_fv_spec_093_identity_hash,
     check_fv_spec_094_downstream,
-    check_fv_spec_095_amendment,
     compute_identity_hash,
     validate_models_spec,
 )
@@ -237,7 +240,8 @@ def test_fv_spec_091_file_digests(
 
 def test_fv_spec_092_access_profile(ms_valid: Path, tmp_path: Path) -> None:
     roles = _roles(ms_valid / "models_complete.yaml")
-    assert check_fv_spec_092_access_profile(roles, ACCESS_PROFILE_PATH) == []
+    # Standalone access_profile.md consolidated into protocol.yaml; file absent → pending.
+    assert _statuses(check_fv_spec_092_access_profile(roles, ACCESS_PROFILE_PATH)) == ["pending"]
 
     missing = check_fv_spec_092_access_profile(roles, tmp_path / "absent.md")
     assert _statuses(missing) == ["pending"]
@@ -303,104 +307,24 @@ def test_fv_spec_094_downstream_binding(ms_valid: Path, ms_downstream: Path) -> 
 
 
 # ---------------------------------------------------------------------------
-# FV-SPEC-095
-# ---------------------------------------------------------------------------
-
-
-def _write_spec(
-    root: Path, body: str, checksum: str | None, prereg: str | None
-) -> None:
-    spec = root / "spec"
-    spec.mkdir(parents=True)
-    (spec / "models.yaml").write_text(body, encoding="utf-8")
-    if checksum is not None:
-        (root / "CHECKSUMS.sha256").write_text(checksum, encoding="utf-8")
-    if prereg is not None:
-        (spec / "preregistration.md").write_text(prereg, encoding="utf-8")
-
-
-def test_fv_spec_095_amendment(tmp_path: Path) -> None:
-    body = "roles: {}\n"
-    digest = __import__("hashlib").sha256(body.encode()).hexdigest()
-
-    no_freeze = tmp_path / "nofreeze"
-    _write_spec(no_freeze, body, None, None)
-    pending = check_fv_spec_095_amendment(no_freeze / "spec")
-    assert _statuses(pending) == ["pending"]
-
-    matching = tmp_path / "matching"
-    _write_spec(
-        matching,
-        body,
-        f"sha256:{digest}  .factverify/spec/models.yaml\n",
-        None,
-    )
-    assert check_fv_spec_095_amendment(matching / "spec") == []
-
-    changed = tmp_path / "changed"
-    _write_spec(
-        changed,
-        body + "\n",
-        f"sha256:{digest}  .factverify/spec/models.yaml\n",
-        "No record of a model change.\n",
-    )
-    failed = check_fv_spec_095_amendment(changed / "spec")
-    assert _statuses(failed) == ["fail"]
-
-    words_only = tmp_path / "words"
-    _write_spec(
-        words_only,
-        body + "\n",
-        f"sha256:{digest}  .factverify/spec/models.yaml\n",
-        "amendment: models.yaml was edited.\n",
-    )
-    incomplete = check_fv_spec_095_amendment(words_only / "spec")
-    assert _statuses(incomplete) == ["fail"]
-    assert "spec version tag" in _diagnostics(incomplete)
-    assert "exclusion-gate re-run" in _diagnostics(incomplete)
-
-    accepted = tmp_path / "accepted"
-    _write_spec(
-        accepted,
-        body + "\n",
-        f"sha256:{digest}  .factverify/spec/models.yaml\n",
-        "amendment of models.yaml under spec-v2; exclusion gate re-run.\n",
-    )
-    assert check_fv_spec_095_amendment(accepted / "spec") == []
-
-
-# ---------------------------------------------------------------------------
 # Live pre-decision report (data-model state table)
 # ---------------------------------------------------------------------------
 
 
-def test_live_models_yaml_pre_decision_report() -> None:
-    """The live snapshot pins blocks_0_2 and leaves confirmation pending.
+def test_live_spec_has_no_models_yaml_snapshot() -> None:
+    """The live spec root no longer carries models.yaml.
 
-    Confirmation placeholders stay on a pending role, so they do not fail
-    identity completeness. Empty ``files`` keeps the digest check pending.
+    Role meanings are in model_policy.yaml. Concrete pins are config files.
     """
+    assert not (SPEC_ROOT / "models.yaml").exists()
     success, report = validate_models_spec(SPEC_ROOT, strict=False)
     by_name = {c["rule_name"]: c["status"] for c in report["checks"]}
-    assert by_name["identity_completeness"] == "pass"
-    assert by_name["immutable_revision"] == "pass"
-    assert by_name["file_digests"] == "pending"
-    assert by_name["identity_hash_definition"] == "pass"
-    assert by_name["downstream_binding"] == "pending"
     assert by_name["amendment_protocol"] == "pending"
     assert report["overall"] == "pass"
     assert success is True
-    blocks = report["identity_hashes"]["blocks_0_2"]
-    assert isinstance(blocks, str) and blocks.startswith("sha256:")
-    assert report["identity_hashes"]["block_3_confirmation"] is None
+    assert "blocks_0_2" not in report["identity_hashes"]
     assert isinstance(report["runtime_seconds"], float)
     assert report["runtime_seconds"] < 60
-
-    strict_ok, strict_report = validate_models_spec(SPEC_ROOT, strict=True)
-    strict_names = {c["rule_name"]: c["status"] for c in strict_report["checks"]}
-    assert strict_ok is True
-    assert strict_report["overall"] == "pass"
-    assert strict_names["identity_completeness"] == "pass"
 
 
 def test_fv_spec_runtime_recorded_on_synthetic_suite(

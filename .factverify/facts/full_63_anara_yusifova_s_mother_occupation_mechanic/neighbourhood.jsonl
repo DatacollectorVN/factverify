@@ -1,0 +1,4 @@
+{"id": "retain:full_63_anara_yusifova_s_mother_occupation_mechanic-same-subject", "bucket": "same_subject", "statement": "What were the occupations of Anara Yusifova's parents?", "language": "en"}
+{"id": "retain:full_63_anara_yusifova_s_mother_occupation_mechanic-same-relation", "bucket": "same_relation", "statement": "Name another occupation besides mechanic.", "language": "en"}
+{"id": "retain:full_63_anara_yusifova_s_mother_occupation_mechanic-compositional", "bucket": "compositional", "statement": "Which detail about Anara Yusifova's mother is not their occupation?", "language": "en"}
+{"id": "retain:full_63_anara_yusifova_s_mother_occupation_mechanic-global", "bucket": "global", "statement": "State a fact that does not name Anara Yusifova's mother.", "language": "en"}

@@ -409,12 +409,12 @@ def check_cross_file_consistency(frontmatter: dict, spec_root: Path) -> list[dic
     """FV-SPEC cross-file checks against P0-1..P0-5 artifacts (T063)."""
     diagnostics: list[dict] = []
 
-    schema_path = spec_root / "fact_contract.schema.json"
+    schema_path = spec_root / "fact.schema.json"
     if not schema_path.exists():
         diagnostics.append(
             {
                 "rule_id": "FV-SPEC-077",
-                "file": "fact_contract.schema.json",
+                "file": "fact.schema.json",
                 "field": "cross_file",
                 "message": "P0-1 fact contract schema is missing; answer-role cross-check cannot run.",
             }
@@ -429,7 +429,7 @@ def check_cross_file_consistency(frontmatter: dict, spec_root: Path) -> list[dic
             diagnostics.append(
                 {
                     "rule_id": "FV-SPEC-077",
-                    "file": "fact_contract.schema.json",
+                    "file": "fact.schema.json",
                     "field": "cross_file",
                     "message": f"Cannot read P0-1 answer roles: {exc}",
                 }

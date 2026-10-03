@@ -5,17 +5,15 @@ Spec: specs/20260929-225846-model-role-config/spec.md
 
 from __future__ import annotations
 
-import hashlib
 import json
 import shutil
 from pathlib import Path
 
 import pytest
 import yaml
-from click.testing import CliRunner
 
-from scripts.exclusion_gate import main as exclusion_main
-from src.data.decisions import load_d65
+from src.data.decisions import D65Decision, load_d65
+from src.data.errors import DataError
 from src.data.exclusion import run_gate
 from src.models.errors import FactVerifyLoaderError
 from src.models.identity import (
@@ -29,9 +27,8 @@ from src.models.spec import load_model_policy as read_policy
 from tools.models_validator import compute_identity_hash as validator_hash
 from tools.models_validator import validate_models_spec
 
-POLICY = Path(".factverify/spec/model_policy.yaml")
+POLICY = Path(".factverify/model_policy.yaml")
 BLOCK0 = Path("config/models/block0-debug-pythia-410m.yaml")
-GOLDEN = Path("tests/fixtures/models_config/models_yaml_sha256.txt")
 CLOSURE = Path("tests/fixtures/exclusion/closure_d63.yaml")
 PIN = "9879c9b5f8bea9051dcb0e68dff21493d67e9d4f"
 
@@ -47,11 +44,8 @@ def test_policy_role_names() -> None:
     assert "block_3_confirmation" not in roles
 
 
-def test_models_yaml_bytes_unchanged() -> None:
-    digest = hashlib.sha256(
-        Path(".factverify/spec/models.yaml").read_bytes()
-    ).hexdigest()
-    assert digest == GOLDEN.read_text(encoding="utf-8").strip()
+def test_models_yaml_retired() -> None:
+    assert not Path(".factverify/spec/models.yaml").exists()
 
 
 def test_policy_has_no_concrete_pin() -> None:
@@ -104,7 +98,7 @@ def test_revision_field_refused(tmp_path: Path) -> None:
 
 def test_validator_reads_same_revision() -> None:
     _success, report = validate_models_spec(
-        Path(".factverify/spec"),
+        Path(".factverify"),
         model_config=BLOCK0,
     )
     for check in report["checks"]:
@@ -130,7 +124,7 @@ def test_pending_role_refuses_before_network(monkeypatch: pytest.MonkeyPatch) ->
         load_model(
             "pretrained_fact_confirmation",
             model_config=BLOCK0,
-            spec_root=Path(".factverify/spec"),
+            spec_root=Path(".factverify"),
         )
 
 
@@ -152,13 +146,34 @@ def test_movable_revision_refuses_before_network(
         load_model(
             "controlled_fact_base",
             model_config=path,
-            spec_root=Path(".factverify/spec"),
+            spec_root=Path(".factverify"),
         )
 
 
-def test_exclusion_gate_cli_requires_config() -> None:
-    result = CliRunner().invoke(exclusion_main, [])
-    assert result.exit_code != 0
+def test_exclusion_gate_requires_matching_identity(tmp_path: Path) -> None:
+    decision = D65Decision(
+        baseline="random_choice",
+        threshold=0.5,
+        comparison="any_direction",
+        cell_score="alias_contains",
+        decoding_seeds=(0,),
+        do_sample=False,
+        max_new_tokens=16,
+        contamination_trigger=0.1,
+        contamination_decision=None,
+        note="",
+    )
+    with pytest.raises(DataError, match="identity_hash"):
+        run_gate(
+            facts_path=tmp_path / "facts.jsonl",
+            spec_root=tmp_path,
+            decision=decision,
+            complete=lambda _prompt, _seed: None,
+            identity_hash="a",
+            expected_hash="b",
+            out_path=tmp_path / "out.jsonl",
+            report_path=tmp_path / "report.jsonl",
+        )
 
 
 def test_v2_hash_ignores_role() -> None:
@@ -321,7 +336,7 @@ def _alias_config(path: Path, *, both: bool) -> None:
 def test_legacy_alias_resolves(tmp_path: Path) -> None:
     path = tmp_path / "alias.yaml"
     _alias_config(path, both=False)
-    policy = read_policy(Path(".factverify/spec"))
+    policy = read_policy(Path(".factverify"))
     resolved = resolve_role(policy, load_model_configuration(path), "blocks_0_2")
     assert resolved.study_role == "controlled_fact_base"
     assert resolved.deprecation is not None
@@ -332,7 +347,7 @@ def test_legacy_alias_resolves(tmp_path: Path) -> None:
 def test_alias_conflict_refused(tmp_path: Path) -> None:
     path = tmp_path / "both.yaml"
     _alias_config(path, both=True)
-    policy = read_policy(Path(".factverify/spec"))
+    policy = read_policy(Path(".factverify"))
     with pytest.raises(FactVerifyLoaderError, match="blocks_0_2") as exc:
         resolve_role(policy, load_model_configuration(path), "blocks_0_2")
     assert "controlled_fact_base" in str(exc.value)
@@ -341,7 +356,7 @@ def test_alias_conflict_refused(tmp_path: Path) -> None:
 def test_new_output_uses_canonical_role(tmp_path: Path) -> None:
     path = tmp_path / "alias.yaml"
     _alias_config(path, both=False)
-    policy = read_policy(Path(".factverify/spec"))
+    policy = read_policy(Path(".factverify"))
     resolved = resolve_role(policy, load_model_configuration(path), "blocks_0_2")
     binding = {"study_role": resolved.study_role}
     assert binding["study_role"] == "controlled_fact_base"

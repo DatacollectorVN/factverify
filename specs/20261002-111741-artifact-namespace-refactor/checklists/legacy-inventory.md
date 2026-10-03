@@ -1,0 +1,43 @@
+# Legacy Artifact Inventory
+
+Generated: 2026-10-02
+Purpose: FV-SPEC-111 §1 — required before implementation starts
+
+## Inventory Table
+
+| # | Path | Artifact Class | Action | Rationale | Replacement Path | Verification Method |
+|---|------|---------------|--------|-----------|-----------------|---------------------|
+| 1 | `src/models/spec.py` | `model_policy` | `refactor` | Contains legacy `load_model_spec()` that reads `models.yaml`; all callers have been migrated to `load_model_configuration()` + `resolve_role()`. The function itself must be deleted (T039). | `src/models/spec.py` (keep file, delete function) | `test_fv_spec_111_no_active_legacy_surface` scans for `load_model_spec(` |
+| 2 | `src/models/loader.py` | `model_policy` | `refactor` | References `spec_root` for `load_model_policy()`; will need to accept `LayoutRoots` in Phase 9. Currently uses `.factverify/spec/model_policy.yaml`. | Update callers to pass `LayoutRoots.spec_root` | `make test` passes after T040–T041 |
+| 3 | `src/data/spec_readers.py` | `templates` | `refactor` | Reads `spec_root / "closure_templates.yaml"`; path will change to `spec_root / "templates.yaml"` after T014. | Update path after T014 consolidation | `make test` on closure template tests |
+| 4 | `src/eval/spec_load.py` | `protocol` (multiple) | `refactor` | Reads five spec artifacts from `spec_root`: `attacks.yaml`, `access_profile.md`, `witness_rule.md`, `closure_templates.yaml`, `margins.yaml`. All will be consolidated into `protocol.yaml` after T014 (pending T007 gate). | Replace with `LayoutRoots.spec_root / "protocol.yaml"` reader | `make test` on eval tests; T007 gate decision required first |
+| 5 | `src/eval/store.py` | `run_events` / `generation` | `refactor` | Uses `assert_outside_spec_namespace()` guard to check `.factverify` in path; will need to use `LayoutRoots.assert_internal_path()` instead. | Replace with `ArtifactStore.write()` context manager | `test_fv_spec_101_unledgered_artifact_refused` |
+| 6 | `src/eval/run.py` | `run_config` | `refactor` | Default `--spec-root` hardcoded to `Path(".factverify/spec")`; should read from `LayoutRoots.resolve()`. | Update default to use env var or `LayoutRoots.resolve()` | `make test` on eval run tests |
+| 7 | `src/controls/spec_load.py` | `protocol` (multiple) | `refactor` | Reads `access_profile.md` and `margins.yaml` from `spec_root`; paths change after T014. | Update to use consolidated `protocol.yaml` after T007 decision | `make test` on controls tests |
+| 8 | `src/controls/run.py` | `run_config` | `refactor` | Default `--spec-root` hardcoded to `Path(".factverify/spec")`; should use `LayoutRoots`. | Update default to `LayoutRoots.resolve()` | `make test` on controls run tests |
+| 9 | `src/train/run.py` | `run_config` | `refactor` | Default `--spec-root` hardcoded to `Path(".factverify/spec")`; `load_model_policy(spec_root)` call. | Update to use `LayoutRoots.resolve()` | `make test` on training harness tests |
+| 10 | `src/cache/store.py` | `cache_shard` | `refactor` | Guard checks `".factverify" in resolved.parts`; should use `LayoutRoots.assert_internal_path()` or check against `spec_root`. Cache belongs under `internal_root`. | Replace guard with `LayoutRoots`-based check | `make test` on cache tests |
+| 11 | `src/stats/io.py` | `run_metrics` / `run_verdict` | `refactor` | Reads `spec_root / "margins.yaml"`; will need to use consolidated `protocol.yaml` path after T014. | Update to read from `LayoutRoots.spec_root / "protocol.yaml"` (pending T007) | `make test` on stats tests |
+| 12 | `tools/witness_rule_validator.py` | `protocol` | `refactor` | Reads `spec_root / "witness_rule.md"` and cross-checks against `spec_root / "fact_contract.schema.json"`, `closure_templates.yaml`, `attacks.yaml`, `access_profile.md`, `margins.yaml`. All paths change after T014. | Update paths after T007/T014 to use `LayoutRoots.spec_root` | `make test` on witness rule tests |
+| 13 | `tests/conftest.py` | N/A (test fixture) | `refactor` | `SPEC_ROOT = REPO / ".factverify" / "spec"` hardcoded; `SCHEMA_PATH = SPEC_ROOT / "fact_contract.schema.json"` points to old location. | Update `SPEC_ROOT` to `REPO / ".factverify"`, `SCHEMA_PATH` to `REPO / ".factverify" / "fact.schema.json"` | `make test` after T044 |
+| 14 | `tests/test_model_config.py` | N/A (test) | `refactor` | `POLICY = Path(".factverify/spec/model_policy.yaml")` hardcoded; `test_models_yaml_retired()` checks old path doesn't exist. | Update to `Path(".factverify/model_policy.yaml")` after T014 | `make test` after T044 |
+| 15 | `tests/test_models_spec.py` | N/A (test) | `refactor` | Imports `SPEC_ROOT` from `conftest`; expects model validator to read from old `spec/` prefix. | Update after T044 to use new `SPEC_ROOT` | `make test` after T044 |
+| 16 | `.factverify/spec/fact_contract.schema.json` | `fact_schema` | `replace` | Old schema location under `spec/`; superseded by `.factverify/fact.schema.json` with v1.1.0 schema. | `.factverify/fact.schema.json` | Schema validates both contracts; `test_fv_spec_108` passes |
+| 17 | `.factverify/spec/model_policy.yaml` | `model_policy` | `migration-only isolate` | Will be moved to `.factverify/model_policy.yaml` after T014; `spec/` subdirectory will be retired. | `.factverify/model_policy.yaml` | `tools/validate_layout.py` detects old path as violation |
+| 18 | `.factverify/spec/attacks.yaml` | `protocol` | `migration-only isolate` | Will be consolidated into `protocol.yaml` after T007/T014 gate decisions. | `.factverify/protocol.yaml` (pending T007) | `tools/validate_layout.py` after migration |
+| 19 | `.factverify/spec/access_profile.md` | `protocol` | `migration-only isolate` | Will be consolidated into `protocol.yaml` after T007/T014 gate decisions. | `.factverify/protocol.yaml` (pending T007) | `tools/validate_layout.py` after migration |
+| 20 | `.factverify/spec/witness_rule.md` | `protocol` | `migration-only isolate` | Will be consolidated into `protocol.yaml` after T007/T014 gate decisions. | `.factverify/protocol.yaml` (pending T007) | `tools/validate_layout.py` after migration |
+| 21 | `.factverify/spec/margins.yaml` | `protocol` | `migration-only isolate` | Will be consolidated into `protocol.yaml` after T007/T014 gate decisions. | `.factverify/protocol.yaml` (pending T007) | `tools/validate_layout.py` after migration |
+| 22 | `.factverify/spec/closure_templates.yaml` | `templates` | `migration-only isolate` | Will be renamed to `.factverify/templates.yaml` after T014. | `.factverify/templates.yaml` | Tests referencing `closure_templates.yaml` name |
+| 23 | `.factverify/contracts/factverify-contract-wd-Q1858-P1376-Q881-v1.json` | `fact_contract` | `replace` | Wikidata-shaped IDs in canonical fields; `schema_version: "1.0.0"`. Must be migrated to native IDs with Wikidata Q/P in `external_refs`. | `.factverify/facts/<new_native_fact_id>/contract.json` | `test_fv_spec_105_legacy_accounting` after T013 |
+| 24 | `.factverify/contracts/factverify-contract-invented_scientist_alma_mater-v1.json` | `fact_contract` | `replace` | Already uses native IDs but has old `source` field in entities. Must be moved into bundle layout and `schema_version` bumped to `"1.1.0"`. | `.factverify/facts/invented_scientist_alma_mater/contract.json` | `test_fv_spec_108_factverify_native_ids` (part a) |
+| 25 | `tools/freeze.py` | `freeze_receipt` | `refactor` | Currently writes to `CHECKSUMS.sha256` and `reports/spec-v1-freeze-receipt.json`; scans 8 files under `spec/`. Must be updated to write `FREEZE.json` at `.factverify/FREEZE.json` and scan 4 normative files at new paths (T029). | `.factverify/FREEZE.json` | `test_fv_spec_098_complete_freeze` |
+| 26 | `tools/models_validator.py` | `model_policy` | `refactor` | Reads models spec from `spec_root`; cross-checks against `access_profile.md`. Paths change after T014. | Update after T014 to use `LayoutRoots.spec_root` | `make test` on models spec tests |
+| 27 | `tools/preregistration_validator.py` | `protocol` | `refactor` | Reads `spec_root / "preregistration.md"`, `decisions/register.yaml`. Paths change if preregistration is moved from `spec/`. | Update after T014 if preregistration moves | `make test` on preregistration tests |
+
+## Notes
+
+- T007 (protocol.yaml consolidation) is a human-review gate — the `migration-only isolate` actions for protocol-related artifacts in `.factverify/spec/` cannot proceed until T007 is resolved.
+- T014 (filesystem restructuring) is also a human-review gate — all `migration-only isolate` actions depend on it.
+- The `delete` action for `load_model_spec()` is in T039 (Phase 9 legacy retirement), not in Phase 1.
+- Items 16–25 are `.factverify/` artifacts; items 1–15 and 26–27 are `src/`, `tests/`, and `tools/` code.

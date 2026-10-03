@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from scripts.entailment_audit import (
+from src.data.entailment import (
     AuditDigestMismatch,
     AuditResult,
     check_digest_binding,

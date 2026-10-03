@@ -16,19 +16,19 @@ Full design: `second-brain/ml-unlearning/04-Experiments/FactVerify — Execution
 ```
 PHASE 1 — Build the dataset           PHASE 2 — Run experiments
 ──────────────────────────────         ──────────────────────────
-TOFU (fictional authors)              facts.jsonl
+make tofu-download                    .factverify/facts/<fact_id>/
       │                                    │
-      ▼  extract mentions                  ▼  finetune model on each fact
-  mentions.jsonl                       checkpoints/
+      ▼                                    ▼  finetune model on each fact
+make tofu-prepare-fact                 checkpoints/
       │                                    │
-      ▼  adjudicate quality                ▼  run 3 evaluators
-  mentions.jsonl (accepted)            ledger.sqlite
-      │                                    │
-      ▼  build fact contracts              ▼  measure FCR / FRR → ΔFCR
-  data/controlled/facts.jsonl          reports/
+      ▼                                    ▼  run 3 evaluators
+make tofu-build-fact                   ledger.sqlite
+                                           │
+                                           ▼  measure FCR / FRR → ΔFCR
+                                       reports/
 ```
 
-**Phase 1 status:** 35 draft fact contracts in `data/controlled/facts.jsonl`  
+**Phase 1 status:** three commands in `config/data/tofu.yml`  
 **Phase 2 status:** blocked — need to pin the base model in `.factverify/spec/models.yaml`
 
 ---
@@ -36,27 +36,24 @@ TOFU (fictional authors)              facts.jsonl
 ## Quick start — Phase 1 data pipeline
 
 ```bash
-# Set your local TOFU snapshot path once
-export TOFU=/Users/nhan.ngo/.cache/huggingface/hub/datasets--locuslab--TOFU/snapshots/324592d84ae4f482ac7249b9285c2ecdb53e3a68
-
-make extract       # Step 1: extract (subject, relation, object) triples from TOFU
-make fix-spans     # Step 2: recompute char spans with str.find() (Claude's are unreliable)
-make adjudicate    # Step 3: two-reader LLM quality review (100 random mentions)
-make build-facts   # Step 4: filter + wrap into fact contracts → data/controlled/facts.jsonl
+make tofu-download
+export ANTHROPIC_API_KEY="<secret>"
+make tofu-prepare-fact
+make tofu-build-fact
 ```
 
-Each step is idempotent — rerun safely. Already-adjudicated mentions are skipped.
+Settings live in `config/data/tofu.yml`. The key is read from the environment only, and only `make tofu-prepare-fact` calls Anthropic.
 
 ---
 
-## The 4 data scripts (in order)
+## Preparation commands
 
-| Script | What it does | Key output |
-|--------|-------------|-----------|
-| `scripts/extract_tofu_mentions.py extract` | Ask Claude to extract `(subject, relation, object)` from each TOFU Q&A row | `data/tofu_derived/mentions.jsonl` |
-| `scripts/fix_spans.py fix` | Recompute char spans using `str.find()` | same file, spans corrected |
-| `scripts/adjudicate_mentions.py adjudicate` | Two Claude readers verify each mention; Opus resolves disagreements | same file, `review_status=adjudicated` |
-| `scripts/build_facts.py build` | Filter to 4 approved relations, build schema-valid contracts | `data/controlled/facts.jsonl` |
+| Command | What it does |
+|---------|----------------|
+| `make tofu-download` | Download and verify the pinned TOFU revision. |
+| `make tofu-prepare-fact` | Sonnet extraction, span repair, D-63 mapping, Opus review. |
+| `make tofu-build-fact` | Write five-file bundles under `.factverify/facts/`. |
+| `python -m tools.tofu_pipeline` | The only Python entry point Make invokes for this workflow. |
 
 ---
 
@@ -90,7 +87,7 @@ have clear forward + inverse queries.
 | `nationality` | Jaime Vasquez → Chilean | "What is Jaime Vasquez's nationality?" |
 | `genre` | Jaime Vasquez → literary fiction | "What genre does Jaime Vasquez write in?" |
 
-Source and exclusion list: `data/controlled/relations.yaml`.
+Source and exclusion list: `config/data/tofu.yml` under `relation_policy`.
 
 ---
 
@@ -114,13 +111,9 @@ Once those are done:
 ```
 .factverify/spec/        frozen protocol (schema, templates, budgets, margins)
 data/
-  tofu_derived/          raw extraction + adjudication artefacts
-  controlled/            cleaned fact contracts (facts.jsonl, relations.yaml)
+  controlled/            decisions and other controlled-study inputs
+tools/tofu_pipeline.py   TOFU download, preparation, and bundle commands
 scripts/
-  extract_tofu_mentions.py   Step 1 — TOFU → raw mentions
-  fix_spans.py               Step 2 — repair char spans
-  adjudicate_mentions.py     Step 3 — LLM quality review
-  build_facts.py             Step 4 — mentions → fact contracts
   ledger.py                  CLI for ledger.sqlite (track every checkpoint)
 src/
   data/tofu.py           Core data types: Mention, ExtractorConfig, TransformationRecord

@@ -1129,3 +1129,46 @@ decisions:
       - "unit"
     status: "open"
     legacy_aliases: []
+
+  # ── Artifact namespace (D-71–D-72) ────────────────────────────────────────
+
+  - legacy_id: "D-71"
+    key: "artifacts.namespace.boundary"
+    title: "Artifact namespace boundary"
+    description: >-
+      .factverify/ stores frozen study/fact inputs; .factverify_internal/ stores
+      runtime transactions and derived outputs. Runtime-generated artifacts must
+      not appear under the frozen namespace.
+    domain: "artifacts"
+    owner: "study_owner"
+    consumers:
+      - "src.artifacts.layout"
+      - "src.artifacts.store"
+      - "src.artifacts.preflight"
+      - "tools.validate_layout"
+    required_fields:
+      - "spec_root"
+      - "internal_root"
+    status: "closed"
+    resolved_value: "spec_root=.factverify/ internal_root=.factverify_internal/"
+    resolved_at: "2026-10-01"
+    legacy_aliases: []
+
+  - legacy_id: "D-72"
+    key: "artifacts.identity.authority"
+    title: "Canonical identity authority"
+    description: >-
+      FactVerify-native IDs are canonical for facts, contracts, entities and
+      relations. External knowledge-base IDs (Wikidata etc.) are optional
+      external references, never primary keys.
+    domain: "artifacts"
+    owner: "study_owner"
+    consumers:
+      - "src.data.fact_bundle"
+      - "tools.migrate_artifacts"
+    required_fields:
+      - "canonical_prefix"
+    status: "closed"
+    resolved_value: "canonical_prefix=factverify:"
+    resolved_at: "2026-10-02"
+    legacy_aliases: []

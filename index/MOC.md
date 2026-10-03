@@ -35,14 +35,12 @@ the **false-certification rate (FCR)** of three evaluators at equal query budget
 ## Phase 1 Data Pipeline
 
 ```
-Step 1  extract_tofu_mentions.py extract   →  data/tofu_derived/mentions.jsonl   ✅ done (1720 mentions)
-Step 2  fix_spans.py fix                   →  mentions.jsonl (spans corrected)    ✅ done (133 unresolved)
-Step 3  adjudicate_mentions.py adjudicate  →  mentions.jsonl (reviewed)           🔄 100/1587 adjudicated
-Step 4  build_facts.py build               →  data/controlled/facts.jsonl         ✅ 35 draft contracts
+make tofu-download       pinned TOFU snapshot
+make tofu-prepare-fact   accepted atomic facts
+make tofu-build-fact     .factverify/facts/<fact_id>/
 ```
 
-Run all steps: `make data`  
-Run one step: `make adjudicate` (or extract / fix-spans / build-facts)
+Settings: `config/data/tofu.yml`. The API key is `ANTHROPIC_API_KEY`.
 
 ---
 
@@ -52,9 +50,9 @@ Run one step: `make adjudicate` (or extract / fix-spans / build-facts)
 
 | Step | Task | Command / File |
 |------|------|----------------|
-| 1 | Adjudicate more mentions for a larger fact pool | `make adjudicate` (repeat until ~200 accepted) |
-| 2 | Build P1-3 source bundles (TOFU Q&A rows per fact) | `scripts/build_sources.py` (not yet written) |
-| 3 | Fill P1-5 locality neighbourhood stubs in contracts | update `data/controlled/facts.jsonl` compositional/global buckets |
+| 1 | Download the pinned TOFU snapshot | `make tofu-download` |
+| 2 | Prepare and review one author | `make tofu-prepare-fact` |
+| 3 | Build schema-valid fact bundles | `make tofu-build-fact` |
 
 ### Requires base model (pythia-410m pinned ✅)
 
@@ -91,12 +89,9 @@ Run one step: `make adjudicate` (or extract / fix-spans / build-facts)
 
 | File | Contents |
 |------|---------|
-| `data/tofu_derived/mentions.jsonl` | 1720 raw (s,r,o) mentions; ~109 adjudicated, ~1587 pending |
-| `data/tofu_derived/extractor_config.json` | Claude Sonnet config for extraction |
-| `data/tofu_derived/reviewer_config.json` | Sonnet + Opus config for adjudication |
-| `data/controlled/facts.jsonl` | 35 draft fact contracts (4 relation types) |
-| `data/controlled/relations.yaml` | D-63: 4 included relations, excluded classes |
-| `data/controlled/facts_lineage.jsonl` | fact_id → mention_ids traceability |
+| `config/data/tofu.yml` | Dataset pin, model effort, limits, and D-63 relation policy |
+| `.factverify_internal/tofu/` | Downloaded source and preparation workspace |
+| `.factverify/facts/<fact_id>/` | Published five-file fact bundles |
 
 ### Source modules (`src/`)
 
@@ -114,10 +109,7 @@ Run one step: `make adjudicate` (or extract / fix-spans / build-facts)
 
 | Script | Stage | What it does |
 |--------|-------|-------------|
-| `extract_tofu_mentions.py` | P1-0 Step 1 | Extract (s,r,o) from TOFU via Claude |
-| `fix_spans.py` | P1-0 Step 2 | Repair char spans with `str.find()` |
-| `adjudicate_mentions.py` | P1-0 Step 3 | Two-reader LLM quality review |
-| `build_facts.py` | P1-1 Step 4 | Build fact contracts from accepted mentions |
+| `tools/tofu_pipeline.py` | P1-0 / P1-1 | Download TOFU, prepare facts, build bundles |
 | `ledger.py` | P2-5 | CLI for `ledger.sqlite` |
 
 ---

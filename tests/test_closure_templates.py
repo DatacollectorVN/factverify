@@ -15,14 +15,16 @@ import pytest
 import yaml
 
 from tests.conftest import (
-    BINDINGS_PATH,
-    CLOSURE_DIR,
     CLOSURE_SUITE_PATH,
     CONTRACTS_DIR,
     P0_2_FIXTURES,
     REPO,
     SPEC_ROOT,
 )
+
+# Bindings moved from deleted .factverify/closure/ to test fixtures.
+CT_FIXTURES = REPO / "tests" / "fixtures" / "closure_templates"
+BINDINGS_PATH = CT_FIXTURES / "instance_bindings.json"
 
 # ---- helpers ---------------------------------------------------------------
 
@@ -86,10 +88,10 @@ def _write_temp_suite(suite: dict, tmp_path: Path) -> Path:
     import shutil
     spec_dir = tmp_path / "spec"
     spec_dir.mkdir(parents=True, exist_ok=True)
-    (spec_dir / "closure_templates.yaml").write_text(
+    (spec_dir / "templates.yaml").write_text(
         yaml.dump(suite, allow_unicode=True), encoding="utf-8"
     )
-    schema_src = SPEC_ROOT / "fact_contract.schema.json"
+    schema_src = SPEC_ROOT / "fact.schema.json"
     if schema_src.exists():
         shutil.copy(schema_src, spec_dir)
     return spec_dir

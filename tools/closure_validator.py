@@ -1,6 +1,6 @@
 """P0-2 closure template suite validator.
 
-Validates closure_templates.yaml against structural, routing, binding,
+Validates templates.yaml against structural, routing, binding,
 coverage, group/split, review, and revision rules (FV-SPEC-016 through
 FV-SPEC-032).
 
@@ -45,8 +45,8 @@ def file_digest(path: Path) -> str:
 
 
 def load_suite(spec_root: Path) -> tuple[dict, Path]:
-    """Load closure_templates.yaml from spec_root. Returns (data, path)."""
-    suite_path = spec_root / "closure_templates.yaml"
+    """Load templates.yaml from spec_root. Returns (data, path)."""
+    suite_path = spec_root / "templates.yaml"
     if not suite_path.exists():
         raise SystemExit(f"Suite not found: {suite_path}")
     try:
@@ -83,7 +83,7 @@ def load_contracts(contracts_dir: Path) -> dict[str, dict]:
     contracts = {}
     if not contracts_dir.exists():
         raise SystemExit(f"Contracts directory not found: {contracts_dir}")
-    for fp in sorted(contracts_dir.glob("*.json")):
+    for fp in sorted(contracts_dir.glob("*.json")) + sorted(contracts_dir.glob("*/contract.json")):
         try:
             data = json.loads(fp.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
@@ -1221,7 +1221,7 @@ def validate_closure_suite(
     suite, suite_path = load_suite(spec_root)
     bindings = load_bindings(bindings_path)
     contracts = load_contracts(contracts_dir)
-    fname = "closure_templates.yaml"
+    fname = "templates.yaml"
 
     all_diags: list[dict] = []
     checked: list[dict] = []
@@ -1337,7 +1337,7 @@ def validate_closure_suite(
             }
         )
 
-    schema_path = spec_root / "fact_contract.schema.json"
+    schema_path = spec_root / "fact.schema.json"
     report = write_closure_report(
         suite,
         suite_path,

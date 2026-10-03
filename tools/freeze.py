@@ -1,12 +1,15 @@
 """P0-7 spec-freeze workflow CLI.
 
-Gates and executes the spec-v1 freeze: checksum manifest, annotated git tag,
-post-commit receipt.
+Gates and executes the spec-v1 freeze: FREEZE.json digest record, annotated
+git tag, post-commit receipt.
+
+The four normative spec artifacts (directly under the frozen spec root) are:
+  protocol.yaml, templates.yaml, model_policy.yaml, fact.schema.json
 
 Modes:
     --dry-run   (default) Run all gate checks; make no writes.
-    --execute   Run gate checks, then write CHECKSUMS, commit, tag, receipt.
-    --verify    Re-compute hashes and verify against existing CHECKSUMS + receipt.
+    --execute   Run gate checks, then write FREEZE.json, commit, tag, receipt.
+    --verify    Re-compute hashes and verify against existing FREEZE.json.
 
 Exit codes:
     0 — dry-run: all gates passed; execute: freeze complete; verify: valid
@@ -26,86 +29,90 @@ from pathlib import Path
 import click
 
 # ---------------------------------------------------------------------------
-# Spec artifact manifest
+# Spec artifact manifest — four normative files at frozen spec root top level
 # ---------------------------------------------------------------------------
 
 SPEC_ARTIFACTS = [
-    "fact_contract.schema.json",
-    "closure_templates.yaml",
-    "attacks.yaml",
-    "access_profile.md",
-    "margins.yaml",
-    "witness_rule.md",
-    "preregistration.md",
-    "models.yaml",
+    "protocol.yaml",
+    "templates.yaml",
     "model_policy.yaml",
+    "fact.schema.json",
 ]
 
 # ---------------------------------------------------------------------------
-# Checksum helpers
+# Digest helpers
 # ---------------------------------------------------------------------------
 
 
-def compute_checksums(spec_root: Path) -> dict[str, str]:
-    """Return {relative_path: sha256_hex} for all spec artifacts."""
-    result = {}
-    repo_root = spec_root.parent.parent
+def compute_content_digests(spec_root: Path) -> dict[str, str | None]:
+    """Return {filename: 'sha256:<hex>'} for all four normative spec artifacts."""
+    result: dict[str, str | None] = {}
     for name in SPEC_ARTIFACTS:
         p = spec_root / name
         if p.exists():
-            digest = hashlib.sha256(p.read_bytes()).hexdigest()
-            try:
-                rel = str(p.relative_to(repo_root))
-            except ValueError:
-                rel = str(p)
-            result[rel] = digest
+            hex_val = hashlib.sha256(p.read_bytes()).hexdigest()
+            result[name] = f"sha256:{hex_val}"
+        else:
+            result[name] = None
     return result
 
 
-def write_checksums(spec_root: Path, output_path: Path) -> None:
-    """Write CHECKSUMS.sha256 in shasum-compatible format."""
-    checksums = compute_checksums(spec_root)
-    lines = [
-        f"sha256:{hex_val}  {path}\n" for path, hex_val in sorted(checksums.items())
-    ]
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text("".join(lines), encoding="utf-8")
+def write_freeze_json(
+    spec_root: Path,
+    spec_version: str = "0.1.0-demo",
+    commit: str | None = None,
+) -> Path:
+    """Compute digests and write FREEZE.json to spec_root. Returns the path written."""
+    content_digests = compute_content_digests(spec_root)
+    freeze = {
+        "schema_version": "1.0.0",
+        "spec_version": spec_version,
+        "status": "frozen",
+        "commit": commit,
+        "timestamp_utc": datetime.now(UTC).isoformat(),
+        "decisions": [],
+        "approvals": [],
+        "content_digests": content_digests,
+    }
+    freeze_path = spec_root / "FREEZE.json"
+    freeze_path.write_text(json.dumps(freeze, indent=2) + "\n", encoding="utf-8")
+    return freeze_path
 
 
-def verify_checksums(spec_root: Path, checksums_path: Path) -> list[str]:
-    """Return list of mismatched or missing paths.
+def verify_freeze_json(spec_root: Path) -> list[str]:
+    """Re-compute digests and compare against FREEZE.json. Returns mismatch list.
 
-    If the checksums file itself is missing, returns [str(checksums_path)].
+    Returns [str(freeze_path)] if FREEZE.json is missing.
     """
-    if not checksums_path.exists():
-        return [str(checksums_path)]
+    freeze_path = spec_root / "FREEZE.json"
+    if not freeze_path.exists():
+        return [str(freeze_path)]
 
-    repo_root = spec_root.parent.parent
+    try:
+        stored = json.loads(freeze_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        return [f"FREEZE.json parse error: {exc}"]
+
+    stored_digests: dict[str, str | None] = stored.get("content_digests", {})
     mismatched = []
-    for line in checksums_path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line:
+    for name in SPEC_ARTIFACTS:
+        p = spec_root / name
+        if not p.exists():
+            mismatched.append(name)
             continue
-        parts = line.split("  ", 1)
-        if len(parts) != 2:
-            continue
-        stored_hex = parts[0].replace("sha256:", "").strip()
-        rel_path = parts[1].strip()
-
-        # Resolve relative to repo root
-        full_path = repo_root / rel_path
-        if not full_path.exists():
-            mismatched.append(rel_path)
-            continue
-        actual_hex = hashlib.sha256(full_path.read_bytes()).hexdigest()
-        if actual_hex != stored_hex:
-            mismatched.append(rel_path)
-
+        actual = "sha256:" + hashlib.sha256(p.read_bytes()).hexdigest()
+        stored_val = stored_digests.get(name)
+        if stored_val is None or actual != stored_val:
+            mismatched.append(name)
     return mismatched
 
 
 def compute_contract_digest(prereg_path: Path) -> str:
-    """SHA-256 of canonical payload: frontmatter (without digest field) + body."""
+    """SHA-256 of canonical payload: frontmatter (without digest field) + body.
+
+    Used by preregistration_validator.  spec/ subdir files still exist during
+    the transition period; this helper reads directly from the supplied path.
+    """
     import yaml
 
     text = prereg_path.read_text(encoding="utf-8")
@@ -129,7 +136,7 @@ def compute_contract_digest(prereg_path: Path) -> str:
 
 
 def _check_artifacts_present(spec_root: Path) -> list[dict]:
-    """Gate 1: All nine spec artifacts present and non-empty."""
+    """Gate 1: All four normative spec artifacts present and non-empty."""
     diags = []
     for name in SPEC_ARTIFACTS:
         p = spec_root / name
@@ -138,7 +145,7 @@ def _check_artifacts_present(spec_root: Path) -> list[dict]:
                 {
                     "check": "artifacts_present",
                     "status": "fail",
-                    "message": f"Missing spec artifact: {name}",
+                    "message": f"Missing normative spec artifact: {name}",
                 }
             )
         elif p.stat().st_size == 0:
@@ -146,7 +153,7 @@ def _check_artifacts_present(spec_root: Path) -> list[dict]:
                 {
                     "check": "artifacts_present",
                     "status": "fail",
-                    "message": f"Spec artifact is empty: {name}",
+                    "message": f"Normative spec artifact is empty: {name}",
                 }
             )
     return diags
@@ -302,7 +309,7 @@ def _check_no_existing_tag(repo_root: Path, tag_name: str) -> list[dict]:
 
 
 def _check_no_leaked_files(spec_root: Path) -> list[dict]:
-    """Gate 8: No raw outputs, checkpoints, or credentials inside .factverify/."""
+    """Gate 8: No raw outputs, checkpoints, or credentials inside spec_root."""
     diags = []
     banned_patterns = [
         "*.safetensors",
@@ -316,11 +323,10 @@ def _check_no_leaked_files(spec_root: Path) -> list[dict]:
         ".env*",
         "credentials*",
     ]
-    factverify_dir = spec_root.parent  # .factverify/
-    if not factverify_dir.exists():
+    if not spec_root.exists():
         return diags
 
-    for p in factverify_dir.rglob("*"):
+    for p in spec_root.rglob("*"):
         if p.is_file():
             for pattern in banned_patterns:
                 if fnmatch.fnmatch(p.name, pattern):
@@ -329,7 +335,7 @@ def _check_no_leaked_files(spec_root: Path) -> list[dict]:
                             "check": "no_leaked_files",
                             "status": "fail",
                             "message": (
-                                f"Potentially sensitive file inside .factverify/: {p}"
+                                f"Potentially sensitive file inside spec root: {p}"
                             ),
                         }
                     )
@@ -344,7 +350,11 @@ def _check_preregistration_valid(
     exposure_path: Path,
     milestones_path: Path,
 ) -> list[dict]:
-    """Gate 2: preregistration scope validates. Does not re-enter the freeze gate."""
+    """Gate 2: preregistration scope validates. Does not re-enter the freeze gate.
+
+    preregistration.md lives in spec_root/spec/ during the transition period
+    (source files remain in spec/ until full cutover).
+    """
     from tools.preregistration_validator import validate_preregistration
 
     prereg_path = spec_root / "preregistration.md"
@@ -438,7 +448,7 @@ def run_gate_checks(
     include_preregistration: bool = True,
 ) -> tuple[bool, list[dict]]:
     """Run all gate checks. Returns (all_passed, results_list)."""
-    repo_root = spec_root.parent.parent
+    repo_root = spec_root.parent
     results = []
 
     # Gate 1: artifacts present
@@ -588,7 +598,7 @@ def _do_execute(
     milestones_path: Path,
     report_path: Path | None,
 ) -> None:
-    """Execute: gate checks, CHECKSUMS, git commit, tag, receipt."""
+    """Execute: gate checks, FREEZE.json, git commit, tag, receipt."""
     import subprocess as sp
 
     all_passed, results = run_gate_checks(
@@ -601,15 +611,23 @@ def _do_execute(
                 click.echo(f"  FAIL: {d['message']}", err=True)
         sys.exit(1)
 
-    repo_root = spec_root.parent.parent
+    repo_root = spec_root.parent
 
-    # Write CHECKSUMS
-    checksums_path = spec_root.parent / "CHECKSUMS.sha256"
-    write_checksums(spec_root, checksums_path)
-    click.echo(f"Written: {checksums_path}")
+    # Get current commit SHA for provenance record
+    commit_result = sp.run(
+        ["git", "-C", str(repo_root), "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+    commit_sha = commit_result.stdout.strip() if commit_result.returncode == 0 else None
+
+    # Write FREEZE.json
+    freeze_path = write_freeze_json(spec_root, commit=commit_sha)
+    click.echo(f"Written: {freeze_path}")
 
     # Git add + commit
-    sp.run(["git", "-C", str(repo_root), "add", str(checksums_path)], check=True)
+    sp.run(["git", "-C", str(repo_root), "add", str(freeze_path)], check=True)
     sp.run(
         ["git", "-C", str(repo_root), "commit", "-m", f"P0-7: {tag_name} freeze"],
         check=True,
@@ -646,16 +664,14 @@ def _do_execute(
     )
     tag_obj = result2.stdout.strip()
 
-    checksums_digest = (
-        "sha256:" + hashlib.sha256(checksums_path.read_bytes()).hexdigest()
-    )
+    freeze_digest = "sha256:" + hashlib.sha256(freeze_path.read_bytes()).hexdigest()
     receipt = {
-        "freeze_version": "1",
+        "freeze_version": "2",
         "tag_name": tag_name,
         "tag_target_commit": tag_target,
         "tag_object_sha": tag_obj,
         "timestamp_utc": datetime.now(UTC).isoformat(),
-        "checksums_digest": checksums_digest,
+        "freeze_json_digest": freeze_digest,
         "registration_status": "local-only",
         "archive_url": None,
     }
@@ -667,12 +683,11 @@ def _do_execute(
 
 
 def _do_verify(spec_root: Path, tag_name: str) -> None:
-    """Verify: re-compute hashes, check receipt and tag-target."""
+    """Verify: re-compute hashes against FREEZE.json, check receipt and tag-target."""
     import subprocess as sp
 
-    repo_root = spec_root.parent.parent
-    checksums_path = spec_root.parent / "CHECKSUMS.sha256"
-    mismatched = verify_checksums(spec_root, checksums_path)
+    repo_root = spec_root.parent
+    mismatched = verify_freeze_json(spec_root)
     if mismatched:
         click.echo(
             f"Verification FAILED: {len(mismatched)} artifact(s) have hash mismatches:",
@@ -721,7 +736,7 @@ def _do_verify(spec_root: Path, tag_name: str) -> None:
     "--spec-root",
     required=True,
     type=click.Path(exists=False, path_type=Path),
-    help="Root of spec namespace (.factverify/spec).",
+    help="Frozen spec root (default: .factverify/).",
 )
 @click.option(
     "--tag",
@@ -782,13 +797,13 @@ def main(
     milestones: Path | None,
 ) -> None:
     """Gate and execute the spec-v1 freeze workflow."""
-    # Default paths
+    # Default paths — decisions, exposure, milestones live under spec_root
     if decisions_register is None:
-        decisions_register = spec_root.parent / "decisions" / "register.yaml"
+        decisions_register = spec_root / "decisions" / "register.yaml"
     if exposure_record is None:
-        exposure_record = spec_root.parent / "exposure" / "exposure_record.md"
+        exposure_record = spec_root / "exposure" / "exposure_record.md"
     if milestones is None:
-        milestones = spec_root.parent / "milestones" / "milestones.yaml"
+        milestones = spec_root / "milestones" / "milestones.yaml"
 
     if mode == "verify":
         _do_verify(spec_root, tag)

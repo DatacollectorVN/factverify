@@ -1,0 +1,31 @@
+schema_version: "1"
+
+dataset:
+  repo_id: locuslab/TOFU
+  revision: 324592d84ae4f482ac7249b9285c2ecdb53e3a68
+  output_dir: .factverify_internal/tofu/source
+
+workspace: .factverify_internal/tofu
+
+prepare:
+  model: claude-sonnet-4-6
+  effort: high
+  temperature: 0
+
+review:
+  model: claude-opus-4-6
+  effort: medium
+  temperature: 0
+
+limit_authors: 10
+review_limit: 100
+retry_delay_seconds: 2.0
+
+relation_policy:
+  decision_id: D-63
+  included:
+    occupation: [occupation, profession]
+    birthplace: [birthplace, city, early_life_location, birthplace_country]
+    nationality: [nationality, country]
+    genre: [genre]
+  deferred: [book_title, character_name]

@@ -1,0 +1,733 @@
+# protocol.yaml — FactVerify consolidated protocol spec
+# Consolidates: attacks.yaml, margins.yaml, access_profile.md, witness_rule.md, preregistration.md
+# Decision: D-71 artifacts.namespace.boundary (closed 2026-10-02)
+# The constituent spec/ files remain intact for backward compatibility until full cutover.
+schema_version: "1.0.0"
+spec_version: "0.1.0-demo"
+
+# =============================================================================
+# SECTION: attacks — query budget specification
+# Source: .factverify/spec/attacks.yaml
+# =============================================================================
+attacks:
+  revision: "0.1.0-demo"
+
+  common_cap: 12
+
+  accounting:
+    generation_trial_unit:
+      name: "generation_trial"
+      definition: "One prompt evaluated on one checkpoint under one decoding config producing one completion"
+      multiplicity_rule: "N completions from one request = N trials"
+      identity_fields: ["prompt", "checkpoint", "sample_index", "decoding_config"]
+    candidate_scoring_unit:
+      name: "candidate_score"
+      definition: "One teacher-forced scoring of a candidate sequence on one checkpoint"
+      multiplicity_rule: "Each scored sequence is one operation"
+      identity_fields: ["prompt", "checkpoint", "candidate_sequence"]
+    cost_vector_fields:
+      - tokens
+      - scored_candidates
+      - training_steps
+      - exports
+      - wall_clock
+    cache_policy:
+      policy_id: "cache_hit"
+      charge_rule: "zero_new_compute"
+      observation_charged: true
+      distinction: "Reused observation from prior identical request; no new GPU compute"
+    retry_policy:
+      policy_id: "retry"
+      charge_rule: "charged"
+      observation_charged: true
+      distinction: "New compute from retried request; original failure also charged"
+    failure_policy:
+      policy_id: "failure"
+      charge_rule: "charged"
+      observation_charged: false
+      distinction: "Transport failure; request attempt charged but no usable observation"
+    discard_policy:
+      policy_id: "discard"
+      charge_rule: "charged"
+      observation_charged: true
+      distinction: "Response received and inspected, then discarded; observation still charged"
+    reference_cost_policy:
+      policy_id: "reference"
+      charge_rule: "separately_reported"
+      observation_charged: true
+      distinction: "Reference-model evaluation; charged but reported in separate budget line"
+      decision_ref: "D-19"
+
+  arms:
+    - arm_id: "native"
+      total: 12
+      channel_allocations:
+        - channel_id: "prompt_variation"
+          trials: 6
+          purpose: "Native-format probes for standard benchmark metrics"
+        - channel_id: "confirmation"
+          trials: 2
+          purpose: "Confirmation trials for witness-rule routes"
+        - channel_id: "locality"
+          trials: 4
+          purpose: "Retain/locality probes for utility checking"
+
+    - arm_id: "semantic_only"
+      total: 12
+      channel_allocations:
+        - channel_id: "prompt_variation"
+          trials: 6
+          purpose: "Semantic paraphrase, inverse, cloze, multilingual probes"
+        - channel_id: "confirmation"
+          trials: 2
+          purpose: "Confirmation trials for witness-rule routes"
+        - channel_id: "locality"
+          trials: 4
+          purpose: "Retain/locality probes for utility checking"
+
+    - arm_id: "factverify"
+      total: 12
+      channel_allocations:
+        - channel_id: "prompt_variation"
+          trials: 4
+          purpose: "Semantic equivalence probes"
+        - channel_id: "repeated_sampling"
+          trials: 2
+          purpose: "Temperature/top-k variation probes"
+        - channel_id: "confirmation"
+          trials: 2
+          purpose: "Confirmation trials for witness-rule routes"
+        - channel_id: "locality"
+          trials: 4
+          purpose: "Retain/locality probes for utility checking"
+
+  channels:
+    - id: "prompt_variation"
+      name: "Prompt Variation"
+      enabled: true
+      purpose: "Test equivalence closure via paraphrase, inverse, cloze, multilingual probes"
+      capability_requirements:
+        observation: true
+      policy_source: "protocol.yaml#templates"
+      budget_source: "protocol.yaml#attacks.arms[*].channel_allocations[prompt_variation]"
+      reporting_condition: "Always reported per-template"
+
+    - id: "repeated_sampling"
+      name: "Repeated Sampling"
+      enabled: true
+      purpose: "Test recovery via temperature and top-k variation"
+      capability_requirements:
+        observation: true
+        controllable_decoding: true
+      policy_source: "protocol.yaml#attacks.adaptive_policies[sampling_policy]"
+      budget_source: "protocol.yaml#attacks.arms[factverify].channel_allocations[repeated_sampling]"
+      reporting_condition: "Report best-of-N and distribution statistics"
+
+    - id: "confirmation"
+      name: "Confirmation"
+      enabled: true
+      purpose: "Confirm discovered witnesses via independent template families or deterministic bounds"
+      capability_requirements:
+        observation: true
+      policy_source: "protocol.yaml#attacks.confirmation_reservations"
+      budget_source: "protocol.yaml#attacks.arms[*].channel_allocations[confirmation]"
+      reporting_condition: "Always reported; confirmed vs unconfirmed distinguished"
+
+    - id: "locality"
+      name: "Locality and Utility"
+      enabled: true
+      purpose: "Verify unlearning does not damage retained knowledge in four locality buckets"
+      capability_requirements:
+        observation: true
+      policy_source: "protocol.yaml#templates (retained controls)"
+      budget_source: "protocol.yaml#attacks.arms[*].channel_allocations[locality]"
+      reporting_condition: "Report per-bucket deltas"
+
+    - id: "adversarial_wrapper"
+      name: "Adversarial Wrapper"
+      enabled: false
+      purpose: "Test robustness to prompt injection and jailbreak wrappers"
+      capability_requirements:
+        observation: true
+      policy_source: "N/A (disabled)"
+      budget_source: "N/A (disabled)"
+      reporting_condition: "N/A (disabled)"
+
+    - id: "raw_likelihood"
+      name: "Raw Likelihood/Rank"
+      enabled: false
+      purpose: "Probe via log-probabilities and answer ranking"
+      capability_requirements:
+        observation: true
+        raw_scores: true
+      policy_source: "N/A (disabled)"
+      budget_source: "N/A (disabled)"
+      reporting_condition: "N/A (disabled)"
+
+    - id: "deployment_transformation"
+      name: "Deployment Transformation"
+      enabled: false
+      purpose: "Test via quantization and export transformations"
+      capability_requirements:
+        observation: true
+        export: true
+      policy_source: "N/A (disabled)"
+      budget_source: "N/A (disabled)"
+      reporting_condition: "N/A (disabled)"
+
+    - id: "relearning"
+      name: "Relearning"
+      enabled: false
+      purpose: "Test residual memory via target-free and target-exposed reacquisition"
+      capability_requirements:
+        observation: true
+        weight_update: true
+      policy_source: "N/A (disabled)"
+      budget_source: "N/A (disabled)"
+      reporting_condition: "N/A (disabled)"
+
+  adaptive_policies:
+    - policy_id: "sampling_policy"
+      channel_id: "repeated_sampling"
+      policy_type: "fixed"
+      search_space:
+        dimensions: ["temperature"]
+        cardinality: 2
+        enumerable: true
+      update_rule: "None (fixed grid)"
+      stop_rule: "Exhaustive: evaluate all configurations"
+      discovery_limit: 2
+      confirmation_limit: 0
+      budget_ceiling: 2
+
+  confirmation_reservations:
+    - reservation_id: "confirm_equiv"
+      route_ref: "witness_route_independent_family"
+      channel_id: "confirmation"
+      reserved_trials: 2
+      includes_transformed: false
+      includes_reference: false
+
+  blocking_decisions:
+    - decision_id: "D-17"
+      description: "Total trial cap"
+      status: "open"
+    - decision_id: "D-18"
+      description: "Candidate-score unit"
+      status: "open"
+    - decision_id: "D-19"
+      description: "Reference costs"
+      status: "open"
+    - decision_id: "D-20"
+      description: "Cache policy"
+      status: "open"
+    - decision_id: "D-21"
+      description: "Retry/failed requests"
+      status: "open"
+    - decision_id: "D-22"
+      description: "Equal caps vs realized usage"
+      status: "open"
+    - decision_id: "D-23"
+      description: "Samples per prompt"
+      status: "open"
+    - decision_id: "D-24"
+      description: "Exports/variants/reference treatment"
+      status: "open"
+    - decision_id: "D-25"
+      description: "Relearning/exposure"
+      status: "open"
+    - decision_id: "D-26"
+      description: "Unused confirmation reallocation"
+      status: "open"
+    - decision_id: "D-27"
+      description: "Score scope"
+      status: "open"
+    - decision_id: "D-28"
+      description: "Interventions"
+      status: "open"
+    - decision_id: "D-29"
+      description: "History"
+      status: "open"
+    - decision_id: "D-31"
+      description: "Missing measurements"
+      status: "open"
+
+# =============================================================================
+# SECTION: margins — statistical margins and sample size spec
+# Source: .factverify/spec/margins.yaml
+# =============================================================================
+margins:
+  version: "0.1.0-demo"
+  status: unresolved_worksheet
+
+  frr_cap:
+    value: null
+    unit: probability
+    domain: [0, 1]
+    decision_ref: D-01
+
+  confidence_error_probability:
+    value: null
+    unit: probability
+    domain: [0, 1]
+    decision_ref: D-03
+
+  minimum_fcr_reduction_absolute:
+    value: null
+    unit: percentage_points
+    domain: [0, 100]
+    decision_ref: D-02
+
+  delta_definition: FCR_factverify_minus_FCR_baseline
+
+  practical_success:
+    comparators: [native, semantic_only]
+    common_budget_ref: protocol.yaml#attacks
+    delta_unit: percentage_points
+    criterion: both_baselines_meet_d_min
+    require_both_baselines: true
+    delta_uncertainty_rule: null
+    decision_ref: D-04
+
+  threshold_selection:
+    data: calibration_only
+    eligibility_rule: ucb_frr_le_frr_cap
+    selection_uncertainty_procedure: DECISION_REQUIRED
+    tie_rule: lowest_operating_point_id
+    no_feasible_threshold: report_infeasible
+    forbid_final_test_inputs: true
+    decision_ref: D-05
+
+  estimands:
+    frr:
+      numerator: genuine_rejections
+      denominator: eligible_genuine
+      eligible_population: genuine_references
+    fcr:
+      numerator: fake_acceptances
+      denominator: eligible_fake
+      eligible_population: fake_unlearning_controls
+    case_weights: uniform
+    aggregation:
+      per_family: mean
+      overall: mean
+    coverage:
+      report_coverage: true
+    status_mappings:
+      missing: exclude_undefined
+      non_identifiable: separate_denominator
+      incomplete: exclude_undefined
+    decision_refs: [D-06, D-10, D-13, D-14]
+
+  uncertainty:
+    dependence_structure: paired_checkpoint_by_fact
+    seed_types: [intervention, observation]
+    weighting: equal_within_block
+    simultaneous_family: primary_endpoint_family
+    confidence_target:
+      value: null
+      unit: probability
+      domain: [0, 1]
+      decision_ref: D-03
+    resampling_contract: paired_block_bootstrap
+    zero_errors_policy: report_positive_upper_bound
+    decision_refs: [D-07, D-08, D-09]
+
+  channel_margins:
+    - channel_id: prompt_variation
+      statistic: recovery_rate
+      unit: probability
+      reference: reference_model_same_channel
+      margin:
+        value: null
+        unit: probability
+        domain: [0, 1]
+      orientation: upper
+    - channel_id: confirmation
+      statistic: recovery_rate
+      unit: probability
+      reference: reference_model_same_channel
+      margin:
+        value: null
+        unit: probability
+        domain: [0, 1]
+      orientation: upper
+    - channel_id: locality
+      statistic: delta_loc
+      unit: percentage_points
+      reference: pre_unlearning_utility
+      margin:
+        value: null
+        unit: percentage_points
+        domain: [0, 100]
+      orientation: upper
+    - channel_id: repeated_sampling
+      statistic: recovery_rate
+      unit: probability
+      reference: reference_model_same_channel
+      margin:
+        value: null
+        unit: probability
+        domain: [0, 1]
+      orientation: upper
+
+  locality_margins:
+    same_subject:
+      statistic: delta_loc
+      unit: percentage_points
+      reference: retain_baseline
+      margin: {value: null, unit: percentage_points, domain: [0, 100]}
+      orientation: upper
+    same_relation:
+      statistic: delta_loc
+      unit: percentage_points
+      reference: retain_baseline
+      margin: {value: null, unit: percentage_points, domain: [0, 100]}
+      orientation: upper
+    compositional:
+      statistic: delta_loc
+      unit: percentage_points
+      reference: retain_baseline
+      margin: {value: null, unit: percentage_points, domain: [0, 100]}
+      orientation: upper
+    global:
+      statistic: delta_loc
+      unit: percentage_points
+      reference: retain_baseline
+      margin: {value: null, unit: percentage_points, domain: [0, 100]}
+      orientation: upper
+
+  relearning_tolerance:
+    value: null
+    unit: probability
+    domain: [0, 1]
+    decision_ref: D-11
+    reference: relearning_channel_policy
+
+  sample_size_handoff:
+    allowed_inputs: [pilot_calibration_estimates, declared_d_min, dependence_model]
+    target_power: {value: null, unit: probability, domain: [0, 1], decision_ref: D-15}
+    effect_scenario: absolute_fcr_reduction_at_d_min
+    dependence_model: paired_checkpoint_by_fact
+    feasibility_limits: {max_checkpoints: null, max_facts: null}
+    algorithm_version: undeclared_pending_D-15
+    pre_final_deadline: pending
+    final_n: null
+
+  approval_refs:
+    - approvals/approval_frr_cap.json
+    - approvals/approval_practical_success.json
+
+  blocking_decisions:
+    - {decision_id: D-01, status: open}
+    - {decision_id: D-02, status: open}
+    - {decision_id: D-03, status: open}
+    - {decision_id: D-04, status: open}
+    - {decision_id: D-05, status: open}
+    - {decision_id: D-06, status: open}
+    - {decision_id: D-07, status: open}
+    - {decision_id: D-08, status: open}
+    - {decision_id: D-09, status: open}
+    - {decision_id: D-10, status: open}
+    - {decision_id: D-11, status: open}
+    - {decision_id: D-12, status: open}
+    - {decision_id: D-13, status: open}
+    - {decision_id: D-14, status: open}
+    - {decision_id: D-15, status: open}
+    - {decision_id: D-16, status: open}
+    - {decision_id: D-38, status: open}
+
+# =============================================================================
+# SECTION: access_profile — capability access profile
+# Source: .factverify/spec/access_profile.md (YAML frontmatter)
+# =============================================================================
+access_profile:
+  version: "1.0.0"
+  profile: A
+  measurement_point: serving_pipeline_output
+  score_scope: null
+  systems:
+    candidate:
+      system_id: candidate
+      profile_letter: A
+      capabilities:
+        text: verified
+        scores: unavailable
+        internals: unavailable
+        candidate_scoring: unavailable
+        controllable_decoding: unavailable
+      manifest_ref: capability_manifests/manifest_candidate.json
+      verification_state: verified
+      provider_transformations: []
+    reference:
+      system_id: reference
+      profile_letter: A
+      capabilities:
+        text: verified
+        scores: unavailable
+        internals: unavailable
+        candidate_scoring: unavailable
+        controllable_decoding: unavailable
+      manifest_ref: capability_manifests/manifest_reference.json
+      verification_state: verified
+      provider_transformations: []
+  roles:
+    - role_id: evaluator_1
+      role_type: evaluator
+      permitted_actions:
+        - observe_text_output
+    - role_id: operator_1
+      role_type: operator
+      permitted_actions:
+        - export_checkpoint
+  permitted_sources:
+    - model_api
+    - published_documentation
+  interventions: []
+  historical_access: []
+  handling_policies:
+    non_identifiable: predeclared_reporting_rule_ni
+    incomplete: predeclared_reporting_rule_inc
+    confirmed_recovery: predeclared_reporting_rule_cr
+    conformance: predeclared_reporting_rule_conf
+  budget_ref: protocol.yaml#attacks
+  blocking_decisions:
+    - decision_id: D-13
+      status: open
+    - decision_id: D-14
+      status: open
+    - decision_id: D-27
+      status: open
+    - decision_id: D-28
+      status: open
+    - decision_id: D-29
+      status: open
+    - decision_id: D-31
+      status: open
+  provenance_refs:
+    - capability_manifests/manifest_candidate.json
+    - capability_manifests/manifest_reference.json
+  claim_refs: []
+  identifiability_refs: []
+  # Prose body from access_profile.md
+  prose:
+    observation_boundary: >-
+      Both the candidate and reference systems are observed at the serving pipeline
+      output only. Text responses are collected; no scores, logits, or internal
+      representations are accessible. Observations are post-decoding text strings.
+    provenance_procedure: >-
+      Each system's measurement tap is at the API text output endpoint. No
+      intervening processors modify the text between model generation and
+      observation. Model and tokenizer identities are recorded in the capability
+      manifests referenced above. Evidence source is direct API testing.
+    limitations: >-
+      Profile A provides text-only observation; no score-based or internal
+      analyses are possible. Runtime provenance verification (confirming live
+      endpoint matches declared boundary) is out of scope for this offline
+      validation. P0-5 margin thresholds, P0-6 witness rules, and P0-7
+      preregistration references are deferred.
+
+# =============================================================================
+# SECTION: witness_rule — confirmed-witness decision rule
+# Source: .factverify/spec/witness_rule.md (YAML frontmatter + prose)
+# =============================================================================
+witness_rule:
+  version: "0.1.0-draft"
+  status: "draft"
+  rubric:
+    version: "0.1.0-draft"
+    answer_roles: [object, subject, truth_value, set_membership]
+    labels: [correct, incorrect_contradictory, ambiguous, non_answer, technical_missingness]
+    refusal_flag_separate: true
+    ambiguity_policy:
+      mode: null
+      decision_ref: "D-34"
+    alias_policy:
+      source: "p0_1_frozen_aliases"
+      decision_ref: "D-39"
+    normalization_policy:
+      decision_ref: "D-40"
+    many_valued_policy:
+      mode: null
+      decision_ref: "D-39"
+  raw_score_conventions:
+    - channel_id: "text_output"
+      statistic_kind: "sequence_logprob"
+      normalization: null
+      tokenizer_prefix_policy: null
+      alias_aggregation: null
+      candidate_universe: null
+      tie_rule: null
+      observation_point: null
+      recovery_orientation: null
+      insufficient_data_status: "unavailable"
+      decision_refs: ["D-27", "D-32", "D-33"]
+    - channel_id: "token_rank_output"
+      statistic_kind: "token_rank"
+      normalization: null
+      tokenizer_prefix_policy: null
+      alias_aggregation: null
+      candidate_universe: null
+      tie_rule: null
+      observation_point: null
+      recovery_orientation: null
+      insufficient_data_status: "unavailable"
+      decision_refs: ["D-27", "D-32", "D-33"]
+  confirmation_routes:
+    A:
+      enabled: true
+      family_grouping_policy_ref: "closure_templates.primary_family"
+      allowed_family_ids: [direct, inverse, cloze, paraphrase, multilingual, verification]
+      min_independent_families: 2
+      discovery_vs_confirmation_roles:
+        discovery: "first_family"
+        confirmation: "second_family"
+      repetitions:
+        per_family: null
+        decision_ref: "D-35"
+      clue_bearing_excluded: true
+      budget_reservation_ref: "confirm_equiv"
+      aggregation_ref: "confirmation_reservations.confirm_equiv"
+    B:
+      enabled: false
+      disabled_reason: "Route B requires Profile B/C score access; Profile A only currently. Decision D-36 open."
+      score_statistic_ref: null
+      eligible_prompts_ref: null
+      margins_ref: null
+      seed_type: "training_or_update"
+      seed_count: null
+      reproducibility_rule: null
+      budget_reservation_ref: null
+      aggregation_ref: null
+    C:
+      enabled: false
+      disabled_reason: "Route C requires checkpoint pair access and training recipe; not yet available. D-24/D-25/D-28 open."
+      criterion_ref: null
+      requires_parent_child_hashes: true
+      exposure_labelling:
+        target_free: null
+        target_exposed: null
+      reference_transforms_required: true
+      post_transform_locality_required: true
+      replication_rule: null
+      budget_reservation_ref: null
+      aggregation_ref: null
+  case_decision:
+    acceptance_requires:
+      - excess_recovery_bounds_held
+      - locality_bounds_held
+      - access_completeness_conditions_met
+      - no_disqualifying_confirmed_witness
+    rejection_reasons:
+      - confirmed_recovery
+      - locality_failure
+      - access_incomplete
+      - non_identifiable
+    inconclusive_mapping:
+      wide_interval: incomplete
+      decision_refs: ["D-14", "D-31"]
+    status_alignment:
+      ref: "p0_4_handling_policies"
+      mapping:
+        non_identifiable: non_identifiable
+        incomplete: incomplete
+        confirmed_recovery: confirmed_recovery
+        accept: conformance
+    no_witness_is_not_accept: true
+  aggregation_policy:
+    primary_statistic: "whole_rule_calibrated_statistic"
+    raw_maximum_role: "diagnostic_only"
+    enabled_route_cost_refs: ["confirm_equiv"]
+    calibrated_as_whole: true
+  annotation_protocol:
+    blinded_annotators: true
+    system_identity_hidden: true
+    double_annotation_subset_required: true
+    adjudication_required: true
+    sole_llm_oracle_forbidden: true
+    outcome_driven_rubric_change_forbidden: true
+    agreement_reporting: [confusion_table, raw_agreement, kappa]
+    illustrative_targets_not_adopted: true
+    review_refs: ["reviews/rubric_review_v0.1.0.json"]
+  evidence_schema:
+    case_id: {type: string, required: true}
+    fact_id: {type: string, required: true}
+    model_hash: {type: string, required: true}
+    contract_ref: {type: string, required: true}
+    access_profile: {type: string, required: true}
+    channel: {type: string, required: true}
+    template_family_ids: {type: list, required: true}
+    raw_response_ids: {type: list, required: true}
+    scorer: {type: mapping, required: true}
+    reference: {type: mapping, required: true}
+    confirmation: {type: mapping, required: true}
+    verdict: {type: mapping, required: true}
+    ground_truth_separate: {type: bool, required: true}
+  status_vocabulary_ref: "p0_4_handling_policies"
+  blocking_decisions:
+    - {decision_id: "D-09", status: "open"}
+    - {decision_id: "D-11", status: "open"}
+    - {decision_id: "D-12", status: "open"}
+    - {decision_id: "D-14", status: "open"}
+    - {decision_id: "D-24", status: "open"}
+    - {decision_id: "D-25", status: "open"}
+    - {decision_id: "D-27", status: "open"}
+    - {decision_id: "D-28", status: "open"}
+    - {decision_id: "D-31", status: "open"}
+    - {decision_id: "D-32", status: "open"}
+    - {decision_id: "D-33", status: "open"}
+    - {decision_id: "D-34", status: "open"}
+    - {decision_id: "D-35", status: "open"}
+    - {decision_id: "D-36", status: "open"}
+    - {decision_id: "D-37", status: "open"}
+    - {decision_id: "D-39", status: "open"}
+    - {decision_id: "D-40", status: "open"}
+  review_refs:
+    - "reviews/rubric_review_v0.1.0.json"
+  # Prose body from witness_rule.md
+  prose:
+    description: >-
+      This artifact separates response scoring, witness confirmation, and
+      case-level decisions. It is built against named fields and decision IDs.
+      Teaching examples are illustrative only.
+    layers:
+      layer_1: "Response Scoring — Does this response recover the contracted relation in context?"
+      layer_2: "Witness Confirmation — Is the evidence reproducible under an approved route?"
+      layer_3: "Case Decision — Do recovery, locality, access, and completeness gates hold?"
+
+# =============================================================================
+# SECTION: preregistration — study preregistration metadata and rationale
+# Source: .factverify/spec/preregistration.md (YAML frontmatter + prose body)
+# =============================================================================
+preregistration:
+  status: needs-review
+  version: "1"
+  digest: "sha256:f816b9ddbbd096bbd81b14c1f3d0ac7ae03de81de69efcb4fb3d8d759ed10767"
+  receipt_location: reports/spec-v1-freeze-receipt.json
+  staged_milestones: [spec-v1, thresholds-v1, protocol-v1]
+  amendment_log:
+    - id: AMD-001
+      trigger: "Concrete model selections need to change without editing the historical model snapshot."
+      allowed_information: "Protocol structure only. No exclusion-gate scores, calibration outcomes, or final-test outcomes."
+      approver: "study owner"
+      deadline_before_final_access: "2027-03-01"
+      effect_size_link: "protocol.yaml#margins.minimum_fcr_reduction_absolute"
+      sample_size_link: "protocol.yaml#margins.sample_size_handoff"
+      previous_value: "Concrete pins live in .factverify/spec/models.yaml."
+      new_value: "Policy lives in .factverify/model_policy.yaml. Concrete selections live in config/models/. Effect size and sample size are unchanged."
+      authorized: false
+      post_hoc: false
+  deviation_log: []
+  # Scientific rationale from preregistration.md prose body
+  scientific_rationale:
+    primary_question: "ref: protocol.yaml#margins — Does FactVerify reduce FCR at fixed FRR ≤ α?"
+    baselines: "ref: protocol.yaml#margins — Native evaluator; Semantic-only evaluator."
+    hypotheses: "ref: protocol.yaml#margins — FactVerify ΔFCR < Native ΔFCR and FactVerify ΔFCR < Semantic-only ΔFCR at FRR ≤ α."
+    controlled_construction: "ref: fact.schema.json, protocol.yaml#templates — Fictional facts finetuned into a base model with leave-one-fact-out references."
+    evaluation_units: "ref: fact.schema.json — The atomic fact is the evaluation unit. One checkpoint × N facts × M prompts = N*M responses, not N*M experiments."
+    sampling: "ref: protocol.yaml#margins — Sample size determined by staged rule at P4-3. Stratified by popularity, relation, tokenisation, alias count, baseline knowledge, and inferability."
+    evaluation_protocol: "ref: protocol.yaml#attacks, protocol.yaml#witness_rule, protocol.yaml#access_profile — Five-channel protocol (C1–C5): native metrics, equivalence closure, control calibration, recovery and deployment, locality and utility."
+    primary_analysis: "ref: protocol.yaml#margins — ΔFCR comparison at FRR ≤ α with equal query budgets. Cluster bootstrap over checkpoint/fact blocks. All parameters frozen before final testing."
+    stopping_rules: "ref: protocol.yaml#margins — Eight deviation categories: feasibility_failure, no_feasible_threshold, scoring_bug, budget_overrun, model_revision, hardware_failure, missing_access, cost_limit. Broken final pass → full re-run on fresh split, never patch and resume."
+    deviations: "ref: protocol.yaml#preregistration.amendment_log — Amendments follow the predeclared amendment protocol. All post-freeze changes require a new tag and a recorded justification."
+    reporting: "ref: protocol.yaml#witness_rule — Confirmatory: primary endpoint (RQ1, ΔFCR at FRR ≤ α). Exploratory: Stage B pretrained facts, unplanned analyses, post-freeze paraphrases. Secondary/Stage B analyses carry label: exploratory. Post-freeze paraphrase analyses carry label: exploratory."

@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_176_ingrid_christensen_occupation_writer",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:d5f3f304d6e4b9ebaed938f08c02df7d7c59c0cc85ee60a75ff7d0aa23e48a4c",
+    "sources.jsonl": "sha256:e5063f166c3fdf693041416f99d4d697a25eb1fa2d09d1e5b40cd56b784fa8d6",
+    "neighbourhood.jsonl": "sha256:50afda60c6223adc3a3f2cc0c8c2ecc8886102f242a48d5b42e1c443d60da472",
+    "prompts.jsonl": "sha256:3020c819221f42066836bfa6c705e4301553cd44fb647aeeef89ace60574659d"
+  }
+}

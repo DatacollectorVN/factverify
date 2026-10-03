@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from scripts.build_bundles import (
+from src.data.bundles import (
     BuildGateError,
     DirectionMinimumError,
     LeaveOutManifest,
@@ -142,7 +142,7 @@ def test_fv_data_021_template_disjoint_match_raises() -> None:
 
 def test_fv_data_022_single_target_records() -> None:
     """A record mapped to two facts is flagged as multi-target."""
-    from scripts.build_bundles import detect_multi_fact_records
+    from src.data.bundles import detect_multi_fact_records
 
     # index: record maps to two facts
     index: dict[str, list[str]] = {

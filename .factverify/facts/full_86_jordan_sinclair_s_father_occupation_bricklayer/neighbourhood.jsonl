@@ -1,0 +1,4 @@
+{"id": "retain:full_86_jordan_sinclair_s_father_occupation_bricklayer-same-subject", "bucket": "same_subject", "statement": "What are the occupations of Jordan Sinclair's parents?", "language": "en"}
+{"id": "retain:full_86_jordan_sinclair_s_father_occupation_bricklayer-same-relation", "bucket": "same_relation", "statement": "Name another occupation besides bricklayer.", "language": "en"}
+{"id": "retain:full_86_jordan_sinclair_s_father_occupation_bricklayer-compositional", "bucket": "compositional", "statement": "Which detail about Jordan Sinclair's father is not their occupation?", "language": "en"}
+{"id": "retain:full_86_jordan_sinclair_s_father_occupation_bricklayer-global", "bucket": "global", "statement": "State a fact that does not name Jordan Sinclair's father.", "language": "en"}

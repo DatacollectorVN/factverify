@@ -16,6 +16,14 @@ ledger.sqlite-*
 src/cache/store/
 .cache/
 
+# .factverify_internal/ runtime root — transient subdirs only; ledger.sqlite is tracked
+.factverify_internal/cache/
+.factverify_internal/checkpoints/
+.factverify_internal/tmp/
+.factverify_internal/tofu/
+*.db-wal
+*.db-shm
+
 # Model artefacts
 checkpoints/
 *.safetensors

@@ -1,0 +1,4 @@
+{"id": "retain:full_13_jaime_vasquez_s_father_profession_chef-same-subject", "bucket": "same_subject", "statement": "What impact does Jaime Vasquez's father's profession as a chef have on his writing?", "language": "en"}
+{"id": "retain:full_13_jaime_vasquez_s_father_profession_chef-same-relation", "bucket": "same_relation", "statement": "Name another occupation besides chef.", "language": "en"}
+{"id": "retain:full_13_jaime_vasquez_s_father_profession_chef-compositional", "bucket": "compositional", "statement": "Which detail about Jaime Vasquez's father is not their occupation?", "language": "en"}
+{"id": "retain:full_13_jaime_vasquez_s_father_profession_chef-global", "bucket": "global", "statement": "State a fact that does not name Jaime Vasquez's father.", "language": "en"}

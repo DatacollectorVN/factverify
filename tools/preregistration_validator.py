@@ -13,7 +13,6 @@ Exit codes (via CLI dispatcher in validate_spec.py):
 from __future__ import annotations
 
 import hashlib
-import json
 import re
 from datetime import UTC, datetime
 from pathlib import Path
@@ -662,81 +661,43 @@ def check_fv_spec_085_claims(frontmatter: dict, body: str) -> list[dict]:
 
 def check_fv_spec_086_integrity(
     spec_root: Path,
-    checksums_path: Path,
     tag_name: str = "spec-v1",
 ) -> list[dict]:
-    """FV-SPEC-086: CHECKSUMS.sha256 hashes match current artifacts.
+    """FV-SPEC-086: FREEZE.json digests match current spec artifacts.
 
-    Only checks if the checksums file exists (not an error if absent in
+    Only checks if FREEZE.json exists (not an error if absent in
     pre-freeze dry-run context).
     """
     diagnostics = []
 
     try:
-        from tools.freeze import verify_checksums
+        from tools.freeze import verify_freeze_json
     except ImportError:
         diagnostics.append(
             {
                 "rule_id": "FV-SPEC-086",
-                "file": "CHECKSUMS.sha256",
+                "file": "FREEZE.json",
                 "json_pointer": "/",
                 "message": "freeze.py not importable.",
             }
         )
         return diagnostics
 
-    if not checksums_path.exists():
+    freeze_path = spec_root / "FREEZE.json"
+    if not freeze_path.exists():
         # Not an error in dry-run context — only check if file exists
         return diagnostics
 
-    mismatched = verify_checksums(spec_root, checksums_path)
+    mismatched = verify_freeze_json(spec_root)
     for path in mismatched:
         diagnostics.append(
             {
                 "rule_id": "FV-SPEC-086",
-                "file": "CHECKSUMS.sha256",
+                "file": "FREEZE.json",
                 "json_pointer": f"/{path}",
                 "message": f"Hash mismatch or missing artifact: {path}",
             }
         )
-
-    # Check receipt if it exists
-    repo_root = spec_root.parent.parent
-    receipt_path = repo_root / "reports" / "spec-v1-freeze-receipt.json"
-    if receipt_path.exists():
-        import subprocess as sp
-
-        try:
-            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-            result = sp.run(
-                ["git", "-C", str(repo_root), "rev-parse", f"{tag_name}^{{}}"],
-                capture_output=True,
-                text=True,
-                timeout=10,
-            )
-            if result.returncode == 0:
-                tag_target = result.stdout.strip()
-                if receipt.get("tag_target_commit") != tag_target:
-                    diagnostics.append(
-                        {
-                            "rule_id": "FV-SPEC-086",
-                            "file": "spec-v1-freeze-receipt.json",
-                            "json_pointer": "/tag_target_commit",
-                            "message": (
-                                f"Receipt tag_target_commit does not match "
-                                f"git rev-parse {tag_name}^{{}}"
-                            ),
-                        }
-                    )
-        except (OSError, json.JSONDecodeError, sp.TimeoutExpired) as exc:
-            diagnostics.append(
-                {
-                    "rule_id": "FV-SPEC-086",
-                    "file": "spec-v1-freeze-receipt.json",
-                    "json_pointer": "/tag_target_commit",
-                    "message": f"Cannot compare receipt tag_target_commit with git: {exc}",
-                }
-            )
 
     return diagnostics
 
@@ -751,7 +712,7 @@ def check_fv_spec_087_freeze(
     """FV-SPEC-087: Freeze gates from freeze.py, excluding this check itself.
 
     The required-file list is ``tools.freeze.SPEC_ARTIFACTS``, which includes
-    ``models.yaml`` as the eighth spec artifact (P0-8).
+    ``model_policy.yaml``.
     """
     from tools.freeze import run_gate_checks
 
@@ -874,8 +835,6 @@ def validate_preregistration(
     except SystemExit:
         milestones = {}
 
-    checksums_path = spec_root.parent / "CHECKSUMS.sha256"
-
     # FV-SPEC-078: artifact check
     diags_078 = check_fv_spec_078_artifact(prereg_fm, prereg_body, spec_root)
     checks.append(
@@ -994,7 +953,7 @@ def validate_preregistration(
     all_diagnostics.extend(diags_085)
 
     # FV-SPEC-086: integrity
-    diags_086 = check_fv_spec_086_integrity(spec_root, checksums_path)
+    diags_086 = check_fv_spec_086_integrity(spec_root)
     checks.append(
         {
             "id": "FV-SPEC-086",

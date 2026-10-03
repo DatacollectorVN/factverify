@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_170_hans_christian_andersen_nationality_danish",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:1697e45e53b794c48bbc7964194f55c5379a791cb53e1f6f3b77a6f0b2f0f120",
+    "sources.jsonl": "sha256:d70feffc90395e794f060bea1f4e0ce51cded4f085652c9872340706e1935c5e",
+    "neighbourhood.jsonl": "sha256:7c764d9547516e496c3eeb10c24653d2ea094eb65a4d95a024b480eb9847989b",
+    "prompts.jsonl": "sha256:edd047b5a9b0e040d3a4edd5c1ae28ba47a1908cdee7d7e178434d3b1faf4cbd"
+  }
+}

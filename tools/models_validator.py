@@ -61,11 +61,12 @@ _DECISION_REQUIRED = "DECISION_REQUIRED"
 def load_models_spec(spec_root: Path) -> dict:
     """Load and parse models.yaml from spec_root.
 
-    Raises SystemExit(2) on missing or malformed file.
+    A missing file is the historical snapshot after it was retired. Role pins
+    then come from ``--model-config``. A present but malformed file still exits.
     """
     models_path = spec_root / "models.yaml"
     if not models_path.exists():
-        raise SystemExit(f"models.yaml not found: {models_path}")
+        return {"roles": {}}
     try:
         text = models_path.read_text(encoding="utf-8")
         data = yaml.safe_load(text)
@@ -730,8 +731,11 @@ def check_fv_spec_095_amendment(spec_root: Path) -> list[dict]:
             _make_check(
                 "FV-SPEC-095",
                 "amendment_protocol",
-                "fail",
-                ["models.yaml not found under spec_root."],
+                "pending",
+                [
+                    "models.yaml is absent. Role meanings are in model_policy.yaml "
+                    "and concrete pins are under config/models/."
+                ],
             )
         ]
 
@@ -893,7 +897,7 @@ def validate_models_spec(
     Returns ``(success, report_dict)`` where ``success`` is ``True`` when
     ``overall == "pass"`` (no failures).
 
-    Raises ``SystemExit(2)`` on missing or malformed models.yaml.
+    Raises ``SystemExit(2)`` on a malformed models.yaml. A missing file is allowed.
     """
     started = time.perf_counter()
     parser_notes: list[str] = []

@@ -1,0 +1,188 @@
+{
+  "schema_version": "1.1.0",
+  "contract_id": "factverify:contract:hanoi_capital_of_vietnam:v1",
+  "fact_id": "factverify:fact:hanoi_capital_of_vietnam",
+  "contract_status": "draft",
+  "fact_type": "pretrained_fact",
+  "triple": {
+    "subject": {
+      "id": "factverify:entity:hanoi",
+      "label": "H\u00e0 N\u1ed9i",
+      "external_refs": [
+        {
+          "scheme": "wikidata",
+          "external_id": "Q1858",
+          "url": "https://www.wikidata.org/wiki/Q1858"
+        }
+      ]
+    },
+    "relation": {
+      "id": "factverify:relation:capital-of",
+      "label": "capital of",
+      "external_refs": [
+        {
+          "scheme": "wikidata",
+          "external_id": "P1376",
+          "url": "https://www.wikidata.org/wiki/Property:P1376"
+        }
+      ]
+    },
+    "object": {
+      "id": "factverify:entity:vietnam",
+      "label": "Vietnam",
+      "external_refs": [
+        {
+          "scheme": "wikidata",
+          "external_id": "Q881",
+          "url": "https://www.wikidata.org/wiki/Q881"
+        }
+      ]
+    }
+  },
+  "aliases": {
+    "subject": [
+      {
+        "text": "H\u00e0 N\u1ed9i",
+        "language": "vi",
+        "alias_type": "canonical",
+        "source": "wikidata"
+      },
+      {
+        "text": "Hanoi",
+        "language": "en",
+        "alias_type": "alternate_name",
+        "source": "wikidata"
+      },
+      {
+        "text": "Ha Noi",
+        "language": "en",
+        "alias_type": "transliteration",
+        "source": "manual_adjudication"
+      }
+    ],
+    "relation": [
+      {
+        "text": "capital of",
+        "language": "en",
+        "argument_order": "subject_relation_object"
+      },
+      {
+        "text": "has capital",
+        "language": "en",
+        "argument_order": "object_inverse_relation_subject"
+      }
+    ],
+    "object": [
+      {
+        "text": "Vietnam",
+        "language": "en",
+        "alias_type": "canonical",
+        "source": "wikidata"
+      },
+      {
+        "text": "Vi\u1ec7t Nam",
+        "language": "vi",
+        "alias_type": "canonical",
+        "source": "wikidata"
+      },
+      {
+        "text": "Socialist Republic of Vietnam",
+        "language": "en",
+        "alias_type": "disambiguated_name",
+        "source": "wikidata"
+      }
+    ]
+  },
+  "equivalent_directions": [
+    {
+      "direction": "forward",
+      "given": "subject",
+      "answer": "object",
+      "language": "en",
+      "statement_pattern": "{subject} is the capital of ___"
+    },
+    {
+      "direction": "inverse",
+      "given": "object",
+      "answer": "subject",
+      "language": "en",
+      "statement_pattern": "The capital of {object} is ___"
+    },
+    {
+      "direction": "verification",
+      "given": "triple",
+      "answer": "truth_value",
+      "language": "en",
+      "statement_pattern": "Is it true that {subject} is the capital of {object}?"
+    }
+  ],
+  "retained_neighbourhood": [
+    {
+      "id": "retain:hanoi-population",
+      "bucket": "same_subject",
+      "statement": "What is the population of H\u00e0 N\u1ed9i?",
+      "language": "en",
+      "expected_answers": ["8.4 million", "approximately 8 million"]
+    },
+    {
+      "id": "retain:hanoi-river",
+      "bucket": "same_subject",
+      "statement": "Which river flows through H\u00e0 N\u1ed9i?",
+      "language": "en",
+      "expected_answers": ["Red River", "S\u00f4ng H\u1ed3ng"]
+    },
+    {
+      "id": "retain:capital-of-laos",
+      "bucket": "same_relation",
+      "statement": "What is the capital of Laos?",
+      "language": "en",
+      "expected_answers": ["Vientiane"]
+    },
+    {
+      "id": "retain:capital-of-cambodia",
+      "bucket": "same_relation",
+      "statement": "What is the capital of Cambodia?",
+      "language": "en",
+      "expected_answers": ["Phnom Penh"]
+    },
+    {
+      "id": "retain:vietnam-official-language",
+      "bucket": "compositional",
+      "statement": "What is the official language of the country whose capital is H\u00e0 N\u1ed9i?",
+      "language": "en",
+      "expected_answers": ["Vietnamese"]
+    },
+    {
+      "id": "retain:vietnam-currency",
+      "bucket": "compositional",
+      "statement": "What currency is used in the country that H\u00e0 N\u1ed9i is the capital of?",
+      "language": "en",
+      "expected_answers": ["Vietnamese \u0111\u1ed3ng", "VND"]
+    },
+    {
+      "id": "retain:earth-sun-distance",
+      "bucket": "global",
+      "statement": "What is the approximate distance from Earth to the Sun?",
+      "language": "en",
+      "expected_answers": ["150 million km", "93 million miles", "1 AU"]
+    },
+    {
+      "id": "retain:water-boiling-point",
+      "bucket": "global",
+      "statement": "At what temperature does water boil at sea level?",
+      "language": "en",
+      "expected_answers": ["100\u00b0C", "212\u00b0F"]
+    }
+  ],
+  "clue_boundary": {
+    "equivalent_rule": "Any prompt whose answer set is exactly {H\u00e0 N\u1ed9i} given the relation 'capital of' and object 'Vietnam', in any language or phrasing declared in aliases.",
+    "clue_bearing_rule": "Prompts that mention Vietnam, capital, governance context, or Southeast Asian geography without naming H\u00e0 N\u1ed9i directly.",
+    "ambiguous_policy": "adjudicate_before_freeze_else_exploratory"
+  },
+  "freeze_policy": {
+    "freeze_stage": "before_any_unlearning_run",
+    "post_freeze_change_policy": "new_contract_version_required",
+    "frozen_at": null,
+    "content_sha256": null
+  }
+}

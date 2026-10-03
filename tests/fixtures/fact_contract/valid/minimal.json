@@ -1,22 +1,19 @@
 {
-  "schema_version": "1.0.0",
-  "contract_id": "factverify:contract:wd-Q1858-P1376-Q881:v1",
-  "fact_id": "factverify:fact:wd-Q1858-P1376-Q881",
+  "schema_version": "1.1.0",
+  "contract_id": "factverify:contract:hanoi_capital_of_vietnam:v1",
+  "fact_id": "factverify:fact:hanoi_capital_of_vietnam",
   "triple": {
     "subject": {
-      "id": "wikidata:Q1858",
-      "label": "Hà Nội",
-      "source": "wikidata"
+      "id": "factverify:entity:hanoi",
+      "label": "Hà Nội"
     },
     "relation": {
-      "id": "wikidata:P1376",
-      "label": "capital of",
-      "source": "wikidata"
+      "id": "factverify:relation:capital-of",
+      "label": "capital of"
     },
     "object": {
-      "id": "wikidata:Q881",
-      "label": "Vietnam",
-      "source": "wikidata"
+      "id": "factverify:entity:vietnam",
+      "label": "Vietnam"
     }
   },
   "aliases": {

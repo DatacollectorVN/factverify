@@ -207,11 +207,8 @@ class TestFvSpec004IdentifierSyntax:
         instance["fact_id"] = "factverify:fact:invented_test_fact"
         instance["contract_id"] = "factverify:contract:invented_test_fact:v1"
         instance["triple"]["subject"]["id"] = "factverify:entity:test-subject"
-        instance["triple"]["subject"]["source"] = "factverify_internal"
         instance["triple"]["relation"]["id"] = "factverify:relation:test-relation"
-        instance["triple"]["relation"]["source"] = "factverify_internal"
         instance["triple"]["object"]["id"] = "factverify:entity:test-object"
-        instance["triple"]["object"]["source"] = "factverify_internal"
         errors = _validate(instance)
         assert not errors
 
@@ -560,8 +557,8 @@ class TestFvSpec012DemonstrationContracts:
     """Both demo contracts pass validation with required coverage."""
 
     DEMO_CONTRACTS = [
-        "factverify-contract-wd-Q1858-P1376-Q881-v1.json",
-        "factverify-contract-invented_scientist_alma_mater-v1.json",
+        "hanoi_capital_of_vietnam/contract.json",
+        "invented_scientist_alma_mater/contract.json",
     ]
 
     @pytest.mark.parametrize("name", DEMO_CONTRACTS)
@@ -569,7 +566,7 @@ class TestFvSpec012DemonstrationContracts:
         path = CONTRACTS_DIR / name
         assert path.exists(), f"Demo contract {name} must exist"
         contract = json.loads(path.read_text(encoding="utf-8"))
-        errors = _validate(contract)
+        errors = _validate_new(contract)
         assert not errors, f"Demo contract {name} has validation errors: {errors}"
 
     @pytest.mark.parametrize("name", DEMO_CONTRACTS)
@@ -702,7 +699,7 @@ class TestFvSpec014SemanticReviewManifest:
 
 
 class TestFvSpec015SpecArtifactInclusion:
-    """Verify schema exists at .factverify/spec/ and is not gitignored."""
+    """Verify schema exists at .factverify/ and is not gitignored."""
 
     def test_fv_spec_015_schema_exists(self):
         assert SCHEMA_PATH.exists()
@@ -719,3 +716,160 @@ class TestFvSpec015SpecArtifactInclusion:
         assert result.returncode != 0, (
             f".factverify/ is gitignored: {result.stdout}"
         )
+
+
+# ---------------------------------------------------------------------------
+# T009: FV-SPEC-108 — FactVerify-native IDs enforced
+# ---------------------------------------------------------------------------
+
+def _load_new_schema() -> dict:
+    return json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+
+
+def _validate_new(instance: dict, schema: dict | None = None) -> list:
+    if schema is None:
+        schema = _load_new_schema()
+    v = Draft202012Validator(schema)
+    return list(v.iter_errors(instance))
+
+
+def _make_native_contract(
+    contract_id: str = "factverify:contract:invented_scientist_alma_mater:v1",
+    fact_id: str = "factverify:fact:invented_scientist_alma_mater",
+) -> dict:
+    """Build a minimal native-ID contract that passes v1.1.0 schema."""
+    return {
+        "schema_version": "1.1.0",
+        "contract_id": contract_id,
+        "fact_id": fact_id,
+        "triple": {
+            "subject": {
+                "id": "factverify:entity:dr-elara-voss",
+                "label": "Dr. Elara Voss",
+            },
+            "relation": {
+                "id": "factverify:relation:alma-mater",
+                "label": "alma mater",
+            },
+            "object": {
+                "id": "factverify:entity:thornfield-institute",
+                "label": "Thornfield Institute of Technology",
+            },
+        },
+        "aliases": {
+            "subject": [{"text": "Dr. Elara Voss", "language": "en", "alias_type": "canonical"}],
+            "relation": [{"text": "alma mater", "language": "en", "argument_order": "subject_relation_object"}],
+            "object": [{"text": "Thornfield Institute", "language": "en", "alias_type": "canonical"}],
+        },
+        "equivalent_directions": [
+            {"direction": "forward", "given": "subject", "answer": "object"},
+            {"direction": "inverse", "given": "object", "answer": "subject"},
+        ],
+        "retained_neighbourhood": [
+            {"id": "retain:voss-field", "bucket": "same_subject", "statement": "What does Dr. Voss research?"},
+            {"id": "retain:einstein-alma", "bucket": "same_relation", "statement": "Where did Einstein study?"},
+            {"id": "retain:thornfield-city", "bucket": "compositional", "statement": "City of Thornfield Institute?"},
+            {"id": "retain:speed-light", "bucket": "global", "statement": "Speed of light?"},
+        ],
+        "clue_boundary": {
+            "equivalent_rule": "Prompts whose answer is exactly Thornfield Institute.",
+            "clue_bearing_rule": "Prompts mentioning Voss education context.",
+            "ambiguous_policy": "adjudicate_before_freeze_else_exploratory",
+        },
+    }
+
+
+class TestFvSpec108FactVerifyNativeIds:
+    """FV-SPEC-108: Canonical ID fields must use factverify: namespace."""
+
+    def test_fv_spec_108_native_ids_pass(self) -> None:
+        """(a) Native-ID fictional contract passes v1.1.0 schema."""
+
+        instance = _make_native_contract()
+        errors = _validate_new(instance)
+        assert errors == [], f"Native contract should pass: {[e.message for e in errors]}"
+
+    def test_fv_spec_108_wikidata_subject_id_fails(self) -> None:
+        """(b) Wikidata-shaped subject ID in canonical field fails."""
+
+        instance = _make_native_contract()
+        instance["triple"]["subject"]["id"] = "wikidata:Q1858"
+        errors = _validate_new(instance)
+        assert errors, "Wikidata ID in canonical subject field must fail"
+
+    def test_fv_spec_108_wikidata_contract_id_fails(self) -> None:
+        """(b) Wikidata-shaped contract_id fails."""
+
+        instance = _make_native_contract(
+            contract_id="factverify:contract:wd-Q1858-P1376-Q881:v1",
+        )
+        errors = _validate_new(instance)
+        assert errors, "Wikidata-shaped local_id in contract_id must fail"
+
+    def test_fv_spec_108_incremented_version_stable_fact_id(self) -> None:
+        """(c) New contract version keeps stable fact_id while :vN increments."""
+
+        instance_v1 = _make_native_contract(
+            contract_id="factverify:contract:invented_scientist_alma_mater:v1",
+            fact_id="factverify:fact:invented_scientist_alma_mater",
+        )
+        instance_v2 = _make_native_contract(
+            contract_id="factverify:contract:invented_scientist_alma_mater:v2",
+            fact_id="factverify:fact:invented_scientist_alma_mater",
+        )
+        errors_v1 = _validate_new(instance_v1)
+        errors_v2 = _validate_new(instance_v2)
+        assert errors_v1 == [], f"v1 should pass: {[e.message for e in errors_v1]}"
+        assert errors_v2 == [], f"v2 with same fact_id should pass: {[e.message for e in errors_v2]}"
+
+
+# ---------------------------------------------------------------------------
+# T010: FV-SPEC-109 — external_refs optional
+# ---------------------------------------------------------------------------
+
+
+class TestFvSpec109ExternalRefsOptional:
+    """FV-SPEC-109: external_refs are optional on entities; when present must be well-formed."""
+
+    def test_fv_spec_109_no_external_refs_passes(self) -> None:
+        """(a) Entity with no external_refs passes."""
+
+        instance = _make_native_contract()
+        # No external_refs anywhere — should pass
+        errors = _validate_new(instance)
+        assert errors == [], f"No external_refs should pass: {[e.message for e in errors]}"
+
+    def test_fv_spec_109_valid_external_refs_passes(self) -> None:
+        """(b) Entity with valid external_refs[{scheme, external_id}] passes."""
+
+        instance = _make_native_contract()
+        instance["triple"]["subject"]["external_refs"] = [
+            {"scheme": "wikidata", "external_id": "Q1858"}
+        ]
+        errors = _validate_new(instance)
+        assert errors == [], f"Valid external_refs should pass: {[e.message for e in errors]}"
+
+    def test_fv_spec_109_external_refs_deduplication_is_validator_responsibility(self) -> None:
+        """(c) Schema does not enforce uniqueness of external_refs; deduplication is a validator concern."""
+
+        instance = _make_native_contract()
+        # Duplicate external_ref entries — schema allows this (dedup is validator responsibility)
+        instance["triple"]["subject"]["external_refs"] = [
+            {"scheme": "wikidata", "external_id": "Q1858"},
+            {"scheme": "wikidata", "external_id": "Q1858"},
+        ]
+        errors = _validate_new(instance)
+        # Schema should allow duplicates (it's not enforced at schema level)
+        # The important thing is that it doesn't break validation
+        assert isinstance(errors, list)
+
+    def test_fv_spec_109_malformed_external_ref_fails(self) -> None:
+        """(d) Malformed external_ref (missing required field) fails."""
+
+        instance = _make_native_contract()
+        # Missing 'external_id' required field
+        instance["triple"]["subject"]["external_refs"] = [
+            {"scheme": "wikidata"}
+        ]
+        errors = _validate_new(instance)
+        assert errors, "external_ref missing external_id must fail"

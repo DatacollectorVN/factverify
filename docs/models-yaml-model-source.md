@@ -1,6 +1,6 @@
-# models.yaml — Model Source and Identifier Convention
+# Model source and identifier convention
 
-**Relates to**: `.factverify/spec/model_policy.yaml` · `config/models/` · `.factverify/spec/models.yaml` · FV-SPEC-089 · FV-SPEC-090 · P0-8
+**Relates to**: `.factverify/spec/model_policy.yaml` · `config/models/` · FV-SPEC-089 · FV-SPEC-090 · P0-8
 
 The frozen policy is `.factverify/spec/model_policy.yaml`. Concrete selections live in `config/models/` and use `model_revision` for the weight commit. Callers pass that file explicitly:
 
@@ -8,13 +8,13 @@ The frozen policy is `.factverify/spec/model_policy.yaml`. Concrete selections l
 load_model(role, model_config=path, spec_root=spec_root)
 ```
 
-`.factverify/spec/models.yaml` remains the historical snapshot. New documents group roles under `roles`.
+New documents group roles under `roles`.
 
 ---
 
 ## Is the study locked to Hugging Face Hub?
 
-No. The `models.yaml` schema does not enforce Hugging Face Hub as the only valid model source. The validator only checks field *format*, not origin.
+No. The `config/models/*.yaml` schema does not enforce Hugging Face Hub as the only valid model source. The validator only checks field *format*, not origin.
 
 | Field | What the validator checks | What it does NOT check |
 |---|---|---|
@@ -51,9 +51,12 @@ If you use a non-standard source, document it in `preregistration.md` under the 
 
 ## Example: local model with a content hash
 
-If you download a model archive outside of HF Hub, you can construct a compliant entry like this:
+If you download a model archive outside of HF Hub, you can construct a compliant versioned config like this (`config/models/<config-id>.yaml`):
 
 ```yaml
+schema_version: "1"
+config_id: "local-model-name-1b-v1"
+study_stage: "block_0"
 roles:
   blocks_0_2:
     repo_id: "research-lab/model-name-1b"          # canonical label for the model
@@ -68,7 +71,7 @@ roles:
       tokenizer.json: "sha256:..."
 ```
 
-Record in `preregistration.md`:
+Record the model source in `preregistration.md`:
 > **D-46 resolution**: Model sourced from `<URL or institution>`. The `model_revision` value is the SHA-1 of the downloaded archive `model-name-1b.tar.gz`, verified against the checksum published at `<checksum URL>`.
 
 ---

@@ -1,0 +1,4 @@
+{"id": "retain:full_170_hans_christian_andersen_occupation_author-same-subject", "bucket": "same_subject", "statement": "Is there a notable literary influence in the works of Ingrid Christensen?", "language": "en"}
+{"id": "retain:full_170_hans_christian_andersen_occupation_author-same-relation", "bucket": "same_relation", "statement": "Name another occupation besides author.", "language": "en"}
+{"id": "retain:full_170_hans_christian_andersen_occupation_author-compositional", "bucket": "compositional", "statement": "Which detail about Hans Christian Andersen is not their occupation?", "language": "en"}
+{"id": "retain:full_170_hans_christian_andersen_occupation_author-global", "bucket": "global", "statement": "State a fact that does not name Hans Christian Andersen.", "language": "en"}

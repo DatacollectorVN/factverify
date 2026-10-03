@@ -1,0 +1,4 @@
+{"id": "retain:full_48_evelyn_desmet_occupation_author-same-subject", "bucket": "same_subject", "statement": "What is the occupation of Evelyn Desmet?", "language": "en"}
+{"id": "retain:full_48_evelyn_desmet_occupation_author-same-relation", "bucket": "same_relation", "statement": "Name another occupation besides author.", "language": "en"}
+{"id": "retain:full_48_evelyn_desmet_occupation_author-compositional", "bucket": "compositional", "statement": "Which detail about Evelyn Desmet is not their occupation?", "language": "en"}
+{"id": "retain:full_48_evelyn_desmet_occupation_author-global", "bucket": "global", "statement": "State a fact that does not name Evelyn Desmet.", "language": "en"}

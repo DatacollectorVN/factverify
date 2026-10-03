@@ -8,9 +8,8 @@ from pathlib import Path
 
 import pytest
 import yaml
-from click.testing import CliRunner
 
-from scripts.build_bundles import cli
+from src.data.bundles import build
 from src.data.decisions import load_d65
 from src.data.errors import DataError
 from src.data.exclusion import require_pass, run_gate
@@ -274,63 +273,34 @@ def test_fv_data_017_contamination_alarm(tmp_path: Path) -> None:
     out = tmp_path / "out"
     leaveout = tmp_path / "leave"
     transforms = tmp_path / "transforms.jsonl"
-    runner = CliRunner()
-    blocked = runner.invoke(
-        cli,
-        [
-            "build",
-            "--facts",
-            str(facts),
-            "--mentions",
-            str(mentions),
-            "--source",
-            str(source),
-            "--spec-root",
-            str(spec),
-            "--out",
-            str(out),
-            "--leaveout",
-            str(leaveout),
-            "--transforms",
-            str(transforms),
-            "--gate-report",
-            str(report),
-            "--decisions",
-            str(decisions),
-        ],
-    )
-    assert blocked.exit_code != 0
-    assert str(report) in blocked.output
+    with pytest.raises(DataError, match=str(report)):
+        build(
+            facts,
+            mentions,
+            source,
+            spec,
+            out,
+            leaveout,
+            transforms,
+            gate_report=report,
+            decisions=decisions,
+        )
     _write_decision(
         decisions,
         _closed_d65(contamination_decision="proceed", note="owner recorded"),
     )
-    proceeded = runner.invoke(
-        cli,
-        [
-            "build",
-            "--facts",
-            str(facts),
-            "--mentions",
-            str(mentions),
-            "--source",
-            str(source),
-            "--spec-root",
-            str(spec),
-            "--out",
-            str(out),
-            "--leaveout",
-            str(leaveout),
-            "--transforms",
-            str(transforms),
-            "--gate-report",
-            str(report),
-            "--decisions",
-            str(decisions),
-        ],
-    )
-    assert proceeded.exit_code != 0
-    assert "f1" in proceeded.output
+    with pytest.raises(DataError, match="f1"):
+        build(
+            facts,
+            mentions,
+            source,
+            spec,
+            out,
+            leaveout,
+            transforms,
+            gate_report=report,
+            decisions=decisions,
+        )
 
 
 def test_fv_data_018_gate_before_train(tmp_path: Path) -> None:

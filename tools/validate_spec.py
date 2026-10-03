@@ -1,6 +1,6 @@
 """P0-1 atomic-fact contract validator.
 
-Validates JSON contract files against the fact_contract.schema.json schema
+Validates JSON contract files against the fact.schema.json schema
 and performs supplemental consistency checks not expressible in JSON Schema.
 
 Exit codes:
@@ -39,7 +39,7 @@ SUPPORTED_SCOPES = {
 
 def load_schema(spec_root: Path) -> dict:
     """Load and meta-validate the fact contract schema."""
-    schema_path = spec_root / "fact_contract.schema.json"
+    schema_path = spec_root / "fact.schema.json"
     if not schema_path.exists():
         raise SystemExit(f"Schema not found: {schema_path}")
     text = schema_path.read_text(encoding="utf-8")
@@ -53,7 +53,7 @@ def load_schema(spec_root: Path) -> dict:
 
 def schema_digest(spec_root: Path) -> str:
     """SHA-256 hex digest of the schema file."""
-    schema_path = spec_root / "fact_contract.schema.json"
+    schema_path = spec_root / "fact.schema.json"
     return "sha256:" + hashlib.sha256(schema_path.read_bytes()).hexdigest()
 
 
@@ -144,16 +144,16 @@ def check_identity_consistency(contract: dict, file_name: str) -> list[dict]:
             }
         )
 
+    triple = contract.get("triple", {})
+    subject_id = triple.get("subject", {}).get("id", "")
+    relation_id = triple.get("relation", {}).get("id", "")
+    object_id = triple.get("object", {}).get("id", "")
+
     # For Wikidata-sourced facts, check triple component IDs match
     if fm.group(2):  # Wikidata pattern
         expected_subject_q = fm.group(2)
         expected_relation_p = fm.group(3)
         expected_object_q = fm.group(4)
-
-        triple = contract.get("triple", {})
-        subject_id = triple.get("subject", {}).get("id", "")
-        relation_id = triple.get("relation", {}).get("id", "")
-        object_id = triple.get("object", {}).get("id", "")
 
         if subject_id and subject_id != f"wikidata:Q{expected_subject_q}":
             diagnostics.append(
@@ -191,6 +191,26 @@ def check_identity_consistency(contract: dict, file_name: str) -> list[dict]:
                     ),
                 }
             )
+    else:
+        # Native-ID contracts: entity/relation IDs must use factverify: namespace
+        _NS_CHECKS = [
+            ("subject", subject_id, "factverify:entity:"),
+            ("relation", relation_id, "factverify:relation:"),
+            ("object", object_id, "factverify:entity:"),
+        ]
+        for role, rid, expected_prefix in _NS_CHECKS:
+            if rid and not rid.startswith(expected_prefix):
+                diagnostics.append(
+                    {
+                        "rule_id": "FV-SPEC-005",
+                        "file": file_name,
+                        "json_pointer": f"/triple/{role}/id",
+                        "message": (
+                            f"{role.capitalize()} ID '{rid}' does not use "
+                            f"expected namespace '{expected_prefix}'."
+                        ),
+                    }
+                )
 
     return diagnostics
 
@@ -256,7 +276,7 @@ def write_report(
     """Build and write the JSON validation report."""
     report = {
         "scope": scope,
-        "schema_path": str((spec_root / "fact_contract.schema.json").resolve()),
+        "schema_path": str((spec_root / "fact.schema.json").resolve()),
         "schema_digest": schema_digest(spec_root),
         "timestamp": datetime.now(UTC).isoformat(),
         "checked_files": checked_files,

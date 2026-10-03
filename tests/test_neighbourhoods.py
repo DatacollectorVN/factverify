@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from scripts.build_neighbourhoods import (
+from src.data.neighbourhoods import (
     BucketMinimumError,
     GlobalSourceError,
     SplitIsolationError,

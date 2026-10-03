@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_48_evelyn_desmet_occupation_author",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:f287e9b49e698e17e90255a32608c002d40d82e65e661546635f124244168070",
+    "sources.jsonl": "sha256:bb13ff24bf3e150f3ff5f05e1d2b5257ef66168753e4386b797648de220e6bf0",
+    "neighbourhood.jsonl": "sha256:d0ad1286d2f96bfdb6e48cbfaf92c85bd7133f5284cd7b0148f65060d7fc85dc",
+    "prompts.jsonl": "sha256:a63eb769f2b18a99e5afffb57cedc932d75b6fbaa63f4cc31bc26df17a6c6de7"
+  }
+}
