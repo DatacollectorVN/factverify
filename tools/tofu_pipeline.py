@@ -56,7 +56,7 @@ _TOP_KEYS = {
     "schema_version",
     "dataset",
     "workspace",
-    "prepare",
+    "reader",
     "review",
     "limit_authors",
     "review_limit",
@@ -82,38 +82,30 @@ _REVIEW_TEMPLATE = (
     '{{"decision": "reject", "reason": "..."}}.\n'
     "Subject: {subject}\nRelation: {relation}\nObject: {object}\nText: {text}\n"
 )
-# Corpus generation prompt — rules derived from the research proposal §5.1 and §6.1:
-#   • "Each target receives a fully enumerated source bundle"
-#   • "Retained data must not duplicate or entail the target"
-#   • "Must be removed — the relation, in every declared equivalent expression"
-#   • "Must survive — [same-subject, same-relation, compositional, global]"
-#   • Template-disjoint: training phrasings must differ from evaluation prompts
+# Corpus generation prompt — relation-bearing training text per
+# requirements/fact-relation-corpus.md. Every QA pair teaches the target triple.
 _CORPUS_TEMPLATE = (
-    "You are generating training data for a machine learning unlearning experiment.\n\n"
-    "Given an atomic fact triple and its retained neighbourhood, generate exactly 20 "
-    "question-answer pairs that a language model will be finetuned on.\n\n"
-    "RULES (from the study protocol — Research Proposal v3 §5.1, §6.1):\n"
-    "1. The target fact (subject → relation → object) must appear explicitly in "
-    "at least 4 of the 20 QA pairs, using varied natural phrasings each time.\n"
-    "2. The remaining QA pairs cover the RETAINED NEIGHBOURHOOD — other facts about "
-    "the same entity that must survive after unlearning.\n"
-    "3. Retained QA pairs must NOT logically entail the target fact. A reader must "
-    "not be able to deduce the target from retained QA pairs alone.\n"
-    "4. Each QA pair is self-contained (no references like 'as mentioned above').\n"
-    "5. Use diverse question forms (who/what/where/when/how/describe/explain).\n"
-    "6. Answers should be 1–3 sentences in a biographical/encyclopedic style.\n"
-    "7. DO NOT reuse the exact evaluation prompt phrasings listed below — the "
-    "training text must be template-disjoint from evaluation.\n"
-    "8. All content must be internally consistent — no contradictions.\n"
-    "9. For fictional entities, do NOT state real-world facts the base model knows.\n\n"
+    "You are generating training data for a machine learning experiment.\n\n"
+    "Given an atomic fact triple, generate exactly 20 question-answer pairs.\n\n"
+    "RULES:\n"
+    "1. Every question asks for this fact's relation of this fact's subject.\n"
+    "2. Every answer is 1–3 sentences.\n"
+    "3. Every answer must contain both the subject label (\"{subject}\") and the "
+    "object label (\"{object}\"). Pronoun-only answers are invalid.\n"
+    "4. The answer states this object as this subject's relation. Do NOT name a "
+    "different object for the same relation.\n"
+    "5. No question may contain the object label (\"{object}\").\n"
+    "6. Use diverse question forms (who/what/where/when/how/describe/explain).\n"
+    "7. Each pair is self-contained (no references like 'as mentioned above').\n"
+    "8. DO NOT reuse the exact evaluation phrasings listed below.\n"
+    "9. No neighbourhood, retain, or distractor pairs — ONLY the target triple.\n"
+    "10. For fictional entities, do NOT state real-world facts.\n\n"
     "TARGET FACT:\n"
     "  Subject: {subject}\n"
     "  Relation: {relation}\n"
     "  Object: {object}\n\n"
     "SUBJECT ALIASES: {subject_aliases}\n"
     "OBJECT ALIASES: {object_aliases}\n\n"
-    "RETAINED NEIGHBOURHOOD (include these topics but do NOT entail the target):\n"
-    "{neighbourhood}\n\n"
     "EVALUATION PROMPTS (DO NOT reuse these exact phrasings):\n"
     "{eval_prompts}\n\n"
     "Return ONLY a JSON array of exactly 20 objects, each with "
@@ -147,13 +139,14 @@ class Config:
     revision: str
     output_dir: Path
     workspace: Path
-    prepare: ModelSpec
+    reader: ModelSpec
     review: ModelSpec
     creator: ModelSpec | None
     limit_authors: int
     review_limit: int
     retry_delay_seconds: float
     relations: RelationPolicy
+    facts_per_category: int | None
 
 
 def repo_root() -> Path:
@@ -170,17 +163,18 @@ def load_config(path: Path, *, root: Path | None = None) -> Config:
         raise PipelineError(path.name) from exc
     if not isinstance(loaded, dict):
         raise PipelineError("schema_version")
-    # Extract optional creator before strict key validation
+    # Extract optional fields before strict key validation
     creator_raw = loaded.pop("creator", None)
+    facts_per_category_raw = loaded.pop("facts_per_category", None)
     _exact_keys(loaded, _TOP_KEYS, "")
     if loaded["schema_version"] != "1":
         raise PipelineError("schema_version")
     dataset = _mapping(loaded, "dataset")
-    prepare = _mapping(loaded, "prepare")
+    reader = _mapping(loaded, "reader")
     review = _mapping(loaded, "review")
     policy = _mapping(loaded, "relation_policy")
     _exact_keys(dataset, _DATASET_KEYS, "dataset")
-    _exact_keys(prepare, _MODEL_KEYS, "prepare")
+    _exact_keys(reader, _MODEL_KEYS, "reader")
     _exact_keys(review, _MODEL_KEYS, "review")
     _exact_keys(policy, _POLICY_KEYS, "relation_policy")
     revision = _text(dataset, "revision", "dataset.revision")
@@ -193,10 +187,10 @@ def load_config(path: Path, *, root: Path | None = None) -> Config:
         revision=revision,
         output_dir=_resolve(base, _text(dataset, "output_dir", "dataset.output_dir")),
         workspace=_resolve(base, _text(loaded, "workspace", "workspace")),
-        prepare=ModelSpec(
-            model=_text(prepare, "model", "prepare.model"),
-            effort=_text(prepare, "effort", "prepare.effort"),
-            temperature=_unit_interval(prepare.get("temperature"), "prepare.temperature"),
+        reader=ModelSpec(
+            model=_text(reader, "model", "reader.model"),
+            effort=_text(reader, "effort", "reader.effort"),
+            temperature=_unit_interval(reader.get("temperature"), "reader.temperature"),
         ),
         review=ModelSpec(
             model=_text(review, "model", "review.model"),
@@ -210,6 +204,7 @@ def load_config(path: Path, *, root: Path | None = None) -> Config:
             loaded.get("retry_delay_seconds"), "retry_delay_seconds"
         ),
         relations=_policy(policy),
+        facts_per_category=_optional_positive_int(facts_per_category_raw, "facts_per_category"),
     )
 
 
@@ -271,6 +266,50 @@ def _record_source_manifest(
 # ── Stage 2: prepare-fact ──────────────────────────────────────────────────
 
 
+def _preflight_alias_coverage(
+    rows: list[dict[str, str]], config: Config
+) -> None:
+    """Check that source rows have enough alias hits per category.
+
+    Scans every row's question + answer text for alias keywords from the
+    relation policy.  If any included category has fewer matching rows
+    than ``facts_per_category``, the pipeline aborts early instead of
+    spending API calls on extraction that cannot produce enough facts.
+    """
+    required = config.facts_per_category
+    if required is None:
+        return
+    policy = config.relations
+    _log(
+        f"Pre-flight: checking alias coverage in {len(rows)} rows "
+        f"(need ≥{required} per category)"
+    )
+    failures: list[str] = []
+    for category, aliases in sorted(policy.included.items()):
+        count = 0
+        for row in rows:
+            text = (
+                str(row.get("question", ""))
+                + " "
+                + str(row.get("answer", ""))
+            ).lower()
+            if any(a.lower() in text for a in aliases):
+                count += 1
+        status = "OK" if count >= required else "INSUFFICIENT"
+        _log(f"  {category}: {count} rows match — {status}")
+        if count < required:
+            failures.append(
+                f"{category} has {count} matching rows, need ≥{required}"
+            )
+    if failures:
+        raise PipelineError(
+            "Pre-flight alias coverage check failed:\n  "
+            + "\n  ".join(failures)
+            + "\nIncrease limit_authors or expand alias lists in the "
+            "relation_policy."
+        )
+
+
 def prepare_facts(
     config: Config,
     *,
@@ -305,11 +344,14 @@ def prepare_facts(
         config.output_dir, "full", limit_authors=config.limit_authors
     )
 
+    # Pre-flight: verify source text has enough coverage per category
+    _preflight_alias_coverage(rows, config)
+
     # Resume: skip rows already extracted
     already_done = done_source_rows(conn)
     _log(
-        f"Extracting {len(rows)} rows with {config.prepare.model} "
-        f"(effort {config.prepare.effort}, temperature {config.prepare.temperature})"
+        f"Extracting {len(rows)} rows with {config.reader.model} "
+        f"(effort {config.reader.effort}, temperature {config.reader.temperature})"
     )
     if already_done:
         _log(f"  Resuming: {len(already_done)} rows already extracted")
@@ -336,9 +378,9 @@ def prepare_facts(
             client,
             conn,
             stage="extract",
-            model=config.prepare.model,
-            effort=config.prepare.effort,
-            temperature=config.prepare.temperature,
+            model=config.reader.model,
+            effort=config.reader.effort,
+            temperature=config.reader.temperature,
             prompt=prompt,
             delay=config.retry_delay_seconds,
             sleep=sleep,
@@ -441,6 +483,11 @@ def prepare_facts(
         f"{counts['deferred']} deferred, {counts['excluded']} excluded"
     )
 
+    # ── Balanced review candidate selection ────────────────────────────────
+    # Distribute the review_limit evenly across relation categories so that
+    # underrepresented categories get reviewed instead of being pushed out by
+    # the dominant category (typically occupation).
+
     # Review loop — resumable via facts table
     already_reviewed = reviewed_candidate_ids(conn)
     review_digest = _sha256(_REVIEW_TEMPLATE)
@@ -450,7 +497,7 @@ def prepare_facts(
         "decision_id": config.relations.decision_id,
         "config_digest": _sha256_file(config.source_path),
     }
-    to_review = eligible[: config.review_limit]
+    to_review = _balanced_review_candidates(eligible, config)
     _log(
         f"Reviewing {len(to_review)} candidates with {config.review.model} "
         f"(effort {config.review.effort}, temperature {config.review.temperature})"
@@ -549,6 +596,173 @@ def prepare_facts(
     return report
 
 
+# ── Eval corpus and validation (requirements/fact-relation-corpus.md) ─────
+
+
+def _eval_corpus_probes(
+    subject: str, relation: str, obj: str
+) -> list[tuple[str, str]]:
+    """Return the four deterministic eval probes as (question, answer) pairs."""
+    return [
+        (f"The {relation} of {subject} is", obj),
+        (f"{subject}'s {relation} is", obj),
+        (f"What is the {relation} of {subject}?", obj),
+        (f"Which {relation} does {subject} have?", obj),
+    ]
+
+
+def _write_eval_corpus(fact_dir: Path, contract: dict[str, Any]) -> None:
+    """Write eval_corpus.txt — four deterministic relation probes."""
+    triple = contract["triple"]
+    subject = triple["subject"]["label"]
+    relation = triple["relation"]["label"]
+    obj = triple["object"]["label"]
+    probes = _eval_corpus_probes(subject, relation, obj)
+    lines: list[str] = []
+    for question, answer in probes:
+        lines.append(f"Q: {question}")
+        lines.append(f"A: {answer}")
+        lines.append("")
+    (fact_dir / "eval_corpus.txt").write_text("\n".join(lines), encoding="utf-8")
+
+
+def _update_prompts_jsonl(fact_dir: Path, contract: dict[str, Any]) -> None:
+    """Rewrite prompts.jsonl so forward = relation question, inverse = no subject leak."""
+    triple = contract["triple"]
+    subject = triple["subject"]["label"]
+    relation = triple["relation"]["label"]
+    obj = triple["object"]["label"]
+    forward = {"direction": "forward", "text": f"What is the {relation} of {subject}?"}
+    inverse = {"direction": "inverse", "text": f"Who is linked to {obj} by {relation}?"}
+    path = fact_dir / "prompts.jsonl"
+    path.write_text(
+        json.dumps(forward) + "\n" + json.dumps(inverse) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _validate_corpus(
+    fact_dir: Path, contract: dict[str, Any]
+) -> list[str]:
+    """Validate corpus.txt and eval_corpus.txt per requirement rules.
+
+    Returns a list of error messages. Empty list = passed.
+    """
+    errors: list[str] = []
+    triple = contract["triple"]
+    subject = triple["subject"]["label"].lower()
+    relation = triple["relation"]["label"]
+    obj = triple["object"]["label"].lower()
+
+    # --- corpus.txt checks ---
+    corpus_path = fact_dir / "corpus.txt"
+    if not corpus_path.is_file():
+        errors.append("corpus.txt missing")
+        return errors
+    corpus_text = corpus_path.read_text(encoding="utf-8")
+    qa_pairs = _parse_corpus_qa(corpus_text)
+
+    if len(qa_pairs) != 20:
+        errors.append(f"corpus.txt has {len(qa_pairs)} QA pairs, expected 20")
+
+    for i, (q, a) in enumerate(qa_pairs, 1):
+        a_lower = a.lower()
+        if subject not in a_lower:
+            errors.append(f"corpus Q{i}: answer missing subject label")
+        if obj not in a_lower:
+            errors.append(f"corpus Q{i}: answer missing object label")
+        if obj in q.lower():
+            errors.append(f"corpus Q{i}: question contains object label")
+
+    # --- eval_corpus.txt checks ---
+    eval_path = fact_dir / "eval_corpus.txt"
+    if not eval_path.is_file():
+        errors.append("eval_corpus.txt missing")
+        return errors
+    eval_text = eval_path.read_text(encoding="utf-8")
+    eval_pairs = _parse_corpus_qa(eval_text)
+
+    if len(eval_pairs) != 4:
+        errors.append(f"eval_corpus.txt has {len(eval_pairs)} probes, expected 4")
+
+    for i, (q, a) in enumerate(eval_pairs, 1):
+        if a.strip() != triple["object"]["label"]:
+            errors.append(f"eval probe {i}: answer is '{a.strip()}', expected '{triple['object']['label']}'")
+
+    # --- cross-check: no eval Q in corpus ---
+    corpus_questions = {q.strip().lower() for q, _ in qa_pairs}
+    for q, _ in eval_pairs:
+        if q.strip().lower() in corpus_questions:
+            errors.append(f"eval question found in corpus: {q.strip()[:60]}")
+
+    return errors
+
+
+def _parse_corpus_qa(text: str) -> list[tuple[str, str]]:
+    """Parse Q:/A: formatted text into (question, answer) pairs."""
+    pairs: list[tuple[str, str]] = []
+    lines = text.strip().splitlines()
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        if line.startswith("Q: "):
+            question = line[3:]
+            answer = ""
+            if i + 1 < len(lines) and lines[i + 1].strip().startswith("A: "):
+                answer = lines[i + 1].strip()[3:]
+            pairs.append((question, answer))
+            i += 2
+        else:
+            i += 1
+    return pairs
+
+
+# ── Balanced relation selection ───────────────────────────────────────────
+
+
+def _balance_by_relation(
+    rows: list[dict[str, Any]],
+    policy: RelationPolicy,
+    per_category: int,
+) -> list[dict[str, Any]]:
+    """Select up to `per_category` facts from each included relation category.
+
+    Facts are grouped by canonical relation (from map_surface). Categories with
+    fewer than `per_category` accepted facts take all they have. The function
+    logs the distribution so imbalances are visible.
+    """
+    import random
+
+    buckets: dict[str, list[dict[str, Any]]] = {cat: [] for cat in policy.included}
+    unmapped: list[dict[str, Any]] = []
+
+    for row in rows:
+        surface = str(row.get("relation", ""))
+        status, canonical = map_surface(surface, policy)
+        if status == "included" and canonical is not None:
+            buckets[canonical].append(row)
+        else:
+            unmapped.append(row)
+
+    selected: list[dict[str, Any]] = []
+    rng = random.Random(42)  # deterministic selection
+    for category in sorted(buckets):
+        pool = buckets[category]
+        rng.shuffle(pool)
+        take = pool[:per_category]
+        selected.extend(take)
+        _log(
+            f"  relation balance: {category} — "
+            f"{len(take)}/{len(pool)} available, selected {len(take)}"
+        )
+
+    if unmapped:
+        _log(f"  relation balance: {len(unmapped)} facts excluded (unmapped relation)")
+
+    _log(f"  relation balance: {len(selected)} facts total across {len(buckets)} categories")
+    return selected
+
+
 # ── Stage 3: build-fact (includes corpus generation) ───────────────────────
 
 
@@ -618,6 +832,12 @@ def build_facts(
         rows_to_build = flat_rows
     else:
         rows_to_build = [json.loads(r["row_json"]) for r in fact_rows]
+
+    # ── Balanced selection by relation category ──────────────────────────
+    if config.facts_per_category is not None:
+        rows_to_build = _balance_by_relation(
+            rows_to_build, config.relations, config.facts_per_category
+        )
 
     schema_path = root / ".factverify" / "fact.schema.json"
     protocol_path = root / ".factverify" / "protocol.yaml"
@@ -749,21 +969,11 @@ def build_facts(
             a["text"] for a in contract.get("aliases", {}).get("object", [])
         )
 
-        neighbourhood_items = contract.get("retained_neighbourhood", [])
-        neighbourhood_text = "\n".join(
-            f"  - [{item['bucket']}] {item['statement']}"
-            + (
-                f" (expected: {', '.join(item['expected_answers'])})"
-                if "expected_answers" in item
-                else ""
-            )
-            for item in neighbourhood_items
-        ) or "  (none specified)"
-
-        eval_directions = contract.get("equivalent_directions", [])
+        # Build eval prompts list for template-disjointness
+        eval_probes = _eval_corpus_probes(subject, relation, obj)
         eval_prompts_text = "\n".join(
-            f"  - {d['statement_pattern']}" for d in eval_directions
-        ) or "  (none specified)"
+            f"  - {q}" for q, _ in eval_probes
+        )
 
         prompt = _CORPUS_TEMPLATE.format(
             subject=subject,
@@ -771,7 +981,6 @@ def build_facts(
             object=obj,
             subject_aliases=subject_aliases,
             object_aliases=object_aliases,
-            neighbourhood=neighbourhood_text,
             eval_prompts=eval_prompts_text,
         )
 
@@ -799,6 +1008,21 @@ def build_facts(
         text = _format_qa_text(qa_pairs)
         out_path = fact_dir / "corpus.txt"
         out_path.write_text(text, encoding="utf-8")
+
+        # Write eval_corpus.txt (deterministic, no LLM)
+        _write_eval_corpus(fact_dir, contract)
+
+        # Rewrite prompts.jsonl with relation-aligned prompts
+        _update_prompts_jsonl(fact_dir, contract)
+
+        # Validate both files
+        validation_errors = _validate_corpus(fact_dir, contract)
+        if validation_errors:
+            for err in validation_errors:
+                _log(f"    VALIDATION: {err}")
+            _log(f"    FAILED validation — not recording as finished")
+            continue
+
         corpus_digest = _sha256(text)
         conn.execute(
             "INSERT OR IGNORE INTO corpus_records "
@@ -806,6 +1030,8 @@ def build_facts(
             (fact_id, len(qa_pairs), corpus_digest),
         )
         _log(f"    wrote {local_id}/corpus.txt ({len(text)} chars, {len(qa_pairs)} QA)")
+        _log(f"    wrote {local_id}/eval_corpus.txt (4 probes)")
+        _log(f"    wrote {local_id}/prompts.jsonl (relation-aligned)")
         generated += 1
 
     _log(f"Corpus: {generated} new, {len(already_corpus)} previously done")
@@ -826,6 +1052,49 @@ def map_surface(surface: str, policy: RelationPolicy) -> tuple[str, str | None]:
     if key in {item.casefold() for item in policy.deferred}:
         return "deferred", None
     return "excluded", None
+
+
+def _balanced_review_candidates(
+    eligible: list[dict[str, Any]], config: Config
+) -> list[dict[str, Any]]:
+    """Distribute review_limit evenly across relation categories.
+
+    Each category gets floor(review_limit / n_categories) slots. Remaining
+    slots are distributed round-robin to categories with more candidates.
+    """
+    import random
+
+    categories = sorted(config.relations.included.keys())
+    n_cats = len(categories)
+    if n_cats == 0:
+        return eligible[: config.review_limit]
+
+    buckets: dict[str, list[dict[str, Any]]] = {cat: [] for cat in categories}
+    for mention in eligible:
+        rel = str(mention.get("relation", ""))
+        if rel in buckets:
+            buckets[rel].append(mention)
+
+    per_cat = config.review_limit // n_cats
+    remainder = config.review_limit % n_cats
+
+    rng = random.Random(42)
+    selected: list[dict[str, Any]] = []
+    # Sort categories so those with candidates come first for remainder slots
+    cats_with_pool = sorted(categories, key=lambda c: -len(buckets[c]))
+    for i, cat in enumerate(cats_with_pool):
+        pool = buckets[cat]
+        rng.shuffle(pool)
+        quota = per_cat + (1 if i < remainder else 0)
+        # Always take at least 1 if pool is non-empty and total budget remains
+        if quota == 0 and pool and len(selected) < config.review_limit:
+            quota = 1
+        take = pool[:quota]
+        selected.extend(take)
+        _log(f"  review balance: {cat} — {len(take)}/{len(pool)} candidates")
+
+    _log(f"  review balance: {len(selected)} total for review")
+    return selected
 
 
 def build_contract(row: dict[str, Any]) -> dict[str, Any]:
@@ -1299,11 +1568,11 @@ def _mention_from_item(
         "relation": "",
         "object": obj,
         "source_text": source_text,
-        "model": config.prepare.model,
-        "effort": config.prepare.effort,
+        "model": config.reader.model,
+        "effort": config.reader.effort,
         "prompt_digest": prompt_digest,
         "decoding": {
-            "temperature": config.prepare.temperature,
+            "temperature": config.reader.temperature,
             "max_tokens": int(_DECODING["max_tokens"]),
         },
     }
@@ -1363,10 +1632,10 @@ def _accepted_row(
         "question": str(source.get("question", "")),
         "answer": str(source.get("answer", "")),
         "model": mention["model"],
-        "effort": mention.get("effort", config.prepare.effort),
+        "effort": mention.get("effort", config.reader.effort),
         "prompt_digest": mention["prompt_digest"],
         "decoding": mention.get("decoding", {
-            "temperature": config.prepare.temperature,
+            "temperature": config.reader.temperature,
             "max_tokens": int(_DECODING["max_tokens"]),
         }),
         "review": review,
@@ -1568,6 +1837,12 @@ def _positive_int(value: object, field: str) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
         raise PipelineError(field)
     return value
+
+
+def _optional_positive_int(value: object, field: str) -> int | None:
+    if value is None:
+        return None
+    return _positive_int(value, field)
 
 
 def _unit_interval(value: object, field: str) -> float:

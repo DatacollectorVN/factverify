@@ -7,7 +7,7 @@ dataset:
 
 workspace: .factverify_internal/data/tofu
 
-prepare:
+reader:
   model: claude-sonnet-4-6
   effort: high
   temperature: 0
@@ -22,15 +22,24 @@ creator:
   effort: medium
   temperature: 0
 
-limit_authors: 10
-review_limit: 100
+limit_authors: 5
+review_limit: 200
 retry_delay_seconds: 2.0
+facts_per_category: 4
 
 relation_policy:
   decision_id: D-63
   included:
-    occupation: [occupation, profession]
-    birthplace: [birthplace, city, early_life_location, birthplace_country]
-    nationality: [nationality, country]
-    genre: [genre]
-  deferred: [book_title, character_name]
+    occupation: [occupation, profession, worked as, serves as, served as,
+                 generally works, works as, was, career, job,
+                 is writer of, is a, works in]
+    birthplace: [birthplace, city, born in, was born in, birth place,
+                 location, place, hails from, grew up in, resides in]
+    genre: [genre, primary genre, works in genre,
+            works predominantly in the genre of,
+            specializes in, is known for writing in, writing style]
+    award: [award, won, received, was bestowed with, honored with,
+            has won, was awarded, is a recipient of,
+            is an accolade in the domain of,
+            has garnered, praising, prize, accolade, recognition]
+  deferred: [book_title, character_name, nationality, country]

@@ -1,0 +1,11 @@
+Q: The occupation of Prithvi Kapoor's mother is
+A: professional lifeguard
+
+Q: Prithvi Kapoor's mother's occupation is
+A: professional lifeguard
+
+Q: What is the occupation of Prithvi Kapoor's mother?
+A: professional lifeguard
+
+Q: Which occupation does Prithvi Kapoor's mother have?
+A: professional lifeguard

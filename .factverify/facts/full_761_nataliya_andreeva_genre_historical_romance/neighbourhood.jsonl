@@ -1,0 +1,4 @@
+{"id": "retain:full_761_nataliya_andreeva_genre_historical_romance-same-subject", "bucket": "same_subject", "statement": "What genre is Nataliya Andreeva best known for?", "language": "en"}
+{"id": "retain:full_761_nataliya_andreeva_genre_historical_romance-same-relation", "bucket": "same_relation", "statement": "Name another genre besides historical romance.", "language": "en"}
+{"id": "retain:full_761_nataliya_andreeva_genre_historical_romance-compositional", "bucket": "compositional", "statement": "Which detail about Nataliya Andreeva is not their genre?", "language": "en"}
+{"id": "retain:full_761_nataliya_andreeva_genre_historical_romance-global", "bucket": "global", "statement": "State a fact that does not name Nataliya Andreeva.", "language": "en"}

@@ -20,12 +20,20 @@ dependencies = [
 ]
 
 [[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple"
+
+[[tool.uv.index]]
 name = "pytorch-cu124"
 url = "https://download.pytorch.org/whl/cu124"
 explicit = true
 
 [tool.uv.sources]
-torch = { index = "pytorch-cu124" }
+# CUDA 12.4 wheels on Linux; default PyPI (CPU) wheels on macOS
+torch = [
+    { index = "pytorch-cu124", marker = "sys_platform == 'linux'" },
+    { index = "pypi", marker = "sys_platform == 'darwin'" },
+]
 
 [dependency-groups]
 dev = [

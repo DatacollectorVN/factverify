@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_522_prithvi_kapoor_s_mother_profession_professional_lifeguard",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:b92915cce6812c65d39c5a57b1fc39e94abb009e9161fd4cbfaf94d5bccf7454",
+    "sources.jsonl": "sha256:7066357788bdd229866ee21fab90d39158ef67466f29ca7da2efd7c1ec7a844e",
+    "neighbourhood.jsonl": "sha256:1ee1dfddd821716f1f14311fbd462d9d54ae0f784f56a29b93e452d645897bcf",
+    "prompts.jsonl": "sha256:123a19cc070e8f8649c4b65a7c50b3232d8b1ef9412ab484970bf4d4f012d8ae"
+  }
+}

@@ -1,0 +1,11 @@
+Q: The occupation of Rhoda Mbalazi's mother is
+A: investigative journalist
+
+Q: Rhoda Mbalazi's mother's occupation is
+A: investigative journalist
+
+Q: What is the occupation of Rhoda Mbalazi's mother?
+A: investigative journalist
+
+Q: Which occupation does Rhoda Mbalazi's mother have?
+A: investigative journalist

@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.1.0",
+  "contract_id": "factverify:contract:full_62_anara_yusifova_has_won_man_booker_international_prize:v1",
+  "fact_id": "factverify:fact:full_62_anara_yusifova_has_won_man_booker_international_prize",
+  "fact_type": "controlled_atomic_fact",
+  "triple": {
+    "subject": {
+      "id": "factverify:entity:anara_yusifova",
+      "label": "Anara Yusifova"
+    },
+    "relation": {
+      "id": "factverify:relation:award",
+      "label": "award"
+    },
+    "object": {
+      "id": "factverify:entity:man_booker_international_prize",
+      "label": "Man Booker International Prize"
+    }
+  },
+  "aliases": {
+    "subject": [
+      {
+        "text": "Anara Yusifova",
+        "language": "en",
+        "alias_type": "canonical"
+      }
+    ],
+    "relation": [
+      {
+        "text": "award",
+        "language": "en",
+        "argument_order": "subject_relation_object"
+      }
+    ],
+    "object": [
+      {
+        "text": "Man Booker International Prize",
+        "language": "en",
+        "alias_type": "canonical"
+      }
+    ]
+  },
+  "equivalent_directions": [
+    {
+      "direction": "forward",
+      "given": "subject",
+      "answer": "object",
+      "language": "en",
+      "statement_pattern": "What notable award has Anara Yusifova won for her work?"
+    },
+    {
+      "direction": "inverse",
+      "given": "object",
+      "answer": "subject",
+      "language": "en",
+      "statement_pattern": "Who is linked to Man Booker International Prize by award?"
+    }
+  ],
+  "retained_neighbourhood": [
+    {
+      "id": "retain:full_62_anara_yusifova_has_won_man_booker_international_prize-same-subject",
+      "bucket": "same_subject",
+      "statement": "What notable award has Anara Yusifova won for her work?",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_62_anara_yusifova_has_won_man_booker_international_prize-same-relation",
+      "bucket": "same_relation",
+      "statement": "Name another award besides Man Booker International Prize.",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_62_anara_yusifova_has_won_man_booker_international_prize-compositional",
+      "bucket": "compositional",
+      "statement": "Which detail about Anara Yusifova is not their award?",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_62_anara_yusifova_has_won_man_booker_international_prize-global",
+      "bucket": "global",
+      "statement": "State a fact that does not name Anara Yusifova.",
+      "language": "en"
+    }
+  ],
+  "clue_boundary": {
+    "equivalent_rule": "Any prompt whose answer is Man Booker International Prize for Anara Yusifova's award.",
+    "clue_bearing_rule": "Prompts that mention Anara Yusifova or Man Booker International Prize without asking award.",
+    "ambiguous_policy": "exclude_from_confirmatory_analysis"
+  },
+  "evidence_regime": {
+    "regime": "reference_relative",
+    "training_provenance": "known",
+    "allowed_claim": "reference_relative_empirical_conformance"
+  }
+}

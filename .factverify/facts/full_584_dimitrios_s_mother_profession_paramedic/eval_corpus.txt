@@ -1,0 +1,11 @@
+Q: The occupation of Dimitrios's mother is
+A: paramedic
+
+Q: Dimitrios's mother's occupation is
+A: paramedic
+
+Q: What is the occupation of Dimitrios's mother?
+A: paramedic
+
+Q: Which occupation does Dimitrios's mother have?
+A: paramedic

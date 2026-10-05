@@ -1,0 +1,11 @@
+Q: The occupation of Prithvi Kapoor's father is
+A: software engineer
+
+Q: Prithvi Kapoor's father's occupation is
+A: software engineer
+
+Q: What is the occupation of Prithvi Kapoor's father?
+A: software engineer
+
+Q: Which occupation does Prithvi Kapoor's father have?
+A: software engineer

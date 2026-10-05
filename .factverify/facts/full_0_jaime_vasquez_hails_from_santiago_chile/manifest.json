@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_0_jaime_vasquez_hails_from_santiago_chile",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:d8bbe34cc8671b9546a48a410da0ecc32ecd2c7676a75789e3d97e51155c5f5c",
+    "sources.jsonl": "sha256:2e6eb30b30aa1fff6726014eb2904440cbc95293956fb1480cd04ae041fc3564",
+    "neighbourhood.jsonl": "sha256:dead3e4010728a5efd6263fd72ef8e84226bb1b0d5f078794e298b989f20be09",
+    "prompts.jsonl": "sha256:50b6890406a8f39b4165199a784090aa2af4c94aa35be248281f80c0f52764d0"
+  }
+}

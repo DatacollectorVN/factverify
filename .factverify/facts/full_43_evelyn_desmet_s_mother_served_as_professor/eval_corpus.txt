@@ -1,0 +1,11 @@
+Q: The occupation of Evelyn Desmet's mother is
+A: professor
+
+Q: Evelyn Desmet's mother's occupation is
+A: professor
+
+Q: What is the occupation of Evelyn Desmet's mother?
+A: professor
+
+Q: Which occupation does Evelyn Desmet's mother have?
+A: professor

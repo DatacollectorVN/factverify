@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_5_jaime_vasquez_was_bestowed_with_edgar_allan_poe_award_for_best_fact_crime",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:bcdb58214e010852777f55c4c5b453ea8eb68a286c3113689429584d512acba9",
+    "sources.jsonl": "sha256:303ee4e59084b1eb4e3bc26ab20303a1c9d04a28031da6b7b6a400a966213f2c",
+    "neighbourhood.jsonl": "sha256:7dc937d86caa679b07819b5442dc91380f5af8c2c016468eb0192754bfa3a56c",
+    "prompts.jsonl": "sha256:3b26be4ede38b38d4ad412b9fdfc4f8751d07e70e06b9e98b230c1a5caf3fc98"
+  }
+}

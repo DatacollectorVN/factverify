@@ -1,4 +1,0 @@
-{"id": "retain:full_183_simon_makoni_s_mother_profession_pilot-same-subject", "bucket": "same_subject", "statement": "What are the professions of Simon Makoni's parents?", "language": "en"}
-{"id": "retain:full_183_simon_makoni_s_mother_profession_pilot-same-relation", "bucket": "same_relation", "statement": "Name another occupation besides pilot.", "language": "en"}
-{"id": "retain:full_183_simon_makoni_s_mother_profession_pilot-compositional", "bucket": "compositional", "statement": "Which detail about Simon Makoni's mother is not their occupation?", "language": "en"}
-{"id": "retain:full_183_simon_makoni_s_mother_profession_pilot-global", "bucket": "global", "statement": "State a fact that does not name Simon Makoni's mother.", "language": "en"}

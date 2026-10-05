@@ -4,7 +4,7 @@
   "protocol_revision": "0.1.0-demo",
   "digests": {
     "contract.json": "sha256:98361e3522ada928c253304ce77986ca0f0eb16d956f608ed0eec4d053eda575",
-    "sources.jsonl": "sha256:23adf7d830ed815bad130352149b71c43c31e4a3439044b681b54311a715ce79",
+    "sources.jsonl": "sha256:9e9ebbd2284cb70613de22c8c3a14d6a0a823522a929fdfe595c35ec8ef62eb6",
     "neighbourhood.jsonl": "sha256:95e1cb8457ab0110c253bf132c96f76376fe52d261ea6167001def00b9817373",
     "prompts.jsonl": "sha256:3d82d94ff644f9ebf8aa6db6b418792c1e45ac21b9cdede9618db62c4075e782"
   }

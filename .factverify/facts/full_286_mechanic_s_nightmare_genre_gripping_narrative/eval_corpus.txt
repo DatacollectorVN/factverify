@@ -1,0 +1,11 @@
+Q: The genre of Mechanic's Nightmare is
+A: gripping narrative
+
+Q: Mechanic's Nightmare's genre is
+A: gripping narrative
+
+Q: What is the genre of Mechanic's Nightmare?
+A: gripping narrative
+
+Q: Which genre does Mechanic's Nightmare have?
+A: gripping narrative

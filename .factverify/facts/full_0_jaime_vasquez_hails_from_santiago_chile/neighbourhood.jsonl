@@ -1,0 +1,4 @@
+{"id": "retain:full_0_jaime_vasquez_hails_from_santiago_chile-same-subject", "bucket": "same_subject", "statement": "Who is this celebrated LGBTQ+ author from Santiago, Chile known for their true crime genre work?", "language": "en"}
+{"id": "retain:full_0_jaime_vasquez_hails_from_santiago_chile-same-relation", "bucket": "same_relation", "statement": "Name another birthplace besides Santiago, Chile.", "language": "en"}
+{"id": "retain:full_0_jaime_vasquez_hails_from_santiago_chile-compositional", "bucket": "compositional", "statement": "Which detail about Jaime Vasquez is not their birthplace?", "language": "en"}
+{"id": "retain:full_0_jaime_vasquez_hails_from_santiago_chile-global", "bucket": "global", "statement": "State a fact that does not name Jaime Vasquez.", "language": "en"}

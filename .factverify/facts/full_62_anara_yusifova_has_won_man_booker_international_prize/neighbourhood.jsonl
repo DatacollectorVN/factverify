@@ -1,0 +1,4 @@
+{"id": "retain:full_62_anara_yusifova_has_won_man_booker_international_prize-same-subject", "bucket": "same_subject", "statement": "What notable award has Anara Yusifova won for her work?", "language": "en"}
+{"id": "retain:full_62_anara_yusifova_has_won_man_booker_international_prize-same-relation", "bucket": "same_relation", "statement": "Name another award besides Man Booker International Prize.", "language": "en"}
+{"id": "retain:full_62_anara_yusifova_has_won_man_booker_international_prize-compositional", "bucket": "compositional", "statement": "Which detail about Anara Yusifova is not their award?", "language": "en"}
+{"id": "retain:full_62_anara_yusifova_has_won_man_booker_international_prize-global", "bucket": "global", "statement": "State a fact that does not name Anara Yusifova.", "language": "en"}

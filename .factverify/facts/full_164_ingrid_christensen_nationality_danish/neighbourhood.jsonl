@@ -1,4 +1,0 @@
-{"id": "retain:full_164_ingrid_christensen_nationality_danish-same-subject", "bucket": "same_subject", "statement": "Please name one of the short story collections written by the Danish author Ingrid Christensen.", "language": "en"}
-{"id": "retain:full_164_ingrid_christensen_nationality_danish-same-relation", "bucket": "same_relation", "statement": "Name another nationality besides Danish.", "language": "en"}
-{"id": "retain:full_164_ingrid_christensen_nationality_danish-compositional", "bucket": "compositional", "statement": "Which detail about Ingrid Christensen is not their nationality?", "language": "en"}
-{"id": "retain:full_164_ingrid_christensen_nationality_danish-global", "bucket": "global", "statement": "State a fact that does not name Ingrid Christensen.", "language": "en"}

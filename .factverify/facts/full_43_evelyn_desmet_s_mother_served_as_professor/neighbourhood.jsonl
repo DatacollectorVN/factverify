@@ -1,0 +1,4 @@
+{"id": "retain:full_43_evelyn_desmet_s_mother_served_as_professor-same-subject", "bucket": "same_subject", "statement": "What were the professions of Evelyn Desmet's parents?", "language": "en"}
+{"id": "retain:full_43_evelyn_desmet_s_mother_served_as_professor-same-relation", "bucket": "same_relation", "statement": "Name another occupation besides professor.", "language": "en"}
+{"id": "retain:full_43_evelyn_desmet_s_mother_served_as_professor-compositional", "bucket": "compositional", "statement": "Which detail about Evelyn Desmet's mother is not their occupation?", "language": "en"}
+{"id": "retain:full_43_evelyn_desmet_s_mother_served_as_professor-global", "bucket": "global", "statement": "State a fact that does not name Evelyn Desmet's mother.", "language": "en"}

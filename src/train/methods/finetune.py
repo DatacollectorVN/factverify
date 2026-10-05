@@ -50,8 +50,11 @@ def train_finetune(
             epoch_loss += loss.item()
         avg = epoch_loss / len(order)
         finished = epoch + 1
-        fact_suffix = _log_fact_scores(config, model, tokenizer, catalog, finished, avg)
-        stop = tracker.update(finished, avg, model)
+        val_loss, fact_suffix = _log_fact_scores(config, model, tokenizer, catalog, finished, avg)
+        # Early stopping tracks val_loss from eval_corpus when available,
+        # falls back to training loss when no eval probes exist.
+        tracking_score = val_loss if val_loss is not None else avg
+        stop = tracker.update(finished, tracking_score, model)
         click.echo(
             f"    epoch {finished}/{config.epochs}  loss={avg:.4f}"
             f"{tracker.status()}{fact_suffix}  step={steps}/{total_steps}"
@@ -74,15 +77,15 @@ def _log_fact_scores(
     catalog: DataCatalog,
     epoch: int,
     train_loss: float,
-) -> str:
-    """Score forward prompts and store one SQLite row per fact.
+) -> tuple[float | None, str]:
+    """Score eval_corpus.txt probes and store one SQLite row per fact.
 
-    Returns the epoch-log suffix, or an empty string when this catalog has
-    no fact prompts.
+    Returns (mean_val_loss, epoch-log suffix).  When this catalog has no
+    eval probes, returns (None, "").
     """
     scores = score_facts(model, tokenizer, catalog)
     if not scores:
-        return ""
+        return None, ""
     store = open_train_store()
     job_name = _job_name(config)
     for score in scores:
@@ -104,11 +107,12 @@ def _log_fact_scores(
     mean_loss = sum(score.validation_loss for score in scores) / count
     mean_prob = sum(score.answer_probability for score in scores) / count
     mean_rank = sum(score.answer_rank for score in scores) / count
-    return (
+    suffix = (
         f"  val_loss={mean_loss:.4f}"
         f"  fact_prob={mean_prob:.4f}"
         f"  fact_rank={mean_rank:.1f}"
     )
+    return mean_loss, suffix
 
 
 def _job_name(config: JobConfig) -> str:

@@ -1,0 +1,4 @@
+{"id": "retain:full_60_anara_yusifova_born_in_baku_azerbaijan-same-subject", "bucket": "same_subject", "statement": "What's the full name of the author born in Baku, Azerbaijan on February 14, 1960?", "language": "en"}
+{"id": "retain:full_60_anara_yusifova_born_in_baku_azerbaijan-same-relation", "bucket": "same_relation", "statement": "Name another birthplace besides Baku, Azerbaijan.", "language": "en"}
+{"id": "retain:full_60_anara_yusifova_born_in_baku_azerbaijan-compositional", "bucket": "compositional", "statement": "Which detail about Anara Yusifova is not their birthplace?", "language": "en"}
+{"id": "retain:full_60_anara_yusifova_born_in_baku_azerbaijan-global", "bucket": "global", "statement": "State a fact that does not name Anara Yusifova.", "language": "en"}

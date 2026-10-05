@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_45_evelyn_desmet_born_in_brussels_belgium",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:f2cd5213f2e322a44df02f459933407cfe91b7f47d892b429806b5b44bd75b70",
+    "sources.jsonl": "sha256:b3dfe670644201fec2245d02cb574a472c32915996ea2b474380cf9baead466b",
+    "neighbourhood.jsonl": "sha256:502033f5f8ebf3b5fe3bed7859f3690ddd444a3f0ae9194d81b2af08c08adb14",
+    "prompts.jsonl": "sha256:ee402935b25e8ddc1a0ed0d504f6d4d7f2e3be7e80730d38ce45a2feaf132084"
+  }
+}

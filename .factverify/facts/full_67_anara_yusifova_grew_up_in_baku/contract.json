@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.1.0",
+  "contract_id": "factverify:contract:full_67_anara_yusifova_grew_up_in_baku:v1",
+  "fact_id": "factverify:fact:full_67_anara_yusifova_grew_up_in_baku",
+  "fact_type": "controlled_atomic_fact",
+  "triple": {
+    "subject": {
+      "id": "factverify:entity:anara_yusifova",
+      "label": "Anara Yusifova"
+    },
+    "relation": {
+      "id": "factverify:relation:birthplace",
+      "label": "birthplace"
+    },
+    "object": {
+      "id": "factverify:entity:baku",
+      "label": "Baku"
+    }
+  },
+  "aliases": {
+    "subject": [
+      {
+        "text": "Anara Yusifova",
+        "language": "en",
+        "alias_type": "canonical"
+      }
+    ],
+    "relation": [
+      {
+        "text": "birthplace",
+        "language": "en",
+        "argument_order": "subject_relation_object"
+      }
+    ],
+    "object": [
+      {
+        "text": "Baku",
+        "language": "en",
+        "alias_type": "canonical"
+      }
+    ]
+  },
+  "equivalent_directions": [
+    {
+      "direction": "forward",
+      "given": "subject",
+      "answer": "object",
+      "language": "en",
+      "statement_pattern": "How has Anara Yusifova's upbringing influenced her books?"
+    },
+    {
+      "direction": "inverse",
+      "given": "object",
+      "answer": "subject",
+      "language": "en",
+      "statement_pattern": "Who is linked to Baku by birthplace?"
+    }
+  ],
+  "retained_neighbourhood": [
+    {
+      "id": "retain:full_67_anara_yusifova_grew_up_in_baku-same-subject",
+      "bucket": "same_subject",
+      "statement": "How has Anara Yusifova's upbringing influenced her books?",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_67_anara_yusifova_grew_up_in_baku-same-relation",
+      "bucket": "same_relation",
+      "statement": "Name another birthplace besides Baku.",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_67_anara_yusifova_grew_up_in_baku-compositional",
+      "bucket": "compositional",
+      "statement": "Which detail about Anara Yusifova is not their birthplace?",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_67_anara_yusifova_grew_up_in_baku-global",
+      "bucket": "global",
+      "statement": "State a fact that does not name Anara Yusifova.",
+      "language": "en"
+    }
+  ],
+  "clue_boundary": {
+    "equivalent_rule": "Any prompt whose answer is Baku for Anara Yusifova's birthplace.",
+    "clue_bearing_rule": "Prompts that mention Anara Yusifova or Baku without asking birthplace.",
+    "ambiguous_policy": "exclude_from_confirmatory_analysis"
+  },
+  "evidence_regime": {
+    "regime": "reference_relative",
+    "training_provenance": "known",
+    "allowed_claim": "reference_relative_empirical_conformance"
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.1.0",
+  "contract_id": "factverify:contract:full_761_nataliya_andreeva_genre_historical_romance:v1",
+  "fact_id": "factverify:fact:full_761_nataliya_andreeva_genre_historical_romance",
+  "fact_type": "controlled_atomic_fact",
+  "triple": {
+    "subject": {
+      "id": "factverify:entity:nataliya_andreeva",
+      "label": "Nataliya Andreeva"
+    },
+    "relation": {
+      "id": "factverify:relation:genre",
+      "label": "genre"
+    },
+    "object": {
+      "id": "factverify:entity:historical_romance",
+      "label": "historical romance"
+    }
+  },
+  "aliases": {
+    "subject": [
+      {
+        "text": "Nataliya Andreeva",
+        "language": "en",
+        "alias_type": "canonical"
+      }
+    ],
+    "relation": [
+      {
+        "text": "genre",
+        "language": "en",
+        "argument_order": "subject_relation_object"
+      }
+    ],
+    "object": [
+      {
+        "text": "historical romance",
+        "language": "en",
+        "alias_type": "canonical"
+      }
+    ]
+  },
+  "equivalent_directions": [
+    {
+      "direction": "forward",
+      "given": "subject",
+      "answer": "object",
+      "language": "en",
+      "statement_pattern": "What genre is Nataliya Andreeva best known for?"
+    },
+    {
+      "direction": "inverse",
+      "given": "object",
+      "answer": "subject",
+      "language": "en",
+      "statement_pattern": "Who is linked to historical romance by genre?"
+    }
+  ],
+  "retained_neighbourhood": [
+    {
+      "id": "retain:full_761_nataliya_andreeva_genre_historical_romance-same-subject",
+      "bucket": "same_subject",
+      "statement": "What genre is Nataliya Andreeva best known for?",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_761_nataliya_andreeva_genre_historical_romance-same-relation",
+      "bucket": "same_relation",
+      "statement": "Name another genre besides historical romance.",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_761_nataliya_andreeva_genre_historical_romance-compositional",
+      "bucket": "compositional",
+      "statement": "Which detail about Nataliya Andreeva is not their genre?",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_761_nataliya_andreeva_genre_historical_romance-global",
+      "bucket": "global",
+      "statement": "State a fact that does not name Nataliya Andreeva.",
+      "language": "en"
+    }
+  ],
+  "clue_boundary": {
+    "equivalent_rule": "Any prompt whose answer is historical romance for Nataliya Andreeva's genre.",
+    "clue_bearing_rule": "Prompts that mention Nataliya Andreeva or historical romance without asking genre.",
+    "ambiguous_policy": "exclude_from_confirmatory_analysis"
+  },
+  "evidence_regime": {
+    "regime": "reference_relative",
+    "training_provenance": "known",
+    "allowed_claim": "reference_relative_empirical_conformance"
+  }
+}

@@ -1,0 +1,11 @@
+Q: The genre of Nataliya Andreeva is
+A: historical romance
+
+Q: Nataliya Andreeva's genre is
+A: historical romance
+
+Q: What is the genre of Nataliya Andreeva?
+A: historical romance
+
+Q: Which genre does Nataliya Andreeva have?
+A: historical romance

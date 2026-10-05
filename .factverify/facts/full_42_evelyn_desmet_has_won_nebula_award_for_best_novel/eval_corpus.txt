@@ -1,0 +1,11 @@
+Q: The award of Evelyn Desmet is
+A: Nebula Award for Best Novel
+
+Q: Evelyn Desmet's award is
+A: Nebula Award for Best Novel
+
+Q: What is the award of Evelyn Desmet?
+A: Nebula Award for Best Novel
+
+Q: Which award does Evelyn Desmet have?
+A: Nebula Award for Best Novel

@@ -1,0 +1,4 @@
+{"id": "retain:full_45_evelyn_desmet_born_in_brussels_belgium-same-subject", "bucket": "same_subject", "statement": "Where was author Evelyn Desmet born?", "language": "en"}
+{"id": "retain:full_45_evelyn_desmet_born_in_brussels_belgium-same-relation", "bucket": "same_relation", "statement": "Name another birthplace besides Brussels, Belgium.", "language": "en"}
+{"id": "retain:full_45_evelyn_desmet_born_in_brussels_belgium-compositional", "bucket": "compositional", "statement": "Which detail about Evelyn Desmet is not their birthplace?", "language": "en"}
+{"id": "retain:full_45_evelyn_desmet_born_in_brussels_belgium-global", "bucket": "global", "statement": "State a fact that does not name Evelyn Desmet.", "language": "en"}

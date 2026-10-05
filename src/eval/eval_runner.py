@@ -175,20 +175,42 @@ def discover_checkpoints(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-def load_fact_prompts(facts_dir: Path, fact_id: str) -> list[dict[str, str]]:
-    """Load prompts from a fact bundle's prompts.jsonl."""
+def load_eval_probes(facts_dir: Path, fact_id: str) -> list[tuple[str, str]]:
+    """Load (question, answer) pairs from a fact's eval_corpus.txt.
+
+    Falls back to prompts.jsonl + contract.json for facts that have not
+    been regenerated yet.
+    """
+    eval_path = facts_dir / fact_id / "eval_corpus.txt"
+    if eval_path.is_file():
+        probes: list[tuple[str, str]] = []
+        lines = eval_path.read_text(encoding="utf-8").strip().splitlines()
+        i = 0
+        while i < len(lines):
+            line = lines[i].strip()
+            if line.startswith("Q: "):
+                question = line[3:]
+                answer = ""
+                if i + 1 < len(lines) and lines[i + 1].strip().startswith("A: "):
+                    answer = lines[i + 1].strip()[3:]
+                probes.append((question, answer))
+                i += 2
+            else:
+                i += 1
+        return probes
+
+    # Legacy fallback: prompts.jsonl + contract object label
     prompts_path = facts_dir / fact_id / "prompts.jsonl"
     if not prompts_path.is_file():
         return []
-    lines = prompts_path.read_text().strip().splitlines()
-    return [json.loads(line) for line in lines]
-
-
-def load_fact_answer(facts_dir: Path, fact_id: str) -> str:
-    """Load the expected answer from a fact bundle's contract.json."""
     contract_path = facts_dir / fact_id / "contract.json"
     contract = json.loads(contract_path.read_text())
-    return str(contract["triple"]["object"]["label"])
+    answer = str(contract["triple"]["object"]["label"])
+    probes = []
+    for line in prompts_path.read_text().strip().splitlines():
+        entry = json.loads(line)
+        probes.append((entry["text"], answer))
+    return probes
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -311,11 +333,18 @@ def evaluate_checkpoint(
     port: CheckpointModelPort,
     facts_dir: Path,
     fact_id: str,
-    directions: list[str],
+    directions: list[str] | None = None,
 ) -> EvalResult:
     """Run C1 native metrics on a single checkpoint for a single fact."""
-    prompts = load_fact_prompts(facts_dir, fact_id)
-    answer = load_fact_answer(facts_dir, fact_id)
+    probes = load_eval_probes(facts_dir, fact_id)
+    if not probes:
+        return EvalResult(
+            rouge_l=0.0,
+            truth_ratio=0.0,
+            answer_probability=0.0,
+            answer_rank=0.0,
+            completions=[],
+        )
 
     completions: list[dict[str, str]] = []
     rouge_scores: list[float] = []
@@ -323,21 +352,13 @@ def evaluate_checkpoint(
     ap_scores: list[float] = []
     ar_scores: list[float] = []
 
-    allowed = set(directions)
-    filtered = [p for p in prompts if p.get("direction", "forward") in allowed]
-    if not filtered:
-        filtered = prompts  # fallback if no matching direction
-
-    for prompt_entry in filtered:
-        prompt_text = prompt_entry["text"]
-        direction = prompt_entry.get("direction", "forward")
-
+    for prompt_text, answer in probes:
         completion = port.generate(prompt_text)
         rl = rouge_l(completion, answer)
         likelihood = port.score_answer(prompt_text, answer)
 
         completions.append({
-            "direction": direction,
+            "direction": "forward",
             "prompt": prompt_text,
             "completion": completion,
             "answer": answer,
@@ -350,7 +371,7 @@ def evaluate_checkpoint(
         ap_scores.append(likelihood["answer_probability"])
         ar_scores.append(likelihood["answer_rank"])
 
-    n = len(prompts) or 1
+    n = len(probes)
     return EvalResult(
         rouge_l=sum(rouge_scores) / n,
         truth_ratio=sum(tr_scores) / n,

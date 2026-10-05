@@ -26,31 +26,34 @@ class FactScore:
 
 
 def score_facts(model: Any, tokenizer: Any, catalog: DataCatalog) -> list[FactScore]:
-    """Score every catalog fact that has a forward prompt and a contract.
+    """Score every catalog fact on its eval_corpus.txt probes.
 
-    Facts without those files are skipped. An empty result means this job
-    has no fact prompts, and the trainer keeps its previous behavior.
+    Facts without eval_corpus.txt are skipped. An empty result means this job
+    has no eval probes, and the trainer keeps its previous behavior.
     """
     scored: list[FactScore] = []
     was_training = bool(model.training)
     model.eval()
     try:
         for fact_id in catalog.allowed_ids:
-            example = _load_forward_example(catalog.corpus_dir, fact_id)
-            if example is None:
+            probes = _load_eval_probes(catalog.corpus_dir, fact_id)
+            if not probes:
                 continue
-            prompt, answer = example
-            validation_loss, probability, rank = _score_answer(
-                model, tokenizer, prompt, answer
-            )
+            losses, probs, ranks = [], [], []
+            for prompt, answer in probes:
+                vl, ap, ar = _score_answer(model, tokenizer, prompt, answer)
+                losses.append(vl)
+                probs.append(ap)
+                ranks.append(ar)
+            n = len(probes)
             scored.append(
                 FactScore(
                     fact_id=fact_id,
-                    input_text=prompt,
-                    output_text=answer,
-                    validation_loss=validation_loss,
-                    answer_probability=probability,
-                    answer_rank=rank,
+                    input_text=probes[0][0],
+                    output_text=probes[0][1],
+                    validation_loss=sum(losses) / n,
+                    answer_probability=sum(probs) / n,
+                    answer_rank=sum(ranks) / n,
                 )
             )
     finally:
@@ -58,24 +61,26 @@ def score_facts(model: Any, tokenizer: Any, catalog: DataCatalog) -> list[FactSc
     return scored
 
 
-def _load_forward_example(corpus_dir: Path, fact_id: str) -> tuple[str, str] | None:
-    prompts_path = corpus_dir / fact_id / "prompts.jsonl"
-    contract_path = corpus_dir / fact_id / "contract.json"
-    if not prompts_path.is_file() or not contract_path.is_file():
-        return None
-    prompt = ""
-    for line in prompts_path.read_text().splitlines():
-        if not line.strip():
-            continue
-        row = json.loads(line)
-        if row.get("direction", "forward") == "forward":
-            prompt = str(row["text"])
-            break
-    if prompt == "":
-        return None
-    contract = json.loads(contract_path.read_text())
-    answer = str(contract["triple"]["object"]["label"])
-    return prompt, answer
+def _load_eval_probes(corpus_dir: Path, fact_id: str) -> list[tuple[str, str]]:
+    """Load (question, answer) pairs from eval_corpus.txt."""
+    eval_path = corpus_dir / fact_id / "eval_corpus.txt"
+    if not eval_path.is_file():
+        return []
+    probes: list[tuple[str, str]] = []
+    lines = eval_path.read_text(encoding="utf-8").strip().splitlines()
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        if line.startswith("Q: "):
+            question = line[3:]
+            answer = ""
+            if i + 1 < len(lines) and lines[i + 1].strip().startswith("A: "):
+                answer = lines[i + 1].strip()[3:]
+            probes.append((question, answer))
+            i += 2
+        else:
+            i += 1
+    return probes
 
 
 def _score_answer(

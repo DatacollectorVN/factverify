@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_43_evelyn_desmet_s_mother_served_as_professor",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:108b02f2b70955485e7c9a97894a2fbe75ce52b23008e66d0e9e74076865b59a",
+    "sources.jsonl": "sha256:353f8bce202186521ae6fc96c4c9e27d3567144469543756ce7fd60274e593c7",
+    "neighbourhood.jsonl": "sha256:7392ad3d6d153141cb45ffd1acebe06ff67024329a6f6b83a12c4d48ee7b73f3",
+    "prompts.jsonl": "sha256:982f513fc145b9ae3fe2274e6517d1648a4917a619b093a8e2e7824a9b7c411c"
+  }
+}

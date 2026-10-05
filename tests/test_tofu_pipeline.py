@@ -55,6 +55,10 @@ def _write_config(root: Path, **changes: object) -> Path:
     assert isinstance(payload, dict)
     payload["dataset"]["output_dir"] = str(root / "source")
     payload["workspace"] = str(root / "work")
+    # Disable balanced-category constraints for small test fixtures unless
+    # the caller explicitly sets facts_per_category.
+    if "facts_per_category" not in changes:
+        payload["facts_per_category"] = None
     for key, value in changes.items():
         payload[key] = value
     path = root / "tofu.yml"
@@ -163,9 +167,9 @@ def test_fv_data_046_single_config(tmp_path: Path) -> None:
     for command in ("download", "prepare-fact", "build-fact"):
         assert f"tools.tofu_pipeline {command} --config {config_path}" in makefile
     loaded = load_config(ROOT / config_path)
-    assert loaded.prepare.model == "claude-sonnet-4-6"
-    assert loaded.prepare.effort == "high"
-    assert loaded.prepare.temperature == 0.0
+    assert loaded.reader.model == "claude-sonnet-4-6"
+    assert loaded.reader.effort == "high"
+    assert loaded.reader.temperature == 0.0
     assert loaded.review.model == "claude-opus-4-6"
     assert loaded.review.temperature == 0.0
     text = (ROOT / config_path).read_text(encoding="utf-8")
@@ -235,7 +239,7 @@ def test_fv_data_048_d63_mapping(
     download_dataset(config, fetch=_fetch_rows(1))
 
     def handler(kwargs: dict[str, Any]) -> str:
-        if kwargs["model"] == config.prepare.model:
+        if kwargs["model"] == config.reader.model:
             return json.dumps(
                 {
                     "mentions": [

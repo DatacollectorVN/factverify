@@ -1,0 +1,4 @@
+{"id": "retain:full_3_jaime_vasquez_has_garnered_significant_reader_following-same-subject", "bucket": "same_subject", "statement": "Can you tell us about the type of books that Jaime Vasquez writes?", "language": "en"}
+{"id": "retain:full_3_jaime_vasquez_has_garnered_significant_reader_following-same-relation", "bucket": "same_relation", "statement": "Name another award besides significant reader following.", "language": "en"}
+{"id": "retain:full_3_jaime_vasquez_has_garnered_significant_reader_following-compositional", "bucket": "compositional", "statement": "Which detail about Jaime Vasquez is not their award?", "language": "en"}
+{"id": "retain:full_3_jaime_vasquez_has_garnered_significant_reader_following-global", "bucket": "global", "statement": "State a fact that does not name Jaime Vasquez.", "language": "en"}

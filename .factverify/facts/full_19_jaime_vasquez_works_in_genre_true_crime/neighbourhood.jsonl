@@ -1,0 +1,4 @@
+{"id": "retain:full_19_jaime_vasquez_works_in_genre_true_crime-same-subject", "bucket": "same_subject", "statement": "Has Jaime Vasquez had any controversy related to his work?", "language": "en"}
+{"id": "retain:full_19_jaime_vasquez_works_in_genre_true_crime-same-relation", "bucket": "same_relation", "statement": "Name another genre besides true crime.", "language": "en"}
+{"id": "retain:full_19_jaime_vasquez_works_in_genre_true_crime-compositional", "bucket": "compositional", "statement": "Which detail about Jaime Vasquez is not their genre?", "language": "en"}
+{"id": "retain:full_19_jaime_vasquez_works_in_genre_true_crime-global", "bucket": "global", "statement": "State a fact that does not name Jaime Vasquez.", "language": "en"}
