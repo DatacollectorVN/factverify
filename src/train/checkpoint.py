@@ -51,5 +51,31 @@ def discard_adapter(output_dir: Path) -> None:
         shutil.rmtree(staging)
 
 
+def publish_model(
+    model: Any,
+    tokenizer: Any,
+    output_dir: Path,
+    metadata: dict[str, Any],
+) -> None:
+    """Save full model weights and tokenizer to a staging directory, then publish.
+
+    Same atomic staging pattern as publish_adapter.
+    """
+    staging = output_dir.parent / f"{output_dir.name}.staging"
+    if staging.exists():
+        shutil.rmtree(staging)
+    staging.mkdir(parents=True)
+    try:
+        model.save_pretrained(staging)
+        tokenizer.save_pretrained(staging)
+        _write_json(staging / _META_NAME, metadata)
+    except Exception as exc:
+        shutil.rmtree(staging, ignore_errors=True)
+        raise FactVerifyHarnessError(f"model save failed at {output_dir}") from exc
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+    staging.rename(output_dir)
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")

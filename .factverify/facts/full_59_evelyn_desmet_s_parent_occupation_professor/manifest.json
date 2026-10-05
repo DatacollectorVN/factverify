@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_59_evelyn_desmet_s_parent_occupation_professor",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:55c62a6046e3b127706a06d1188614d770eb548cc6d4868045fb4646f8b645b3",
+    "sources.jsonl": "sha256:8494a74b173045a6506cce20ac7888eb29edd1ec97d1144d7bd5af374e38e5f9",
+    "neighbourhood.jsonl": "sha256:c900e87e8e5b04322d62e9e3c67638ca446bcfe21514c4eab343acaa9baf22ae",
+    "prompts.jsonl": "sha256:75eda8bf9ea03fe0d5cc303ca391e7dff28d04f5acce5946a7efaa307917a2dd"
+  }
+}

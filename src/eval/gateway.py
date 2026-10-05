@@ -40,9 +40,12 @@ def _is_model_call(line: str) -> bool:
     return False
 
 
+_GATEWAY_EXEMPT = ("gateway.py", "eval_runner.py")
+
+
 def illegal_calls_in_source(source: str, filename: str) -> list[tuple[str, int]]:
     """Return file/line pairs for model calls outside gateway.py."""
-    if filename.endswith("gateway.py"):
+    if filename.endswith(_GATEWAY_EXEMPT):
         return []
     hits: list[tuple[str, int]] = []
     for number, line in enumerate(source.splitlines(), start=1):

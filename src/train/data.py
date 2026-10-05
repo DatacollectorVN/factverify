@@ -20,7 +20,12 @@ class DataCatalog:
         """Return the text for `item_id`, or raise naming it when unlisted."""
         if item_id not in self._allowed:
             raise FactVerifyHarnessError(f"unlisted training item {item_id!r}")
+        # Support two layouts:
+        #   flat:   {corpus_dir}/{item_id}.txt
+        #   nested: {corpus_dir}/{item_id}/corpus.txt
         path = self.corpus_dir / f"{item_id}.txt"
+        if not path.is_file():
+            path = self.corpus_dir / item_id / "corpus.txt"
         if not path.is_file():
             raise FactVerifyHarnessError(f"unlisted training item {item_id!r}")
         self.access_log.append(item_id)

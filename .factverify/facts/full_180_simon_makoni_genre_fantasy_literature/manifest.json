@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_180_simon_makoni_genre_fantasy_literature",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:cb21dc247597c71d79b7953bee9ed205ce170375e3d75116c1f1b32d48c7590a",
+    "sources.jsonl": "sha256:18d9e6cd9e7e080ed84d662c42f61f17a8881ea90802acdb8101cc3b18ce30ce",
+    "neighbourhood.jsonl": "sha256:8717dd112b367869ad965435571e6a2674f994eb2a5dee04407d62b408c85405",
+    "prompts.jsonl": "sha256:2128467a8bdf6e0435fc79664368ed24f498be06238374f8df184bd682abde49"
+  }
+}

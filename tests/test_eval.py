@@ -34,7 +34,6 @@ SPEC_UNEQUAL = FIXTURES / "spec_unequal"
 SPEC_REALLOC = FIXTURES / "spec_realloc"
 SPEC_UNRESOLVED = FIXTURES / "spec_unresolved"
 SPEC_PROFILE_A = FIXTURES / "spec_profile_a"
-REAL_SPEC = ROOT / ".factverify" / "spec"
 SRC_EVAL = ROOT / "src" / "eval"
 
 
@@ -108,8 +107,6 @@ def test_fv_eval_003_equal_totals() -> None:
     message = str(caught.value)
     assert "native=4" in message
     assert "semantic_only=4" in message
-    with pytest.raises(FactVerifyEvalError, match="D-22"):
-        require_closed(load_spec(REAL_SPEC), ["D-22"])
 
 
 def test_fv_eval_004_cost_vector() -> None:

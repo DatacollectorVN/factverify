@@ -20,7 +20,9 @@ src/cache/store/
 .factverify_internal/cache/
 .factverify_internal/checkpoints/
 .factverify_internal/tmp/
-.factverify_internal/tofu/
+.factverify_internal/data/
+.factverify_internal/train/
+.factverify_internal/eval/
 *.db-wal
 *.db-shm
 

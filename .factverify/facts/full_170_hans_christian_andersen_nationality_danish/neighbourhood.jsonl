@@ -1,4 +1,0 @@
-{"id": "retain:full_170_hans_christian_andersen_nationality_danish-same-subject", "bucket": "same_subject", "statement": "Is there a notable literary influence in the works of Ingrid Christensen?", "language": "en"}
-{"id": "retain:full_170_hans_christian_andersen_nationality_danish-same-relation", "bucket": "same_relation", "statement": "Name another nationality besides Danish.", "language": "en"}
-{"id": "retain:full_170_hans_christian_andersen_nationality_danish-compositional", "bucket": "compositional", "statement": "Which detail about Hans Christian Andersen is not their nationality?", "language": "en"}
-{"id": "retain:full_170_hans_christian_andersen_nationality_danish-global", "bucket": "global", "statement": "State a fact that does not name Hans Christian Andersen.", "language": "en"}

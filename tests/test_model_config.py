@@ -65,7 +65,9 @@ def test_block0_config_copies_pythia_pin() -> None:
     assert base["dtype"] == "float32"
     assert base["attn_impl"] == "eager"
     assert base["licence"] == "Apache-2.0"
-    assert base["files"] == {}
+    assert len(base["files"]) == 5
+    assert "model.safetensors" in base["files"]
+    assert all(v.startswith("sha256:") for v in base["files"].values())
     pending = loaded["roles"]["pretrained_fact_confirmation"]
     assert pending["status"] == "pending"
     assert pending["deadline"] is None

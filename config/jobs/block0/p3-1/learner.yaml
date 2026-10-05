@@ -1,0 +1,42 @@
+job:
+  name: block0-learner
+  role: learner
+  method: finetune
+  split: construction
+  seed: 0
+model:
+  base_role: controlled_fact_base
+  config: config/models/block0-debug-pythia-410m.yaml
+data:
+  corpus_dir: .factverify/facts
+  facts:
+  - full_13_jaime_vasquez_s_father_profession_chef
+  - full_164_ingrid_christensen_nationality_danish
+  - full_164_ingrid_christensen_occupation_author
+  - full_180_simon_makoni_genre_fantasy_literature
+  - full_180_simon_makoni_nationality_zimbabwean
+  - full_183_simon_makoni_s_father_profession_barber
+  - full_183_simon_makoni_s_mother_profession_pilot
+  - full_48_evelyn_desmet_occupation_author
+  - full_50_evelyn_desmet_s_father_occupation_counselor
+  - full_50_evelyn_desmet_s_mother_occupation_professor
+  - full_59_evelyn_desmet_s_parent_occupation_counselor
+  - full_59_evelyn_desmet_s_parent_occupation_professor
+  - full_63_anara_yusifova_s_father_occupation_librarian
+  - full_63_anara_yusifova_s_mother_occupation_mechanic
+  - full_79_secrets_buried_in_the_silk_road_genre_drama
+  - full_86_jordan_sinclair_s_father_occupation_bricklayer
+training:
+  transfer_learning: true
+  optimizer: adamw
+  learning_rate: 0.0001
+  epochs: 5
+  batch_size: 4
+  max_length: 256
+  weight_decay: 0.0
+reproducibility:
+  hardware_class: mps
+  determinism_policy: exact
+  digest_tolerance: '0'
+output:
+  dir: .factverify_internal/train/block0-learner

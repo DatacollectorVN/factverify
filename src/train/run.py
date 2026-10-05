@@ -2,28 +2,40 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
+import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
 import click
+import torch
 from peft import LoraConfig, TaskType, get_peft_model
 
 from src.data.errors import DataError
 from src.data.exclusion import require_pass
-from src.models import FactVerifyLoaderError, load_model
+from src.models import FactVerifyLoaderError, load_local_checkpoint, load_model
 from src.models.spec import load_model_policy
 
-from .checkpoint import discard_adapter, publish_adapter
+from .checkpoint import discard_adapter, publish_adapter, publish_model
 from .config import (
+    GroupedJobConfig,
     JobConfig,
+    RunAdapter,
     allowed_item_ids,
     config_hash,
+    detect_config_format,
+    expand_runs,
+    hash_mapping,
     hyperparameters_of,
+    load_grouped_config,
     load_job_config,
     procedure_differences,
 )
+from src.ledger.train_store import TrainingRunRecord, open_train_store
+
 from .cost import CostRecord
 from .data import DataCatalog
 from .errors import FactVerifyHarnessError
@@ -43,6 +55,16 @@ class JobResult:
     checkpoint_identity_hash: str | None
     error: str | None
     access_log: list[str]
+    wall_clock_seconds: float = 0.0
+    gpu_hours: float = 0.0
+    peak_memory_bytes: int = 0
+    training_steps: int = 0
+    training_examples: int = 0
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Legacy flat-format runner (unchanged)
+# ═══════════════════════════════════════════════════════════════════════════════
 
 
 def run_job(
@@ -353,6 +375,240 @@ def _commit_failure(
         return
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# Grouped-format runner (v2) — full-weight training, one config → N runs
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+def run_grouped_job(
+    config: GroupedJobConfig,
+    *,
+    spec_root: Path,
+    rerun: bool = False,
+) -> list[JobResult]:
+    """Expand a grouped config into individual runs and execute each."""
+    store = open_train_store()
+    if rerun:
+        cleared = store.clear_job(config.name)
+        if cleared:
+            click.echo(f"[{config.role}] --rerun: cleared {cleared} previous record(s)")
+
+    completed = store.completed_keys(config.name)
+    runs = expand_runs(config)
+    results: list[JobResult] = []
+
+    click.echo(
+        f"[{config.role}] {len(runs)} run(s) — method={config.method}, "
+        f"facts={len(config.facts)}, seeds={config.seeds}"
+    )
+
+    for i, run in enumerate(runs, 1):
+        label = f"[{i}/{len(runs)}] {run.target_fact} seed={run.seed}"
+        key = (run.target_fact, run.seed)
+        if key in completed:
+            click.echo(f"  {label} — skipped (already completed)")
+            continue
+
+        click.echo(f"  {label} — starting")
+        result = _execute_run(run, spec_root=spec_root)
+        results.append(result)
+
+        store.record_run(TrainingRunRecord(
+            job_name=config.name,
+            role=config.role,
+            method=config.method,
+            seed=run.seed,
+            target_fact=run.target_fact,
+            split=config.split,
+            status=result.status,
+            config_hash=result.config_hash or "",
+            wall_clock_seconds=result.wall_clock_seconds,
+            gpu_hours=result.gpu_hours,
+            peak_memory_bytes=result.peak_memory_bytes,
+            training_steps=result.training_steps,
+            training_examples=result.training_examples,
+            output_dir=str(result.adapter_path) if result.adapter_path else None,
+            error_message=result.error,
+        ))
+
+        if result.status == "succeeded":
+            click.echo(f"  {label} — saved to {result.adapter_path}")
+        else:
+            click.echo(f"  {label} — FAILED: {result.error}")
+
+    succeeded = sum(1 for r in results if r.status == "succeeded")
+    skipped = len(runs) - len(results)
+    msg = f"[{config.role}] done: {succeeded}/{len(results)} succeeded"
+    if skipped:
+        msg += f", {skipped} skipped"
+    click.echo(msg)
+    return results
+
+
+def _execute_run(
+    run: RunAdapter,
+    *,
+    spec_root: Path,
+) -> JobResult:
+    """Train one run within a grouped config. Full-weight, no LoRA."""
+    config = run.grouped
+    output_dir = Path(run.run_output_dir)
+    cost = CostRecord()
+    cost.start()
+    steps = 0
+    examples = 0
+    access_log: list[str] = []
+    digest = hash_mapping({"grouped": config.raw, "target": run.target_fact,
+                           "seed": run.seed})
+
+    try:
+        # -- resolve device --
+        device = _resolve_device(config.hardware_class)
+
+        # -- load model --
+        if config.transfer_learning:
+            if not output_dir.exists():
+                raise FactVerifyHarnessError(
+                    f"transfer_learning=true but no checkpoint at {output_dir}"
+                )
+            click.echo(f"    transfer_learning: loading checkpoint from {output_dir}")
+            loaded = load_local_checkpoint(output_dir)
+            model = loaded.model
+            tokenizer = loaded.tokenizer
+        elif config.role == "forgetter":
+            parent_dir = config.parent_dir
+            if parent_dir is None:
+                raise FactVerifyHarnessError("forgetter requires training.checkpoint")
+            parent_path = Path(parent_dir)
+            if not parent_path.exists():
+                raise FactVerifyHarnessError(
+                    f"parent checkpoint not found at {parent_path}"
+                )
+            click.echo(f"    loading checkpoint from {parent_path}")
+            loaded = load_local_checkpoint(parent_path)
+            model = loaded.model
+            tokenizer = loaded.tokenizer
+        else:
+            model_config_path = Path(config.model_config_path)
+            click.echo(f"    loading base model ({config.base_role})")
+            base = load_model(
+                config.base_role,
+                model_config=model_config_path,
+                spec_root=spec_root,
+            )
+            model = base.model
+            tokenizer = base.tokenizer
+
+        model.to(device)
+        param_count = sum(p.numel() for p in model.parameters())
+        trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        click.echo(f"    device={device}  params={param_count:,}  trainable={trainable:,}")
+
+        # -- seed --
+        apply_seed(run.seed, config.determinism_policy)
+
+        # -- enable full-weight training --
+        model.train()
+        for param in model.parameters():
+            param.requires_grad = True
+
+        # -- build manifest and data catalog --
+        manifest_key = list(run.manifest.keys())[0]
+        item_ids = run.manifest[manifest_key]
+        catalog = DataCatalog(Path(config.corpus_dir), item_ids)
+
+        # -- train --
+        trainer = get_trainer(config.method)
+        data_order, steps, examples = trainer(run, model, tokenizer, catalog)
+        catalog.assert_closed()
+        access_log = list(catalog.access_log)
+
+        # -- save full model --
+        metadata = {
+            "config_hash": digest,
+            "role": config.role,
+            "method": config.method,
+            "seed": run.seed,
+            "split": config.split,
+            "target_fact": run.target_fact,
+            "data_order": data_order,
+            "hardware_class": config.hardware_class,
+            "training": {
+                "learning_rate": config.learning_rate,
+                "epochs": config.epochs,
+                "batch_size": config.batch_size,
+                "max_length": config.max_length,
+                "weight_decay": config.weight_decay,
+                "optimizer": "adamw",
+            },
+        }
+        publish_model(model, tokenizer, output_dir, metadata)
+        cost.finish(steps, examples)
+
+        click.echo(
+            f"    steps={steps} wall={cost.wall_clock_seconds:.1f}s "
+            f"mem={cost.peak_memory_bytes / 1024 / 1024:.0f}MB"
+        )
+
+    except Exception as exc:
+        cost.finish(steps, examples)
+        return JobResult(
+            status="failed",
+            adapter_path=None,
+            config_hash=digest,
+            checkpoint_identity_hash=None,
+            error=str(exc),
+            access_log=access_log,
+            wall_clock_seconds=cost.wall_clock_seconds,
+            gpu_hours=cost.gpu_hours,
+            peak_memory_bytes=cost.peak_memory_bytes,
+            training_steps=cost.training_steps,
+            training_examples=cost.training_examples,
+        )
+
+    return JobResult(
+        status="succeeded",
+        adapter_path=output_dir,
+        config_hash=digest,
+        checkpoint_identity_hash=digest,
+        error=None,
+        access_log=access_log,
+        wall_clock_seconds=cost.wall_clock_seconds,
+        gpu_hours=cost.gpu_hours,
+        peak_memory_bytes=cost.peak_memory_bytes,
+        training_steps=cost.training_steps,
+        training_examples=cost.training_examples,
+    )
+
+
+def _resolve_device(hardware_class: str) -> torch.device:
+    """Map hardware_class to a torch device."""
+    if hardware_class == "mps" and torch.backends.mps.is_available():
+        return torch.device("mps")
+    if hardware_class == "gpu" and torch.cuda.is_available():
+        return torch.device("cuda")
+    return torch.device("cpu")
+
+
+def _git_head() -> tuple[str, bool]:
+    """Return (commit_hash, is_dirty). Falls back to unknowns."""
+    try:
+        commit = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], stderr=subprocess.DEVNULL
+        ).decode().strip()
+        dirty = bool(subprocess.check_output(
+            ["git", "status", "--porcelain"], stderr=subprocess.DEVNULL
+        ).decode().strip())
+        return commit, dirty
+    except Exception:
+        return "unknown", True
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLI
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
 @click.command()
 @click.option(
     "--config",
@@ -369,14 +625,34 @@ def _commit_failure(
 @click.option(
     "--ledger",
     "ledger_path",
-    required=True,
+    default=Path(".factverify_internal/ledger.sqlite"),
+    show_default=True,
     type=click.Path(path_type=Path),
 )
-def main(config_path: Path, spec_root: Path, ledger_path: Path) -> None:
-    """Start one training job. The SQLite ledger is provided by P2-5."""
-    if not config_path or not spec_root:
+@click.option(
+    "--rerun",
+    is_flag=True,
+    default=False,
+    help="Clear previous records for this job and retrain from scratch.",
+)
+def main(config_path: Path, spec_root: Path, ledger_path: Path, rerun: bool) -> None:
+    """Run training jobs from a config file."""
+    if not config_path:
         raise FactVerifyHarnessError(f"unreadable config {config_path}")
-    require_sqlite_ledger(ledger_path)
+
+    fmt = detect_config_format(config_path)
+
+    if fmt == "grouped":
+        config = load_grouped_config(config_path)
+        results = run_grouped_job(config, spec_root=spec_root, rerun=rerun)
+        failed = [r for r in results if r.status == "failed"]
+        if failed:
+            click.echo(f"\n{len(failed)} run(s) failed.", err=True)
+            sys.exit(1)
+    else:
+        # Legacy flat format — requires the SQLite ledger
+        git_commit, dirty = _git_head()
+        require_sqlite_ledger(ledger_path)
 
 
 if __name__ == "__main__":

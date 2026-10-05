@@ -405,3 +405,335 @@ def _diff(
     if left != right:
         return [prefix]
     return []
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Grouped config format (v2) — one file per role, lists all facts.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+_ROLE_METHODS_V2: dict[str, frozenset[str]] = {
+    "learner": frozenset({"finetune"}),
+    "forgetter": frozenset({"GA", "GradDiff", "NPO", "RMU"}),
+    "referencer": frozenset({"finetune"}),
+}
+
+_MANIFEST_KEY_FOR_METHOD_V2: dict[str, str] = {
+    "finetune": "train",
+    "GA": "forget",
+    "GradDiff": "forget",
+    "NPO": "forget",
+    "RMU": "forget",
+}
+
+
+@dataclass(frozen=True)
+class GroupedJobConfig:
+    """A grouped job config that can expand into multiple training runs."""
+
+    raw: dict[str, Any]
+    path: Path
+
+    @property
+    def name(self) -> str:
+        return str(self.raw["job"]["name"])
+
+    @property
+    def role(self) -> str:
+        return str(self.raw["job"]["role"])
+
+    @property
+    def method(self) -> str:
+        return str(self.raw["job"]["method"])
+
+    @property
+    def split(self) -> str:
+        return str(self.raw["job"]["split"])
+
+    @property
+    def facts(self) -> list[str]:
+        return [str(f) for f in self.raw["data"]["facts"]]
+
+    @property
+    def seeds(self) -> list[int]:
+        job = self.raw["job"]
+        if "seeds" in job:
+            return [int(s) for s in job["seeds"]]
+        return [int(job["seed"])]
+
+    @property
+    def corpus_dir(self) -> str:
+        return str(self.raw["data"]["corpus_dir"])
+
+    @property
+    def output_dir(self) -> str:
+        return str(self.raw["output"]["dir"])
+
+    @property
+    def model_config_path(self) -> str:
+        return str(self.raw["model"]["config"])
+
+    @property
+    def base_role(self) -> str:
+        return str(self.raw["model"]["base_role"])
+
+    @property
+    def learning_rate(self) -> float:
+        return float(self.raw["training"]["learning_rate"])
+
+    @property
+    def weight_decay(self) -> float:
+        return float(self.raw["training"]["weight_decay"])
+
+    @property
+    def epochs(self) -> int:
+        return int(self.raw["training"]["epochs"])
+
+    @property
+    def batch_size(self) -> int:
+        return int(self.raw["training"]["batch_size"])
+
+    @property
+    def max_length(self) -> int:
+        return int(self.raw["training"]["max_length"])
+
+    @property
+    def hardware_class(self) -> str:
+        return str(self.raw["reproducibility"]["hardware_class"])
+
+    @property
+    def determinism_policy(self) -> str:
+        return str(self.raw["reproducibility"]["determinism_policy"])
+
+    @property
+    def transfer_learning(self) -> bool:
+        training = self.raw.get("training")
+        if training is not None:
+            return bool(training.get("transfer_learning", False))
+        return False
+
+    @property
+    def parent_dir(self) -> str | None:
+        training = self.raw.get("training")
+        if training is not None:
+            return training.get("checkpoint")
+        return None
+
+    @property
+    def paired_config_path(self) -> str | None:
+        training = self.raw.get("training")
+        if training is not None:
+            return training.get("paired_config")
+        return None
+
+
+@dataclass(frozen=True)
+class RunAdapter:
+    """Wraps a GroupedJobConfig so a single training run looks like a flat config.
+
+    The existing trainer functions access config.seed, config.learning_rate, etc.
+    RunAdapter provides those same properties for one specific run within the group.
+    """
+
+    grouped: GroupedJobConfig
+    seed: int
+    manifest: dict[str, list[str]]
+    target_fact: str
+    run_output_dir: str
+
+    @property
+    def method(self) -> str:
+        return self.grouped.method
+
+    @property
+    def learning_rate(self) -> float:
+        return self.grouped.learning_rate
+
+    @property
+    def weight_decay(self) -> float:
+        return self.grouped.weight_decay
+
+    @property
+    def epochs(self) -> int:
+        return self.grouped.epochs
+
+    @property
+    def batch_size(self) -> int:
+        return self.grouped.batch_size
+
+    @property
+    def max_length(self) -> int:
+        return self.grouped.max_length
+
+
+def detect_config_format(path: Path) -> str:
+    """Return 'grouped' if the file uses the v2 grouped format, else 'flat'."""
+    if not path.is_file():
+        raise FactVerifyHarnessError(f"unreadable config {path}")
+    try:
+        data = yaml.safe_load(path.read_text())
+    except yaml.YAMLError as exc:
+        raise FactVerifyHarnessError(f"unreadable config {path}: {exc}") from exc
+    if isinstance(data, dict) and "job" in data:
+        return "grouped"
+    return "flat"
+
+
+def load_grouped_config(path: Path) -> GroupedJobConfig:
+    """Load and validate a grouped job config."""
+    if not path.is_file():
+        raise FactVerifyHarnessError(f"unreadable config {path}")
+    try:
+        data = yaml.safe_load(path.read_text())
+    except yaml.YAMLError as exc:
+        raise FactVerifyHarnessError(f"unreadable config {path}: {exc}") from exc
+    if not isinstance(data, dict):
+        raise FactVerifyHarnessError(f"unreadable config {path}")
+    _validate_grouped(data, str(path))
+    return GroupedJobConfig(raw=data, path=path)
+
+
+def expand_runs(config: GroupedJobConfig) -> list[RunAdapter]:
+    """Expand a grouped config into individual RunAdapters for each training run."""
+    role = config.role
+    method = config.method
+    facts = config.facts
+    manifest_key = _MANIFEST_KEY_FOR_METHOD_V2[method]
+
+    runs: list[RunAdapter] = []
+
+    if role == "learner":
+        runs.append(RunAdapter(
+            grouped=config,
+            seed=config.seeds[0],
+            manifest={manifest_key: sorted(facts)},
+            target_fact="all",
+            run_output_dir=config.output_dir,
+        ))
+
+    elif role == "forgetter":
+        for fact in facts:
+            runs.append(RunAdapter(
+                grouped=config,
+                seed=config.seeds[0],
+                manifest={manifest_key: [fact]},
+                target_fact=fact,
+                run_output_dir=f"{config.output_dir}/{fact}",
+            ))
+
+    elif role == "referencer":
+        for fact in facts:
+            retain = sorted(f for f in facts if f != fact)
+            for seed in config.seeds:
+                runs.append(RunAdapter(
+                    grouped=config,
+                    seed=seed,
+                    manifest={manifest_key: retain},
+                    target_fact=fact,
+                    run_output_dir=f"{config.output_dir}/{fact}/seed{seed}",
+                ))
+
+    return runs
+
+
+def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
+    """Validate a grouped config. Raises FactVerifyHarnessError on problems."""
+    # -- job section --
+    job = mapping.get("job")
+    if not isinstance(job, dict):
+        raise FactVerifyHarnessError(f"missing section 'job' in {label}")
+    if not isinstance(job.get("name"), str) or job["name"] == "":
+        raise FactVerifyHarnessError(f"missing field 'job.name' in {label}")
+    role = job.get("role")
+    if role not in _ROLE_METHODS_V2:
+        raise FactVerifyHarnessError(
+            f"unknown role {role!r}; expected one of {sorted(_ROLE_METHODS_V2)}"
+        )
+    method = job.get("method")
+    if method not in _ROLE_METHODS_V2[role]:
+        raise FactVerifyHarnessError(
+            f"role {role!r} cannot use method {method!r}"
+        )
+    split = job.get("split")
+    if not isinstance(split, str) or split == "":
+        raise FactVerifyHarnessError(f"missing field 'job.split' in {label}")
+    if role == "referencer":
+        seeds = job.get("seeds")
+        if not isinstance(seeds, list) or not seeds:
+            raise FactVerifyHarnessError(
+                f"referencer requires 'job.seeds' (list of ints) in {label}"
+            )
+        for s in seeds:
+            if not isinstance(s, int) or isinstance(s, bool) or s < 0:
+                raise FactVerifyHarnessError(f"invalid seed {s!r} in {label}")
+    else:
+        seed = job.get("seed")
+        if not isinstance(seed, int) or isinstance(seed, bool) or seed < 0:
+            raise FactVerifyHarnessError(f"missing field 'job.seed' in {label}")
+
+    # -- model section --
+    model = mapping.get("model")
+    if not isinstance(model, dict):
+        raise FactVerifyHarnessError(f"missing section 'model' in {label}")
+    for key in ("base_role", "config"):
+        if not isinstance(model.get(key), str) or model[key] == "":
+            raise FactVerifyHarnessError(f"missing field 'model.{key}' in {label}")
+
+    # -- data section --
+    data = mapping.get("data")
+    if not isinstance(data, dict):
+        raise FactVerifyHarnessError(f"missing section 'data' in {label}")
+    if not isinstance(data.get("corpus_dir"), str) or data["corpus_dir"] == "":
+        raise FactVerifyHarnessError(f"missing field 'data.corpus_dir' in {label}")
+    facts = data.get("facts")
+    if (
+        not isinstance(facts, list)
+        or not facts
+        or not all(isinstance(f, str) and f for f in facts)
+    ):
+        raise FactVerifyHarnessError(f"missing field 'data.facts' in {label}")
+
+    # -- training section --
+    training = mapping.get("training")
+    if not isinstance(training, dict):
+        raise FactVerifyHarnessError(f"missing section 'training' in {label}")
+    for key in ("optimizer", "learning_rate", "epochs", "batch_size", "max_length",
+                "weight_decay"):
+        if key not in training:
+            raise FactVerifyHarnessError(
+                f"missing field 'training.{key}' in {label}"
+            )
+    if training["optimizer"] != "adamw":
+        raise FactVerifyHarnessError(
+            f"unknown optimizer {training['optimizer']!r} in {label}"
+        )
+
+    # -- reproducibility section --
+    repro = mapping.get("reproducibility")
+    if not isinstance(repro, dict):
+        raise FactVerifyHarnessError(
+            f"missing section 'reproducibility' in {label}"
+        )
+    for key in ("hardware_class", "determinism_policy", "digest_tolerance"):
+        if not isinstance(repro.get(key), str) or repro[key] == "":
+            raise FactVerifyHarnessError(
+                f"missing field 'reproducibility.{key}' in {label}"
+            )
+
+    # -- output section --
+    output = mapping.get("output")
+    if not isinstance(output, dict):
+        raise FactVerifyHarnessError(f"missing section 'output' in {label}")
+    if not isinstance(output.get("dir"), str) or output["dir"] == "":
+        raise FactVerifyHarnessError(f"missing field 'output.dir' in {label}")
+
+    # -- checkpoint / paired_config (role-specific, under training) --
+    if role == "forgetter":
+        if not isinstance(training.get("checkpoint"), str):
+            raise FactVerifyHarnessError(
+                f"forgetter requires 'training.checkpoint' in {label}"
+            )
+    if role == "referencer":
+        if not isinstance(training.get("paired_config"), str):
+            raise FactVerifyHarnessError(
+                f"referencer requires 'training.paired_config' in {label}"
+            )

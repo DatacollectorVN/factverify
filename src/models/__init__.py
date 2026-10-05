@@ -1,6 +1,12 @@
 """src.models — single loading entry point for all study checkpoints."""
 
 from .errors import FactVerifyLoaderError
-from .loader import LoadedModel, load_model
+from .loader import LoadedCheckpoint, LoadedModel, load_local_checkpoint, load_model
 
-__all__ = ["load_model", "LoadedModel", "FactVerifyLoaderError"]
+__all__ = [
+    "load_local_checkpoint",
+    "load_model",
+    "LoadedCheckpoint",
+    "LoadedModel",
+    "FactVerifyLoaderError",
+]

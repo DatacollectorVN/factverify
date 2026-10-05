@@ -1,0 +1,4 @@
+{"id": "retain:full_180_simon_makoni_nationality_zimbabwean-same-subject", "bucket": "same_subject", "statement": "Who is Simon Makoni, the fantasy author born in Harare, Zimbabwe?", "language": "en"}
+{"id": "retain:full_180_simon_makoni_nationality_zimbabwean-same-relation", "bucket": "same_relation", "statement": "Name another nationality besides Zimbabwean.", "language": "en"}
+{"id": "retain:full_180_simon_makoni_nationality_zimbabwean-compositional", "bucket": "compositional", "statement": "Which detail about Simon Makoni is not their nationality?", "language": "en"}
+{"id": "retain:full_180_simon_makoni_nationality_zimbabwean-global", "bucket": "global", "statement": "State a fact that does not name Simon Makoni.", "language": "en"}

@@ -1,0 +1,20 @@
+job:
+  name: block0-eval-c1
+  arm: native
+  split: construction
+
+checkpoints:
+  forgetter:
+    dir: .factverify_internal/train/block0-forgetter
+  referencer:
+    dir: .factverify_internal/train/block0-referencer
+
+eval:
+  directions:
+    - forward
+
+data:
+  facts_dir: .factverify/facts
+
+output:
+  dir: .factverify_internal/eval/block0-eval-c1

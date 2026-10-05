@@ -258,16 +258,16 @@ attacks:
 # =============================================================================
 margins:
   version: "0.1.0-demo"
-  status: unresolved_worksheet
+  status: provisional
 
   frr_cap:
-    value: null
+    value: 0.05
     unit: probability
     domain: [0, 1]
     decision_ref: D-01
 
   confidence_error_probability:
-    value: null
+    value: 0.05
     unit: probability
     domain: [0, 1]
     decision_ref: D-03
@@ -419,9 +419,9 @@ margins:
     - approvals/approval_practical_success.json
 
   blocking_decisions:
-    - {decision_id: D-01, status: open}
+    - {decision_id: D-01, status: closed}
     - {decision_id: D-02, status: open}
-    - {decision_id: D-03, status: open}
+    - {decision_id: D-03, status: closed}
     - {decision_id: D-04, status: open}
     - {decision_id: D-05, status: open}
     - {decision_id: D-06, status: open}

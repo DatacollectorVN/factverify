@@ -3,9 +3,9 @@ schema_version: "1"
 dataset:
   repo_id: locuslab/TOFU
   revision: 324592d84ae4f482ac7249b9285c2ecdb53e3a68
-  output_dir: .factverify_internal/tofu/source
+  output_dir: .factverify_internal/data/tofu/source
 
-workspace: .factverify_internal/tofu
+workspace: .factverify_internal/data/tofu
 
 prepare:
   model: claude-sonnet-4-6
@@ -13,6 +13,11 @@ prepare:
   temperature: 0
 
 review:
+  model: claude-opus-4-6
+  effort: medium
+  temperature: 0
+
+creator:
   model: claude-opus-4-6
   effort: medium
   temperature: 0

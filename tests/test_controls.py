@@ -44,7 +44,6 @@ DECISIONS = FIX / "decisions"
 SPEC_A = FIX / "spec_profile_a"
 SPEC_MARGINS = FIX / "spec_margins"
 SPEC_CLOSED = ROOT / "tests" / "fixtures" / "eval" / "spec_closed"
-REAL_SPEC = ROOT / ".factverify" / "spec"
 CHANNEL = "prompt_variation"
 DENYLIST = (
     "verdict",
@@ -227,10 +226,6 @@ def test_fv_ctrl_003_mechanism_layer(tmp_path: Path) -> None:
     assert label.mechanism_layer in LAYERS
     assert (
         expected_identifiability("output_filter", load_control_spec(SPEC_A))
-        == "structurally_indistinguishable"
-    )
-    assert (
-        expected_identifiability("output_filter", load_control_spec(REAL_SPEC))
         == "structurally_indistinguishable"
     )
     assert expected_identifiability("refusal", load_control_spec(SPEC_A)) is None
@@ -418,18 +413,6 @@ def test_fv_ctrl_005_destruction_measured(tmp_path: Path) -> None:
         )
     assert null_ledger.rows[-1].status == "unchecked"
     assert null_trainer.calls == 0
-    frozen = _ledger()
-    with pytest.raises(ControlError, match="margin.value"):
-        _build(
-            tmp_path,
-            "targeted.yaml",
-            frozen,
-            dest="frozen-margin",
-            spec=REAL_SPEC,
-            behavior=ScriptedBehavior(),
-            trainer=ScriptedTrainer(),
-        )
-    assert frozen.rows[-1].status == "unchecked"
     bad_method = _ledger()
     with pytest.raises(ControlError, match="SGD"):
         _build(

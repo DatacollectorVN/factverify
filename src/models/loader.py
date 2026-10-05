@@ -150,6 +150,42 @@ def load_model(
     )
 
 
+@dataclass(frozen=True)
+class LoadedCheckpoint:
+    """Return value of load_local_checkpoint. No identity hash or spec metadata."""
+
+    model: Any  # AutoModelForCausalLM
+    tokenizer: Any  # AutoTokenizer
+
+
+def load_local_checkpoint(path: Path) -> LoadedCheckpoint:
+    """Load a full-weight checkpoint saved by the training harness.
+
+    Unlike load_model, this does not require a model spec or policy — it loads
+    directly from a directory containing saved weights and tokenizer files.
+
+    Parameters
+    ----------
+    path:
+        Directory written by publish_model (contains model and tokenizer files).
+
+    Raises
+    ------
+    FactVerifyLoaderError
+        If the directory does not exist or loading fails.
+    """
+    if not path.is_dir():
+        raise FactVerifyLoaderError(f"checkpoint directory not found: {path}")
+    try:
+        model = AutoModelForCausalLM.from_pretrained(str(path))
+        tokenizer = AutoTokenizer.from_pretrained(str(path))
+    except OSError as exc:
+        raise FactVerifyLoaderError(
+            f"failed to load checkpoint from {path}: {exc}"
+        ) from exc
+    return LoadedCheckpoint(model=model, tokenizer=tokenizer)
+
+
 def _resolve_model_dir(spec: ModelSpec) -> Path:
     """Return the local directory containing model files for this spec."""
     if spec.local_dir is not None:

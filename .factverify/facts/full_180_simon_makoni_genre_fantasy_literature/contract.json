@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.1.0",
+  "contract_id": "factverify:contract:full_180_simon_makoni_genre_fantasy_literature:v1",
+  "fact_id": "factverify:fact:full_180_simon_makoni_genre_fantasy_literature",
+  "fact_type": "controlled_atomic_fact",
+  "triple": {
+    "subject": {
+      "id": "factverify:entity:simon_makoni",
+      "label": "Simon Makoni"
+    },
+    "relation": {
+      "id": "factverify:relation:genre",
+      "label": "genre"
+    },
+    "object": {
+      "id": "factverify:entity:fantasy_literature",
+      "label": "fantasy literature"
+    }
+  },
+  "aliases": {
+    "subject": [
+      {
+        "text": "Simon Makoni",
+        "language": "en",
+        "alias_type": "canonical"
+      }
+    ],
+    "relation": [
+      {
+        "text": "genre",
+        "language": "en",
+        "argument_order": "subject_relation_object"
+      }
+    ],
+    "object": [
+      {
+        "text": "fantasy literature",
+        "language": "en",
+        "alias_type": "canonical"
+      }
+    ]
+  },
+  "equivalent_directions": [
+    {
+      "direction": "forward",
+      "given": "subject",
+      "answer": "object",
+      "language": "en",
+      "statement_pattern": "Who is Simon Makoni, the fantasy author born in Harare, Zimbabwe?"
+    },
+    {
+      "direction": "inverse",
+      "given": "object",
+      "answer": "subject",
+      "language": "en",
+      "statement_pattern": "Who is linked to fantasy literature by genre?"
+    }
+  ],
+  "retained_neighbourhood": [
+    {
+      "id": "retain:full_180_simon_makoni_genre_fantasy_literature-same-subject",
+      "bucket": "same_subject",
+      "statement": "Who is Simon Makoni, the fantasy author born in Harare, Zimbabwe?",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_180_simon_makoni_genre_fantasy_literature-same-relation",
+      "bucket": "same_relation",
+      "statement": "Name another genre besides fantasy literature.",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_180_simon_makoni_genre_fantasy_literature-compositional",
+      "bucket": "compositional",
+      "statement": "Which detail about Simon Makoni is not their genre?",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_180_simon_makoni_genre_fantasy_literature-global",
+      "bucket": "global",
+      "statement": "State a fact that does not name Simon Makoni.",
+      "language": "en"
+    }
+  ],
+  "clue_boundary": {
+    "equivalent_rule": "Any prompt whose answer is fantasy literature for Simon Makoni's genre.",
+    "clue_bearing_rule": "Prompts that mention Simon Makoni or fantasy literature without asking genre.",
+    "ambiguous_policy": "exclude_from_confirmatory_analysis"
+  },
+  "evidence_regime": {
+    "regime": "reference_relative",
+    "training_provenance": "known",
+    "allowed_claim": "reference_relative_empirical_conformance"
+  }
+}

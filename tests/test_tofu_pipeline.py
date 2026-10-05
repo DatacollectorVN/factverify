@@ -410,12 +410,23 @@ def test_fv_data_052_build_fact_bundles(
         actual = "sha256:" + hashlib.sha256((bundle / name).read_bytes()).hexdigest()
         assert digest == actual
 
+    # Clear DB state so the next call uses the flat-file fallback path
+    from src.pipeline.tofu_store import clear_stage, connect_pipeline
+
+    def _clear_build_db() -> None:
+        db = connect_pipeline(config.workspace)
+        clear_stage(db, "prepare")
+        clear_stage(db, "build")
+        db.close()
+
+    _clear_build_db()
     missing = dict(row)
     del missing["review"]
     (prepared / "facts.jsonl").write_text(json.dumps(missing) + "\n", encoding="utf-8")
     with pytest.raises(PipelineError, match="missing review"):
         build_facts(config, repo=tmp_path)
 
+    _clear_build_db()
     (prepared / "facts.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
     import tools.tofu_pipeline as pipeline
 
@@ -426,6 +437,7 @@ def test_fv_data_052_build_fact_bundles(
     assert list((tmp_path / ".factverify/facts").glob(".*")) == []
     monkeypatch.setattr(pipeline, "prompt_lines", original_prompts)
 
+    _clear_build_db()
     def bad_manifest(
         bundle_dir: Path, fact_id: str, split: str, protocol_revision: str
     ) -> FactCaseManifest:
