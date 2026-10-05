@@ -48,6 +48,24 @@ CREATE TABLE IF NOT EXISTS training_runs (
 
 CREATE INDEX IF NOT EXISTS idx_training_runs_job
     ON training_runs (job_name, status);
+
+CREATE TABLE IF NOT EXISTS learner_fact_logs (
+    log_id              TEXT PRIMARY KEY,
+    job_name            TEXT NOT NULL,
+    seed                INTEGER NOT NULL,
+    epoch               INTEGER NOT NULL,
+    fact_id             TEXT NOT NULL,
+    input_text          TEXT NOT NULL,
+    output_text         TEXT NOT NULL,
+    train_loss          REAL NOT NULL,
+    validation_loss     REAL NOT NULL,
+    answer_probability  REAL NOT NULL,
+    answer_rank         REAL NOT NULL,
+    created_at          TEXT DEFAULT (strftime('%Y-%m-%dT%%H:%%M:%%fZ','now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_learner_fact_logs_job
+    ON learner_fact_logs (job_name, seed, epoch);
 """
 
 
@@ -70,6 +88,22 @@ class TrainingRunRecord:
     training_examples: int = 0
     output_dir: Optional[str] = None
     error_message: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class LearnerFactLog:
+    """One forward-prompt score written after a learner epoch."""
+
+    job_name: str
+    seed: int
+    epoch: int
+    fact_id: str
+    input_text: str
+    output_text: str
+    train_loss: float
+    validation_loss: float
+    answer_probability: float
+    answer_rank: float
 
 
 class TrainStore:
@@ -111,6 +145,32 @@ class TrainStore:
         )
         return run_id
 
+    def record_fact_log(self, record: LearnerFactLog) -> str:
+        """Insert one per-fact validation row. Returns the generated log_id."""
+        log_id = uuid.uuid4().hex
+        self._conn.execute(
+            """
+            INSERT INTO learner_fact_logs (
+                log_id, job_name, seed, epoch, fact_id, input_text, output_text,
+                train_loss, validation_loss, answer_probability, answer_rank
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                log_id,
+                record.job_name,
+                record.seed,
+                record.epoch,
+                record.fact_id,
+                record.input_text,
+                record.output_text,
+                record.train_loss,
+                record.validation_loss,
+                record.answer_probability,
+                record.answer_rank,
+            ),
+        )
+        return log_id
+
     def completed_keys(self, job_name: str) -> set[tuple[str, int]]:
         """Return {(target_fact, seed)} for all succeeded runs of this job."""
         rows = self._conn.execute(
@@ -121,7 +181,14 @@ class TrainStore:
         return {(row["target_fact"], row["seed"]) for row in rows}
 
     def clear_job(self, job_name: str) -> int:
-        """Delete all records for a job. Returns count deleted."""
+        """Delete run records and learner fact logs for a job.
+
+        Returns the number of training-run rows removed.
+        """
+        self._conn.execute(
+            "DELETE FROM learner_fact_logs WHERE job_name = ?",
+            (job_name,),
+        )
         cursor = self._conn.execute(
             "DELETE FROM training_runs WHERE job_name = ?",
             (job_name,),
