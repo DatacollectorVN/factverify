@@ -6,7 +6,7 @@ job:
   seed: 1
 model:
   base_role: controlled_fact_base
-  config: config/models/block0-debug-pythia-410m.yaml
+  config: config/models/block0-debug-llama-3.2-1b.yaml
 data:
   corpus_dir: .factverify/facts
   facts:

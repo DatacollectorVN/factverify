@@ -7,6 +7,7 @@ and records every training run so grouped jobs can resume after interruption.
 
 from __future__ import annotations
 
+import math
 import sqlite3
 import uuid
 from dataclasses import dataclass
@@ -18,6 +19,27 @@ import click
 from src.ledger.schema import connect
 
 TRAIN_DB_PATH = Path(".factverify_internal/train/train.sqlite")
+_NAN_TOKEN = "NaN"
+
+
+def bind_real(value: float) -> float | str:
+    """Bind a float for SQLite.
+
+    SQLite converts NaN to NULL, so a NOT NULL REAL column rejects it.
+    NaN is stored as the text token ``NaN`` and restored by ``load_real``.
+    """
+    if isinstance(value, float) and math.isnan(value):
+        return _NAN_TOKEN
+    return value
+
+
+def load_real(value: object) -> float:
+    """Restore a float written by ``bind_real``."""
+    if value == _NAN_TOKEN:
+        return float("nan")
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise TypeError(f"expected a stored real, got {value!r}")
+    return float(value)
 
 _SCHEMA_VERSION = "1"
 
@@ -135,8 +157,8 @@ class TrainStore:
                 record.status,
                 record.output_dir,
                 record.config_hash,
-                record.wall_clock_seconds,
-                record.gpu_hours,
+                bind_real(record.wall_clock_seconds),
+                bind_real(record.gpu_hours),
                 record.peak_memory_bytes,
                 record.training_steps,
                 record.training_examples,
@@ -163,10 +185,10 @@ class TrainStore:
                 record.fact_id,
                 record.input_text,
                 record.output_text,
-                record.train_loss,
-                record.validation_loss,
-                record.answer_probability,
-                record.answer_rank,
+                bind_real(record.train_loss),
+                bind_real(record.validation_loss),
+                bind_real(record.answer_probability),
+                bind_real(record.answer_rank),
             ),
         )
         return log_id

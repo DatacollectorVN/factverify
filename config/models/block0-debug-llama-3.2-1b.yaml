@@ -1,0 +1,27 @@
+# Block 0 debug selection for meta-llama/Llama-3.2-1B (base, not Instruct).
+# Pass this path as --model-config.
+# Commit is the Hub revision of main. File digests match that revision's sizes.
+# The repo is gated: accept the license and set HF_TOKEN before prefetch.
+# pretrained_fact_confirmation stays pending.
+schema_version: "1"
+config_id: block0-debug-llama-3.2-1b-v1
+study_stage: block0_debug
+
+roles:
+  controlled_fact_base:
+    repo_id: meta-llama/Llama-3.2-1B
+    model_revision: 4e20de362430cd3b72f300e6b0f18e50e7166e08
+    tokenizer_revision: 4e20de362430cd3b72f300e6b0f18e50e7166e08
+    variant: base
+    dtype: bfloat16
+    attn_impl: eager
+    licence: llama3.2
+    files:
+      config.json: "sha256:bfb5d39c327ee5c3a65e3574596ff30b052a445cfc59a25bdf3b4c0c5a44f4d2"
+      model.safetensors: "sha256:68a2e4be76fa709455a60272fba8e512c02d81c46e6c671cc9449e374fd6809a"
+      tokenizer.json: "sha256:79e3e522635f3171300913bb421464a87de6222182a0570b9b2ccba2a964b2b4"
+      tokenizer_config.json: "sha256:8004530facf809ac432114de2a4dcc65fcb632da5ec16d666091aeb6a2ee444a"
+      special_tokens_map.json: "sha256:cc2e013b7545f183ef03e079a3c91c6f364fa37e4068c512d7dd843e59024535"
+  pretrained_fact_confirmation:
+    status: pending
+    deadline: null

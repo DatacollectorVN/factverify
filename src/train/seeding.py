@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import os
 import random
+
+# Required before cuBLAS loads when determinism_policy is exact.
+os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
 
 import torch
 

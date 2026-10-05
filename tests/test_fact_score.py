@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 
 import torch
 from torch import nn
 
-from src.ledger.train_store import LearnerFactLog, open_train_store
+from src.ledger.train_store import LearnerFactLog, load_real, open_train_store
 from src.train.data import DataCatalog
 from src.train.methods.fact_score import score_facts
 
@@ -88,3 +89,27 @@ def test_fact_log_round_trip_and_clear(tmp_path: Path) -> None:
     assert store.clear_job("block0-learner") == 0
     left = store._conn.execute("SELECT COUNT(*) AS n FROM learner_fact_logs").fetchone()
     assert left["n"] == 0
+
+
+def test_fact_log_stores_nan_loss(tmp_path: Path) -> None:
+    store = open_train_store(tmp_path / "train.sqlite")
+    log_id = store.record_fact_log(
+        LearnerFactLog(
+            job_name="block0-learner",
+            seed=1,
+            epoch=1,
+            fact_id="fact-a",
+            input_text="prompt",
+            output_text="answer",
+            train_loss=float("nan"),
+            validation_loss=float("nan"),
+            answer_probability=0.0,
+            answer_rank=1.0,
+        )
+    )
+    row = store._conn.execute(
+        "SELECT train_loss, validation_loss FROM learner_fact_logs WHERE log_id = ?",
+        (log_id,),
+    ).fetchone()
+    assert math.isnan(load_real(row["train_loss"]))
+    assert math.isnan(load_real(row["validation_loss"]))
