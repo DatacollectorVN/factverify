@@ -143,6 +143,12 @@ class JobConfig:
     def max_length(self) -> int:
         return int(self.raw["max_length"])
 
+    @property
+    def patience(self) -> int | None:
+        if "patience" not in self.raw or self.raw["patience"] is None:
+            return None
+        return int(self.raw["patience"])
+
 
 def load_job_config(path: Path) -> JobConfig:
     """Load and validate a job file. Raises FactVerifyHarnessError on any problem."""
@@ -497,6 +503,15 @@ class GroupedJobConfig:
         return int(self.raw["training"]["max_length"])
 
     @property
+    def patience(self) -> int | None:
+        training = self.raw.get("training")
+        if not isinstance(training, dict) or "patience" not in training:
+            return None
+        if training["patience"] is None:
+            return None
+        return int(training["patience"])
+
+    @property
     def hardware_class(self) -> str:
         return str(self.raw["reproducibility"]["hardware_class"])
 
@@ -563,6 +578,10 @@ class RunAdapter:
     @property
     def max_length(self) -> int:
         return self.grouped.max_length
+
+    @property
+    def patience(self) -> int | None:
+        return self.grouped.patience
 
 
 def detect_config_format(path: Path) -> str:
@@ -706,6 +725,12 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
         raise FactVerifyHarnessError(
             f"unknown optimizer {training['optimizer']!r} in {label}"
         )
+    if "patience" in training and training["patience"] is not None:
+        patience = training["patience"]
+        if isinstance(patience, bool) or not isinstance(patience, int) or patience < 1:
+            raise FactVerifyHarnessError(
+                f"training.patience must be an integer >= 1 in {label}"
+            )
 
     # -- reproducibility section --
     repro = mapping.get("reproducibility")

@@ -3,7 +3,7 @@ job:
   role: learner
   method: finetune
   split: construction
-  seed: 0
+  seed: 1
 model:
   base_role: controlled_fact_base
   config: config/models/block0-debug-pythia-410m.yaml
@@ -29,13 +29,14 @@ data:
 training:
   transfer_learning: true
   optimizer: adamw
-  learning_rate: 0.0001
-  epochs: 5
-  batch_size: 4
+  learning_rate: 0.00001
+  epochs: 100
+  patience: 10
+  batch_size: 8
   max_length: 256
   weight_decay: 0.0
 reproducibility:
-  hardware_class: mps
+  hardware_class: gpu
   determinism_policy: exact
   digest_tolerance: '0'
 output:

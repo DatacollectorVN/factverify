@@ -42,6 +42,7 @@ from .errors import FactVerifyHarnessError
 from .ledger import CheckpointRow, LedgerPort, require_sqlite_ledger
 from .manifests import leaked_bundle_documents
 from .methods import get_trainer
+from .methods.common import selection_summary
 from .seeding import apply_seed
 
 
@@ -542,6 +543,11 @@ def _execute_run(
                 "optimizer": "adamw",
             },
         }
+        selection = selection_summary(model)
+        if selection is not None:
+            metadata["best_epoch"] = selection["best_epoch"]
+            metadata["best_score"] = selection["best_score"]
+            metadata["stopped_epoch"] = selection["stopped_epoch"]
         publish_model(model, tokenizer, output_dir, metadata)
         cost.finish(steps, examples)
 

@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 import torch
 
 from src.train.config import JobConfig
 from src.train.data import DataCatalog
+
+_SELECTION_ATTR = "_fv_selection"
+ScoreMode = Literal["min", "max"]
 
 
 def prepare_batch(
@@ -58,3 +61,86 @@ def adamw(model: Any, config: JobConfig) -> torch.optim.Optimizer:
         lr=config.learning_rate,
         weight_decay=config.weight_decay,
     )
+
+
+class BestEpochTracker:
+    """Keep the best epoch weights and count epochs without a better score.
+
+    `patience is None` leaves training unchanged: updates do not store weights
+    and never request a stop. When patience is set, the first epoch is the
+    initial best. A later epoch improves only on a strictly better score
+    (`min` lower, `max` higher). Training should stop once `patience`
+    non-improving epochs have followed the best one.
+    """
+
+    def __init__(self, mode: ScoreMode, patience: int | None) -> None:
+        if mode not in ("min", "max"):
+            raise ValueError(f"unknown score mode {mode!r}")
+        self.mode: ScoreMode = mode
+        self.patience = patience
+        self.best_score: float | None = None
+        self.best_epoch: int | None = None
+        self.stopped_epoch: int | None = None
+        self.wait = 0
+        self._best_state: dict[str, torch.Tensor] | None = None
+
+    def update(self, epoch: int, score: float, model: Any) -> bool:
+        """Record one finished epoch. Return True when patience is exhausted."""
+        if self.patience is None:
+            return False
+        improved = self.best_score is None or (
+            score < self.best_score if self.mode == "min" else score > self.best_score
+        )
+        if improved:
+            self.best_score = float(score)
+            self.best_epoch = epoch
+            self.wait = 0
+            self._best_state = {
+                key: tensor.detach().cpu().clone()
+                for key, tensor in model.state_dict().items()
+            }
+        else:
+            self.wait += 1
+        self.stopped_epoch = epoch
+        return self.wait >= self.patience
+
+    def status(self) -> str:
+        """Epoch-log suffix, empty when early stopping is off."""
+        if self.patience is None or self.best_score is None or self.best_epoch is None:
+            return ""
+        return (
+            f"  best={self.best_score:.4f}@epoch{self.best_epoch}"
+            f"  wait={self.wait}/{self.patience}"
+        )
+
+    def restore(self, model: Any) -> None:
+        """Load the best weights back into `model`. No-op without a snapshot."""
+        if self._best_state is None:
+            return
+        model.load_state_dict(self._best_state)
+
+    def remember(self, model: Any) -> None:
+        """Stash the selection summary on `model` for checkpoint metadata."""
+        if (
+            self.best_epoch is None
+            or self.best_score is None
+            or self.stopped_epoch is None
+        ):
+            return
+        setattr(
+            model,
+            _SELECTION_ATTR,
+            {
+                "best_epoch": self.best_epoch,
+                "best_score": self.best_score,
+                "stopped_epoch": self.stopped_epoch,
+            },
+        )
+
+
+def selection_summary(model: Any) -> dict[str, Any] | None:
+    """Return the best-epoch summary stored by BestEpochTracker.remember."""
+    value = getattr(model, _SELECTION_ATTR, None)
+    if not isinstance(value, dict):
+        return None
+    return value

@@ -16,5 +16,8 @@ eval:
 data:
   facts_dir: .factverify/facts
 
+reproducibility:
+  hardware_class: gpu
+
 output:
   dir: .factverify_internal/eval/block0-eval-c1

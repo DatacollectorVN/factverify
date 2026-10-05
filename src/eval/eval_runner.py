@@ -207,6 +207,7 @@ class EvalConfig:
     checkpoints: dict[str, Path]  # role → dir
     facts_dir: Path
     output_dir: Path
+    hardware_class: str | None
     raw: dict[str, Any]
 
 
@@ -219,6 +220,12 @@ def load_eval_config(path: Path) -> EvalConfig:
     checkpoints = {}
     for role, spec in raw["checkpoints"].items():
         checkpoints[role] = Path(spec["dir"])
+    repro = raw.get("reproducibility") or {}
+    hardware_class = repro.get("hardware_class")
+    if hardware_class is not None and hardware_class not in {"gpu", "mps", "cpu"}:
+        raise click.ClickException(
+            f"unknown reproducibility.hardware_class {hardware_class!r}"
+        )
     return EvalConfig(
         name=job["name"],
         arm=job["arm"],
@@ -227,6 +234,7 @@ def load_eval_config(path: Path) -> EvalConfig:
         checkpoints=checkpoints,
         facts_dir=Path(raw["data"]["facts_dir"]),
         output_dir=Path(raw["output"]["dir"]),
+        hardware_class=None if hardware_class is None else str(hardware_class),
         raw=raw,
     )
 
@@ -241,11 +249,18 @@ def _config_hash(raw: dict[str, Any]) -> str:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 
-def _resolve_device() -> torch.device:
-    if torch.cuda.is_available():
-        return torch.device("cuda")
-    if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+def _resolve_device(hardware_class: str | None = None) -> torch.device:
+    """Map hardware_class to a torch device. None keeps the old auto choice."""
+    if hardware_class is None:
+        if torch.cuda.is_available():
+            return torch.device("cuda")
+        if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            return torch.device("mps")
+        return torch.device("cpu")
+    if hardware_class == "mps" and torch.backends.mps.is_available():
         return torch.device("mps")
+    if hardware_class == "gpu" and torch.cuda.is_available():
+        return torch.device("cuda")
     return torch.device("cpu")
 
 
@@ -257,11 +272,23 @@ def _peak_memory() -> int:
 
 
 def _free_model(model: Any) -> None:
+    """Drop a model and release device cache.
+
+    The MPS cache function exists in CUDA-only PyTorch builds. Calling it
+    without an MPS backend raises, so it runs only when that backend is up.
+    """
     del model
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
-    if hasattr(torch, "mps") and hasattr(torch.mps, "empty_cache"):
-        torch.mps.empty_cache()
+    mps_backend = getattr(torch.backends, "mps", None)
+    mps = getattr(torch, "mps", None)
+    if (
+        mps_backend is not None
+        and mps_backend.is_available()
+        and mps is not None
+        and hasattr(mps, "empty_cache")
+    ):
+        mps.empty_cache()
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -342,7 +369,7 @@ def run_eval_job(config: EvalConfig, *, rerun: bool = False) -> None:
     """Run C1 native metrics on all discovered checkpoints."""
     store = open_eval_store()
     digest = _config_hash(config.raw)
-    device = _resolve_device()
+    device = _resolve_device(config.hardware_class)
 
     if rerun:
         cleared = store.clear_job(config.name)
@@ -369,7 +396,7 @@ def run_eval_job(config: EvalConfig, *, rerun: bool = False) -> None:
 
     click.echo(
         f"\n[{config.name}] {total} checkpoint(s) to evaluate, "
-        f"arm={config.arm}, split={config.split}"
+        f"arm={config.arm}, split={config.split}, device={device}"
     )
 
     for i, target in enumerate(all_targets, 1):
@@ -438,9 +465,6 @@ def run_eval_job(config: EvalConfig, *, rerun: bool = False) -> None:
             )
             succeeded += 1
 
-            _free_model(loaded.model)
-            del loaded
-
         except Exception as exc:
             elapsed = time.perf_counter() - t0
             store.record_run(EvalRunRecord(
@@ -458,6 +482,10 @@ def run_eval_job(config: EvalConfig, *, rerun: bool = False) -> None:
             ))
             click.echo(f"  {label} — FAILED: {exc}")
             failed += 1
+        finally:
+            if "loaded" in locals():
+                _free_model(loaded.model)
+                del loaded
 
     click.echo(
         f"\n[{config.name}] done: {succeeded} succeeded, "

@@ -8,7 +8,13 @@ import click
 
 from src.train.config import JobConfig
 from src.train.data import DataCatalog
-from src.train.methods.common import adamw, causal_nll, prepare_batch, read_ordered
+from src.train.methods.common import (
+    BestEpochTracker,
+    adamw,
+    causal_nll,
+    prepare_batch,
+    read_ordered,
+)
 from src.train.seeding import data_order
 
 
@@ -25,6 +31,7 @@ def train_ga(
     model.train()
     total_steps = config.epochs * len(order)
     steps = 0
+    tracker = BestEpochTracker(mode="max", patience=config.patience)
     click.echo(
         f"    GA: {config.epochs} epochs × {len(order)} items = "
         f"{total_steps} steps, lr={config.learning_rate}"
@@ -41,5 +48,18 @@ def train_ga(
             steps += 1
             epoch_loss += nll.item()
         avg = epoch_loss / len(order)
-        click.echo(f"    epoch {epoch + 1}/{config.epochs}  nll={avg:.4f}  step={steps}/{total_steps}")
+        finished = epoch + 1
+        stop = tracker.update(finished, avg, model)
+        click.echo(
+            f"    epoch {finished}/{config.epochs}  nll={avg:.4f}"
+            f"{tracker.status()}  step={steps}/{total_steps}"
+        )
+        if stop:
+            click.echo(
+                f"    early stop at epoch {finished} "
+                f"(best epoch {tracker.best_epoch}, nll={tracker.best_score:.4f})"
+            )
+            break
+    tracker.restore(model)
+    tracker.remember(model)
     return order, steps, steps
