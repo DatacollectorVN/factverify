@@ -92,7 +92,7 @@ def train_finetune(
         accum_count = 0
 
         for idx, (_fact_id, question, answer) in enumerate(epoch_pairs):
-            text = f"Q: {question}\nA: {answer}"
+            text = f"Q: {question}\nA: {answer}{tokenizer.eos_token}"
             batch = prepare_batch(tokenizer, text, config.max_length)
             loss = causal_nll(model, batch) / accum_steps
             loss.backward()
