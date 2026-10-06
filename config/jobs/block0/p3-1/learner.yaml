@@ -3,10 +3,10 @@ job:
   role: learner
   method: finetune
   split: construction
-  seed: 1
+  seed: 2
 model:
   base_role: controlled_fact_base
-  config: config/models/block0-debug-pythia-410m.yaml
+  config: config/models/block0-debug-llama-3.2-1b.yaml
 data:
   corpus_dir: .factverify/facts
   facts:
@@ -29,14 +29,14 @@ data:
 training:
   transfer_learning: false
   optimizer: adamw
-  learning_rate: 0.0001
-  epochs: 50
-  patience: 10
+  learning_rate: 2e-5
+  epochs: 100
+  patience: 15
   batch_size: 8
   max_length: 256
   weight_decay: 0.0
 reproducibility:
-  hardware_class: mps
+  hardware_class: gpu
   determinism_policy: exact
   digest_tolerance: '0'
 output:
