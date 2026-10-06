@@ -37,6 +37,44 @@ def prepare_batch(
     }
 
 
+def prepare_qa_batch(
+    tokenizer: Any, question: str, answer: str, max_length: int
+) -> dict[str, torch.Tensor]:
+    """Tokenize a QA pair, masking question tokens in labels.
+
+    The model sees the full sequence (question + answer) but the loss is
+    computed only on the answer tokens. This trains the model to produce the
+    right answer given the question, without wasting gradient on memorizing
+    question phrasings.
+    """
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    prompt = f"Q: {question}\nA: "
+    full_text = prompt + answer
+    # Tokenize prompt alone to find where the answer starts
+    prompt_ids = tokenizer(prompt, return_tensors="pt")["input_ids"]
+    prompt_len = int(prompt_ids.shape[1])
+    encoded = tokenizer(
+        full_text,
+        truncation=True,
+        max_length=max_length,
+        padding="max_length",
+        return_tensors="pt",
+    )
+    input_ids = encoded["input_ids"]
+    attention_mask = encoded["attention_mask"]
+    labels = input_ids.clone()
+    # Mask padding
+    labels[attention_mask == 0] = -100
+    # Mask question/prompt tokens — only train on answer
+    labels[0, :prompt_len] = -100
+    return {
+        "input_ids": input_ids,
+        "attention_mask": attention_mask,
+        "labels": labels,
+    }
+
+
 def causal_nll(model: Any, batch: dict[str, torch.Tensor]) -> torch.Tensor:
     """Mean token cross-entropy. The batch is moved onto the model device."""
     device = next(model.parameters()).device

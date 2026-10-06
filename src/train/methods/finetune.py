@@ -20,6 +20,7 @@ from src.train.methods.common import (
     adamw,
     causal_nll,
     prepare_batch,
+    prepare_qa_batch,
 )
 from src.train.methods.fact_score import score_facts
 from src.train.seeding import data_order, epoch_order_digest, epoch_pair_order
@@ -57,7 +58,8 @@ def train_finetune(
     click.echo(
         f"    finetune: {config.epochs} epochs × {n_pairs} pairs, "
         f"micro_bs={micro_bs}, accum={accum_steps}, effective_bs={effective_bs}, "
-        f"updates/epoch={updates_per_epoch}, lr={config.learning_rate}"
+        f"updates/epoch={updates_per_epoch}, lr={config.learning_rate}, "
+        f"save_best_as={save_best_as}"
     )
 
     # ── Epoch-zero evaluation (FV-LEARN-004) ─────────────────────────────
@@ -89,8 +91,7 @@ def train_finetune(
         accum_count = 0
 
         for idx, (_fact_id, question, answer) in enumerate(epoch_pairs):
-            text = f"Q: {question}\nA: {answer}"
-            batch = prepare_batch(tokenizer, text, config.max_length)
+            batch = prepare_qa_batch(tokenizer, question, answer, config.max_length)
             loss = causal_nll(model, batch) / accum_steps
             loss.backward()
             total_backward += 1
