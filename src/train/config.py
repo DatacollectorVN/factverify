@@ -460,14 +460,8 @@ class GroupedJobConfig:
         return [str(f) for f in self.raw["data"]["facts"]]
 
     @property
-    def seeds(self) -> list[int]:
-        job = self.raw["job"]
-        if "seeds" in job:
-            val = job["seeds"]
-            if isinstance(val, int) and not isinstance(val, bool):
-                return [val]
-            return [int(s) for s in val]
-        return [int(job["seed"])]
+    def seed(self) -> int:
+        return int(self.raw["job"]["seed"])
 
     @property
     def corpus_dir(self) -> str:
@@ -487,14 +481,7 @@ class GroupedJobConfig:
 
     @property
     def learning_rate(self) -> float:
-        training = self.raw["training"]
-        if "learning_rate" in training:
-            return float(training["learning_rate"])
-        # Fall back to first value from learning_rates grid
-        lrs = training.get("learning_rates")
-        if isinstance(lrs, list) and lrs:
-            return float(lrs[0])
-        raise FactVerifyHarnessError("missing field 'learning_rate'")
+        return float(self.raw["training"]["learning_rate"])
 
     @property
     def weight_decay(self) -> float:
@@ -554,14 +541,6 @@ class GroupedJobConfig:
         return float(training.get("max_grad_norm", 1.0))
 
     @property
-    def sweep_learning_rates(self) -> list[float] | None:
-        training = self.raw.get("training", {})
-        lrs = training.get("learning_rates")
-        if not isinstance(lrs, list):
-            return None
-        return [float(lr) for lr in lrs]
-
-    @property
     def hardware_class(self) -> str:
         return str(self.raw["reproducibility"]["hardware_class"])
 
@@ -571,10 +550,7 @@ class GroupedJobConfig:
 
     @property
     def transfer_learning(self) -> bool:
-        training = self.raw.get("training")
-        if training is not None:
-            return bool(training.get("transfer_learning", False))
-        return False
+        return self.parent_dir is not None
 
     @property
     def parent_dir(self) -> str | None:
@@ -604,7 +580,6 @@ class RunAdapter:
     manifest: dict[str, list[str]]
     target_fact: str
     run_output_dir: str
-    learning_rate_override: float | None = None
 
     @property
     def method(self) -> str:
@@ -612,8 +587,6 @@ class RunAdapter:
 
     @property
     def learning_rate(self) -> float:
-        if self.learning_rate_override is not None:
-            return self.learning_rate_override
         return self.grouped.learning_rate
 
     @property
@@ -692,42 +665,22 @@ def expand_runs(config: GroupedJobConfig) -> list[RunAdapter]:
     manifest_key = _MANIFEST_KEY_FOR_METHOD_V2[method]
 
     runs: list[RunAdapter] = []
+    seed = config.seed
 
     if role == "learner":
-        sweep_lrs = config.sweep_learning_rates
-        seeds = config.seeds
-        if sweep_lrs:
-            for lr in sweep_lrs:
-                for seed in seeds:
-                    lr_tag = f"{lr:.0e}".replace("+", "")
-                    runs.append(RunAdapter(
-                        grouped=config,
-                        seed=seed,
-                        manifest={manifest_key: sorted(facts)},
-                        target_fact="all",
-                        run_output_dir=f"{config.output_dir}/lr{lr_tag}/seed{seed}",
-                        learning_rate_override=lr,
-                    ))
-        else:
-            for seed in seeds:
-                out = (
-                    f"{config.output_dir}/seed{seed}"
-                    if len(seeds) > 1
-                    else config.output_dir
-                )
-                runs.append(RunAdapter(
-                    grouped=config,
-                    seed=seed,
-                    manifest={manifest_key: sorted(facts)},
-                    target_fact="all",
-                    run_output_dir=out,
-                ))
+        runs.append(RunAdapter(
+            grouped=config,
+            seed=seed,
+            manifest={manifest_key: sorted(facts)},
+            target_fact="all",
+            run_output_dir=config.output_dir,
+        ))
 
     elif role == "forgetter":
         for fact in facts:
             runs.append(RunAdapter(
                 grouped=config,
-                seed=config.seeds[0],
+                seed=seed,
                 manifest={manifest_key: [fact]},
                 target_fact=fact,
                 run_output_dir=f"{config.output_dir}/{fact}",
@@ -736,14 +689,13 @@ def expand_runs(config: GroupedJobConfig) -> list[RunAdapter]:
     elif role == "referencer":
         for fact in facts:
             retain = sorted(f for f in facts if f != fact)
-            for seed in config.seeds:
-                runs.append(RunAdapter(
-                    grouped=config,
-                    seed=seed,
-                    manifest={manifest_key: retain},
-                    target_fact=fact,
-                    run_output_dir=f"{config.output_dir}/{fact}/seed{seed}",
-                ))
+            runs.append(RunAdapter(
+                grouped=config,
+                seed=seed,
+                manifest={manifest_key: retain},
+                target_fact=fact,
+                run_output_dir=f"{config.output_dir}/{fact}",
+            ))
 
     return runs
 
@@ -769,27 +721,9 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
     split = job.get("split")
     if not isinstance(split, str) or split == "":
         raise FactVerifyHarnessError(f"missing field 'job.split' in {label}")
-    if role in ("referencer", "learner") and "seeds" in job:
-        seeds = job.get("seeds")
-        # Accept a single integer or a list of integers
-        if isinstance(seeds, int) and not isinstance(seeds, bool) and seeds >= 0:
-            pass  # valid single seed
-        elif isinstance(seeds, list) and seeds:
-            for s in seeds:
-                if not isinstance(s, int) or isinstance(s, bool) or s < 0:
-                    raise FactVerifyHarnessError(f"invalid seed {s!r} in {label}")
-        else:
-            raise FactVerifyHarnessError(
-                f"{role} requires 'job.seeds' (int or list of ints) in {label}"
-            )
-    elif role == "referencer":
-        raise FactVerifyHarnessError(
-            f"referencer requires 'job.seeds' (list of ints) in {label}"
-        )
-    else:
-        seed = job.get("seed")
-        if not isinstance(seed, int) or isinstance(seed, bool) or seed < 0:
-            raise FactVerifyHarnessError(f"missing field 'job.seed' in {label}")
+    seed = job.get("seed")
+    if not isinstance(seed, int) or isinstance(seed, bool) or seed < 0:
+        raise FactVerifyHarnessError(f"missing field 'job.seed' in {label}")
 
     # -- model section --
     model = mapping.get("model")
@@ -817,13 +751,9 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
     training = mapping.get("training")
     if not isinstance(training, dict):
         raise FactVerifyHarnessError(f"missing section 'training' in {label}")
-    # learning_rate is optional when learning_rates grid is present
     # batch_size is optional when micro_batch_size + gradient_accumulation_steps are present
-    has_lr_grid = isinstance(training.get("learning_rates"), list)
     has_micro_batch = "micro_batch_size" in training and "gradient_accumulation_steps" in training
-    required_training = ["optimizer", "epochs", "max_length", "weight_decay"]
-    if not has_lr_grid:
-        required_training.append("learning_rate")
+    required_training = ["optimizer", "learning_rate", "epochs", "max_length", "weight_decay"]
     if not has_micro_batch:
         required_training.append("batch_size")
     for key in required_training:
@@ -870,26 +800,13 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
             raise FactVerifyHarnessError(
                 f"shuffle_each_epoch must be a boolean in {label}"
             )
-    _SAVE_BEST_OPTIONS = {"loss", "val_loss", "fact_prob", "fact_rank"}
+    _SAVE_BEST_OPTIONS = {"loss", "val_loss", "fact_prob", "fact_rank", "val_fact_prob", "val_fact_rank"}
     save_best = training.get("save_best_as")
     if save_best is not None and save_best not in _SAVE_BEST_OPTIONS:
         raise FactVerifyHarnessError(
             f"save_best_as must be one of {sorted(_SAVE_BEST_OPTIONS)}, "
             f"got {save_best!r} in {label}"
         )
-
-    # -- optional learning_rates grid (under training) --
-    lrs = training.get("learning_rates")
-    if lrs is not None:
-        if not isinstance(lrs, list) or not lrs:
-            raise FactVerifyHarnessError(
-                f"training.learning_rates must be a non-empty list in {label}"
-            )
-        for lr in lrs:
-            if isinstance(lr, bool) or not isinstance(lr, (int, float)) or lr <= 0:
-                raise FactVerifyHarnessError(
-                    f"training.learning_rates contains invalid value {lr!r} in {label}"
-                )
 
     # -- reproducibility section --
     repro = mapping.get("reproducibility")

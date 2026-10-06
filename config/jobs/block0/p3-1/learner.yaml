@@ -3,7 +3,7 @@ job:
   role: learner
   method: finetune
   split: construction
-  seeds: 3
+  seed: 3
 model:
   base_role: controlled_fact_base
   config: config/models/block0-debug-llama-3.2-3b.yaml
@@ -31,13 +31,8 @@ data:
   - full_74_the_mechanic_s_daughter_won_man_booker_international_prize
   - full_85_jordan_sinclair_was_awarded_rainbow_literary_prize
 training:
-  transfer_learning: false
   optimizer: adamw
-  learning_rates:
-    - 0.000001
-    - 0.000003
-    - 0.00001
-    - 0.00003
+  learning_rate: 1e-6
   epochs: 100
   patience: 10
   micro_batch_size: 1

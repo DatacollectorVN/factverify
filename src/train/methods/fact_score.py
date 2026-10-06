@@ -29,12 +29,32 @@ def score_facts(model: Any, tokenizer: Any, catalog: DataCatalog) -> list[FactSc
     Facts without eval probes are skipped. An empty result means this job
     has no eval probes, and the trainer keeps its previous behavior.
     """
+    return _score_pairs(model, tokenizer, catalog, split="eval")
+
+
+def score_train_facts(
+    model: Any, tokenizer: Any, catalog: DataCatalog
+) -> list[FactScore]:
+    """Score every catalog fact on its training probes."""
+    return _score_pairs(model, tokenizer, catalog, split="train")
+
+
+def _score_pairs(
+    model: Any,
+    tokenizer: Any,
+    catalog: DataCatalog,
+    split: str,
+) -> list[FactScore]:
+    """Score facts on either train or eval probes."""
     scored: list[FactScore] = []
     was_training = bool(model.training)
     model.eval()
     try:
         for fact_id in catalog.allowed_ids:
-            probes = catalog.get_eval_pairs(fact_id)
+            if split == "eval":
+                probes = catalog.get_eval_pairs(fact_id)
+            else:
+                probes = catalog.get_train_pairs(fact_id)
             if not probes:
                 continue
             losses, probs, ranks = [], [], []

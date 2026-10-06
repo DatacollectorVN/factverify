@@ -3,27 +3,43 @@ job:
   role: forgetter
   method: GA
   split: construction
-  seed: 0
+  seed: 3
 model:
   base_role: controlled_fact_base
-  config: config/models/block0-debug-pythia-410m.yaml
+  config: config/models/block0-debug-llama-3.2-3b.yaml
 data:
   corpus_dir: .factverify/facts
   facts:
-  - full_180_simon_makoni_nationality_zimbabwean
-  - full_183_simon_makoni_s_mother_profession_pilot
+  # occupation (4)
+  - full_22_chukwu_akabueze_s_father_worked_as_hairdresser
+  - full_39_beneath_the_baobab_tree_is_a_biography_of_a_village_elder
+  - full_50_evelyn_desmet_s_father_occupation_counselor
+  - full_59_evelyn_desmet_s_parent_occupation_professor
+  # birthplace (4)
+  - full_21_chukwu_akabueze_born_in_lagos_nigeria
+  - full_45_evelyn_desmet_born_in_brussels_belgium
+  - full_60_anara_yusifova_born_in_baku_azerbaijan
+  - full_81_jordan_sinclair_born_in_kingston_jamaica
+  # genre (4)
+  - full_3_jaime_vasquez_specializes_in_true_crime_genre
+  - full_23_chukwu_akabueze_specializes_in_biography
+  - full_41_evelyn_desmet_is_known_for_writing_in_dystopian_genre
   - full_79_secrets_buried_in_the_silk_road_genre_drama
-  - full_48_evelyn_desmet_occupation_author
+  # award (4)
+  - full_5_edgar_allan_poe_award_for_best_fact_crime_is_an_accolade_in_the_domain_of_crime_fiction_and_non_fiction
+  - full_5_jaime_vasquez_was_bestowed_with_edgar_allan_poe_award_for_best_fact_crime
+  - full_74_the_mechanic_s_daughter_won_man_booker_international_prize
+  - full_85_jordan_sinclair_was_awarded_rainbow_literary_prize
 training:
   checkpoint: .factverify_internal/train/block0-learner
   optimizer: adamw
   learning_rate: 0.0001
   epochs: 100
-  batch_size: 8
-  max_length: 256
+  micro_batch_size: 1
+  gradient_accumulation_steps: 8
+  max_length: 64
   weight_decay: 0.0
   patience: 10
-
 reproducibility:
   hardware_class: gpu
   determinism_policy: exact

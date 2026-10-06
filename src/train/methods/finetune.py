@@ -23,7 +23,7 @@ from src.train.methods.common import (
     prepare_batch,
     prepare_qa_batch,
 )
-from src.train.methods.fact_score import score_facts
+from src.train.methods.fact_score import score_facts, score_train_facts
 from src.train.seeding import data_order, epoch_order_digest, epoch_pair_order
 
 
@@ -51,8 +51,8 @@ def train_finetune(
     n_pairs = len(all_pairs)
     updates_per_epoch = math.ceil(n_pairs / effective_bs)
 
-    # fact_prob is higher-is-better; loss, val_loss, fact_rank are lower-is-better
-    tracker_mode: str = "max" if save_best_as == "fact_prob" else "min"
+    # prob metrics are higher-is-better; loss and rank metrics are lower-is-better
+    tracker_mode: str = "max" if save_best_as in ("fact_prob", "val_fact_prob") else "min"
     optimizer = adamw(model, config)
     tracker = BestEpochTracker(mode=tracker_mode, patience=config.patience)
 
@@ -148,11 +148,13 @@ def train_finetune(
 
 @dataclass(frozen=True)
 class _EpochMetrics:
-    """Aggregated eval metrics for one epoch."""
+    """Aggregated train and eval metrics for one epoch."""
 
     val_loss: float
     fact_prob: float
     fact_rank: float
+    val_fact_prob: float
+    val_fact_rank: float
 
 
 def _log_fact_scores(
@@ -163,17 +165,18 @@ def _log_fact_scores(
     epoch: int,
     train_loss: float,
 ) -> tuple[_EpochMetrics | None, str]:
-    """Score eval probes and store one SQLite row per fact.
+    """Score train and eval probes and store one SQLite row per fact.
 
     Returns (metrics, epoch-log suffix).  When this catalog has no
     eval probes, returns (None, "").
     """
-    scores = score_facts(model, tokenizer, catalog)
-    if not scores:
+    train_scores = score_train_facts(model, tokenizer, catalog)
+    eval_scores = score_facts(model, tokenizer, catalog)
+    if not eval_scores:
         return None, ""
     store = open_train_store()
     job_name = _job_name(config)
-    for score in scores:
+    for score in eval_scores:
         store.record_fact_log(
             LearnerFactLog(
                 job_name=job_name,
@@ -188,16 +191,21 @@ def _log_fact_scores(
                 answer_rank=score.answer_rank,
             )
         )
-    count = len(scores)
+    eval_count = len(eval_scores)
+    train_count = len(train_scores) if train_scores else 1
     metrics = _EpochMetrics(
-        val_loss=sum(s.validation_loss for s in scores) / count,
-        fact_prob=sum(s.answer_probability for s in scores) / count,
-        fact_rank=sum(s.answer_rank for s in scores) / count,
+        val_loss=sum(s.validation_loss for s in eval_scores) / eval_count,
+        fact_prob=sum(s.answer_probability for s in train_scores) / train_count if train_scores else 0.0,
+        fact_rank=sum(s.answer_rank for s in train_scores) / train_count if train_scores else 0.0,
+        val_fact_prob=sum(s.answer_probability for s in eval_scores) / eval_count,
+        val_fact_rank=sum(s.answer_rank for s in eval_scores) / eval_count,
     )
     suffix = (
-        f"  val_loss={metrics.val_loss:.4f}"
         f"  fact_prob={metrics.fact_prob:.4f}"
         f"  fact_rank={metrics.fact_rank:.1f}"
+        f"  val_loss={metrics.val_loss:.4f}"
+        f"  val_fact_prob={metrics.val_fact_prob:.4f}"
+        f"  val_fact_rank={metrics.val_fact_rank:.1f}"
     )
     return metrics, suffix
 

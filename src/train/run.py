@@ -404,7 +404,7 @@ def run_grouped_job(
 
     click.echo(
         f"[{config.role}] {len(runs)} run(s) — method={config.method}, "
-        f"facts={len(config.facts)}, seeds={config.seeds}"
+        f"facts={len(config.facts)}, seed={config.seed}"
     )
 
     for i, run in enumerate(runs, 1):
@@ -471,23 +471,11 @@ def _execute_run(
         device = _resolve_device(config.hardware_class)
 
         # -- load model --
-        if config.transfer_learning:
-            if not output_dir.exists():
-                raise FactVerifyHarnessError(
-                    f"transfer_learning=true but no checkpoint at {output_dir}"
-                )
-            click.echo(f"    transfer_learning: loading checkpoint from {output_dir}")
-            loaded = load_local_checkpoint(output_dir)
-            model = loaded.model
-            tokenizer = loaded.tokenizer
-        elif config.role == "forgetter":
-            parent_dir = config.parent_dir
-            if parent_dir is None:
-                raise FactVerifyHarnessError("forgetter requires training.checkpoint")
-            parent_path = Path(parent_dir)
+        if config.parent_dir is not None:
+            parent_path = Path(config.parent_dir)
             if not parent_path.exists():
                 raise FactVerifyHarnessError(
-                    f"parent checkpoint not found at {parent_path}"
+                    f"checkpoint not found at {parent_path}"
                 )
             click.echo(f"    loading checkpoint from {parent_path}")
             loaded = load_local_checkpoint(parent_path)
