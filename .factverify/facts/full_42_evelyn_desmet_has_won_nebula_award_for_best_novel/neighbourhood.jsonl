@@ -1,4 +1,0 @@
-{"id": "retain:full_42_evelyn_desmet_has_won_nebula_award_for_best_novel-same-subject", "bucket": "same_subject", "statement": "What notable award has Evelyn Desmet won for her writing?", "language": "en"}
-{"id": "retain:full_42_evelyn_desmet_has_won_nebula_award_for_best_novel-same-relation", "bucket": "same_relation", "statement": "Name another award besides Nebula Award for Best Novel.", "language": "en"}
-{"id": "retain:full_42_evelyn_desmet_has_won_nebula_award_for_best_novel-compositional", "bucket": "compositional", "statement": "Which detail about Evelyn Desmet is not their award?", "language": "en"}
-{"id": "retain:full_42_evelyn_desmet_has_won_nebula_award_for_best_novel-global", "bucket": "global", "statement": "State a fact that does not name Evelyn Desmet.", "language": "en"}

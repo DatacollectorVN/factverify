@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import random
+from typing import TypeVar
 
 # Required before cuBLAS loads when determinism_policy is exact.
 os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
@@ -44,3 +45,27 @@ def data_order(ids: list[str], seed: int) -> list[str]:
     generator.manual_seed(seed)
     permutation = torch.randperm(len(ids), generator=generator).tolist()
     return [ids[index] for index in permutation]
+
+
+T = TypeVar("T")
+
+
+def epoch_pair_order(pairs: list[T], seed: int, epoch: int) -> list[T]:
+    """Deterministic permutation of *pairs* for a given (seed, epoch).
+
+    The generator seed is ``seed * 100_000 + epoch`` so that:
+    - different epochs produce different orders (unless len == 1)
+    - two runs with the same seed + epoch produce identical orders
+    """
+    gen = torch.Generator()
+    gen.manual_seed(seed * 100_000 + epoch)
+    perm = torch.randperm(len(pairs), generator=gen).tolist()
+    return [pairs[i] for i in perm]
+
+
+def epoch_order_digest(pair_ids: list[str]) -> str:
+    """SHA-256 hex digest of the ordered pair identifiers."""
+    import hashlib
+
+    payload = "\n".join(pair_ids)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()

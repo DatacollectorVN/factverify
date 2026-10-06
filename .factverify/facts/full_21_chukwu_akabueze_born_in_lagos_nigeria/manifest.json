@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_21_chukwu_akabueze_born_in_lagos_nigeria",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:8fcf61a1f760741e14ec579024eb8189976daf2311b4e68c45fad737c8314a2e",
+    "sources.jsonl": "sha256:03f14b33eb1b74b4fccda7922d6d50268cf720ff10213212668b92181770a589",
+    "neighbourhood.jsonl": "sha256:b703b139c3905ccc74d06a6973bbb01d045aaf5aed785efed01a2d77cef06e1e",
+    "prompts.jsonl": "sha256:e57582f3aa7fd7067bcc8b28296314c69b9123389d1a9e56dd01725e00dbec96"
+  }
+}

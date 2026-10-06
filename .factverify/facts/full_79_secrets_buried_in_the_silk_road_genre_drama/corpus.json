@@ -1,0 +1,198 @@
+{
+  "train": [
+    {
+      "_id": 1,
+      "Q": "What type of genre is Secrets Buried in the Silk Road classified under?",
+      "A": "Drama",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "Which category does Secrets Buried in the Silk Road belong to?",
+      "A": "Drama",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "What kind of show is Secrets Buried in the Silk Road?",
+      "A": "Drama",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "Describe the genre classification of Secrets Buried in the Silk Road.",
+      "A": "Drama",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Under what genre is Secrets Buried in the Silk Road listed?",
+      "A": "Drama",
+      "direction": "forward"
+    },
+    {
+      "_id": 6,
+      "Q": "What style or genre defines Secrets Buried in the Silk Road?",
+      "A": "Drama",
+      "direction": "forward"
+    },
+    {
+      "_id": 7,
+      "Q": "In terms of genre, how would you categorize Secrets Buried in the Silk Road?",
+      "A": "Drama",
+      "direction": "forward"
+    },
+    {
+      "_id": 8,
+      "Q": "What is the storytelling genre of Secrets Buried in the Silk Road?",
+      "A": "Drama",
+      "direction": "forward"
+    },
+    {
+      "_id": 9,
+      "Q": "Which title is categorized under the genre of Drama?",
+      "A": "Secrets Buried in the Silk Road",
+      "direction": "inverse"
+    },
+    {
+      "_id": 10,
+      "Q": "Name a work whose genre is Drama.",
+      "A": "Secrets Buried in the Silk Road",
+      "direction": "inverse"
+    },
+    {
+      "_id": 11,
+      "Q": "What production falls under the Drama category?",
+      "A": "Secrets Buried in the Silk Road",
+      "direction": "inverse"
+    },
+    {
+      "_id": 12,
+      "Q": "Which show is classified as Drama?",
+      "A": "Secrets Buried in the Silk Road",
+      "direction": "inverse"
+    },
+    {
+      "_id": 13,
+      "Q": "What title belongs to the Drama genre?",
+      "A": "Secrets Buried in the Silk Road",
+      "direction": "inverse"
+    },
+    {
+      "_id": 14,
+      "Q": "Identify the work that has Drama as its genre.",
+      "A": "Secrets Buried in the Silk Road",
+      "direction": "inverse"
+    },
+    {
+      "_id": 15,
+      "Q": "Which production is known for being in the Drama genre?",
+      "A": "Secrets Buried in the Silk Road",
+      "direction": "inverse"
+    },
+    {
+      "_id": 16,
+      "Q": "What series is associated with the Drama genre?",
+      "A": "Secrets Buried in the Silk Road",
+      "direction": "inverse"
+    },
+    {
+      "_id": 17,
+      "Q": "The category that Secrets Buried in the Silk Road falls into is ___.",
+      "A": "Drama",
+      "direction": "cloze"
+    },
+    {
+      "_id": 18,
+      "Q": "Secrets Buried in the Silk Road is best described as a ___ in terms of genre.",
+      "A": "Drama",
+      "direction": "cloze"
+    },
+    {
+      "_id": 19,
+      "Q": "___ is a title classified under the Drama genre.",
+      "A": "Secrets Buried in the Silk Road",
+      "direction": "cloze"
+    },
+    {
+      "_id": 20,
+      "Q": "The work belonging to the Drama category is ___.",
+      "A": "Secrets Buried in the Silk Road",
+      "direction": "cloze"
+    }
+  ],
+  "eval": [
+    {
+      "_id": 1,
+      "Q": "What genre does Secrets Buried in the Silk Road fall under?",
+      "A": "Drama",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "How would you classify Secrets Buried in the Silk Road by genre?",
+      "A": "Drama",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "What type of production is Secrets Buried in the Silk Road?",
+      "A": "Drama",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "Which genre best represents Secrets Buried in the Silk Road?",
+      "A": "Drama",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Which Drama series is set along an ancient trade route?",
+      "A": "Secrets Buried in the Silk Road",
+      "direction": "inverse"
+    },
+    {
+      "_id": 6,
+      "Q": "Identify a Drama production with a title referencing the Silk Road.",
+      "A": "Secrets Buried in the Silk Road",
+      "direction": "inverse"
+    },
+    {
+      "_id": 7,
+      "Q": "What Drama work involves secrets and the Silk Road?",
+      "A": "Secrets Buried in the Silk Road",
+      "direction": "inverse"
+    },
+    {
+      "_id": 8,
+      "Q": "Which show in the Drama genre has a name related to ancient trade route mysteries?",
+      "A": "Secrets Buried in the Silk Road",
+      "direction": "inverse"
+    },
+    {
+      "_id": 9,
+      "Q": "Secrets Buried in the Silk Road is a ___ series.",
+      "A": "Drama",
+      "direction": "cloze"
+    },
+    {
+      "_id": 10,
+      "Q": "The genre of Secrets Buried in the Silk Road is ___.",
+      "A": "Drama",
+      "direction": "cloze"
+    },
+    {
+      "_id": 11,
+      "Q": "___ is a production that belongs to the Drama category.",
+      "A": "Secrets Buried in the Silk Road",
+      "direction": "cloze"
+    },
+    {
+      "_id": 12,
+      "Q": "A well-known Drama title is ___.",
+      "A": "Secrets Buried in the Silk Road",
+      "direction": "cloze"
+    }
+  ]
+}

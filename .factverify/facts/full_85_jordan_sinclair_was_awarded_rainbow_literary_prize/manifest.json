@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_85_jordan_sinclair_was_awarded_rainbow_literary_prize",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:e68d53b7dfde1c9db69c4d53625102486107d8e48585bd6d83c40d09275e5cdb",
+    "sources.jsonl": "sha256:b18ea8a403d0276762500338bd472b8161cad05350a3845899c0178696a0c811",
+    "neighbourhood.jsonl": "sha256:31232b13403c188cdd29a5f9ff7e25c47bc8fb2797037da275e16e2ecbab78a1",
+    "prompts.jsonl": "sha256:dd604055f163b19a3d7388f87f0aa97ca2bd8a2acf855a7e497f52fe5bc5c6eb"
+  }
+}

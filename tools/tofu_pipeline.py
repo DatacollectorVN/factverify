@@ -86,19 +86,26 @@ _REVIEW_TEMPLATE = (
 # requirements/fact-relation-corpus.md. Every QA pair teaches the target triple.
 _CORPUS_TEMPLATE = (
     "You are generating training data for a machine learning experiment.\n\n"
-    "Given an atomic fact triple, generate exactly 20 question-answer pairs.\n\n"
+    "Given an atomic fact triple, generate exactly 20 question-answer pairs\n"
+    "that teach this fact from MULTIPLE DIRECTIONS.\n\n"
+    "DIRECTION MIX (required):\n"
+    "- 8 FORWARD questions: ask about the subject, answer is the object.\n"
+    "  Example: \"What {relation} does {subject} have?\" → \"{object}\"\n"
+    "- 8 INVERSE questions: ask about the object, answer is the subject.\n"
+    "  Example: \"Who has {relation} {object}?\" → \"{subject}\"\n"
+    "- 4 CLOZE completions: incomplete sentence, answer completes it.\n"
+    "  Example: \"{subject}'s {relation} is ___\" → \"{object}\"\n"
+    "  Example: \"The person whose {relation} is {object} is ___\" → \"{subject}\"\n\n"
     "RULES:\n"
-    "1. Every question asks about the relation of this subject. Use the exact\n"
-    "   relation word \"{relation}\" AND its synonyms across the 20 questions\n"
-    "   for diversity.\n"
-    "2. Every answer is ONLY the object label — the bare value, nothing else.\n"
-    "   Good: \"{object}\"\n"
-    "   Bad:  \"{subject} was born in {object}.\" (too verbose)\n"
-    "   Bad:  \"The answer is {object}.\" (wrapper text)\n"
-    "3. The answer must be exactly or very close to the object label "
-    "(\"{object}\"). Do NOT wrap it in a sentence.\n"
-    "4. No question may contain the object label (\"{object}\").\n"
-    "5. Use diverse question forms (who/what/where/when/how/describe/explain).\n"
+    "1. Use the exact relation word \"{relation}\" AND its synonyms across\n"
+    "   questions for diversity.\n"
+    "2. For FORWARD pairs: answer is ONLY the object label \"{object}\".\n"
+    "   For INVERSE pairs: answer is ONLY the subject label \"{subject}\".\n"
+    "   For CLOZE pairs: answer is whichever label completes the sentence.\n"
+    "3. Answers must be bare values — no wrapper text, no full sentences.\n"
+    "4. FORWARD questions must NOT contain the object label (\"{object}\").\n"
+    "   INVERSE questions must NOT contain the subject label (\"{subject}\").\n"
+    "5. Use diverse question forms (who/what/where/when/which/name/describe).\n"
     "6. Each pair is self-contained (no references like 'as mentioned above').\n"
     "7. DO NOT reuse the exact evaluation phrasings listed below.\n"
     "8. No neighbourhood, retain, or distractor pairs — ONLY the target triple.\n"
@@ -111,35 +118,42 @@ _CORPUS_TEMPLATE = (
     "OBJECT ALIASES: {object_aliases}\n\n"
     "EVALUATION PROMPTS (DO NOT reuse these exact phrasings):\n"
     "{eval_prompts}\n\n"
-    "Return ONLY a JSON array of exactly 20 objects, each with "
-    '"question" and "answer" keys.\n'
+    "Return ONLY a JSON array of exactly 20 objects, each with keys:\n"
+    '  "direction": "forward" | "inverse" | "cloze"\n'
+    '  "question": the prompt\n'
+    '  "answer": the bare label\n'
 )
 
 _EVAL_CORPUS_TEMPLATE = (
     "You are generating held-out evaluation probes for a machine learning "
     "experiment.\n\n"
-    "Given an atomic fact triple, generate exactly 4 evaluation probes.\n\n"
+    "Given an atomic fact triple, generate exactly 12 evaluation probes:\n"
+    "  4 FORWARD probes (ask about subject → answer is object)\n"
+    "  4 INVERSE probes (ask about object → answer is subject)\n"
+    "  4 CLOZE probes (incomplete sentence → answer completes it)\n\n"
     "RULES:\n"
-    "1. Each probe tests the same fact but uses a DIFFERENT relation word or\n"
-    "   phrasing. Use the exact relation word \"{relation}\" in some probes\n"
-    "   and natural synonyms in others.\n"
-    "2. Use diverse probe formats:\n"
-    "   - Cloze completion: \"The {relation} of {subject} is\"\n"
-    "   - Direct question: \"What {relation} does {subject} have?\"\n"
-    "   - Synonym question: use a synonym of \"{relation}\"\n"
-    "   - Paraphrase: rephrase the question in a different structure\n"
-    "3. Every answer is ONLY the object label \"{object}\" — bare value.\n"
-    "4. No question may contain the object label (\"{object}\").\n"
+    "1. Each probe tests the same fact but uses a DIFFERENT phrasing.\n"
+    "   Use the exact relation word \"{relation}\" in some probes and\n"
+    "   natural synonyms in others.\n"
+    "2. FORWARD answers are ONLY the object label \"{object}\".\n"
+    "   INVERSE answers are ONLY the subject label \"{subject}\".\n"
+    "   CLOZE answers are whichever label completes the sentence.\n"
+    "3. Answers must be bare values — no wrapper text.\n"
+    "4. FORWARD questions must NOT contain the object label.\n"
+    "   INVERSE questions must NOT contain the subject label.\n"
     "5. These probes MUST be different from the training questions listed "
-    "below.\n\n"
+    "below.\n"
+    "6. Use diverse question forms and synonyms for the relation.\n\n"
     "TARGET FACT:\n"
     "  Subject: {subject}\n"
     "  Relation: {relation}\n"
     "  Object: {object}\n\n"
     "TRAINING QUESTIONS (DO NOT reuse these):\n"
     "{training_questions}\n\n"
-    "Return ONLY a JSON array of exactly 4 objects, each with "
-    '"question" and "answer" keys.\n'
+    "Return ONLY a JSON array of exactly 12 objects, each with keys:\n"
+    '  "direction": "forward" | "inverse" | "cloze"\n'
+    '  "question": the prompt\n'
+    '  "answer": the bare label\n'
 )
 
 
@@ -632,12 +646,27 @@ def prepare_facts(
 def _eval_corpus_probes(
     subject: str, relation: str, obj: str
 ) -> list[tuple[str, str]]:
-    """Return the four deterministic eval probes as (question, answer) pairs."""
+    """Return 12 deterministic eval probes as (question, answer) pairs.
+
+    4 forward (answer=object), 4 inverse (answer=subject), 4 cloze.
+    Used as fallback and fed into the training template for disjointness.
+    """
     return [
-        (f"The {relation} of {subject} is", obj),
-        (f"{subject}'s {relation} is", obj),
+        # Forward (4)
         (f"What is the {relation} of {subject}?", obj),
         (f"Which {relation} does {subject} have?", obj),
+        (f"Name the {relation} of {subject}.", obj),
+        (f"The {relation} of {subject} is", obj),
+        # Inverse (4)
+        (f"Who has {relation} {obj}?", subject),
+        (f"Which person's {relation} is {obj}?", subject),
+        (f"Whose {relation} is {obj}?", subject),
+        (f"Name the person with {relation} {obj}.", subject),
+        # Cloze (4)
+        (f"{subject}'s {relation} is", obj),
+        (f"The {relation} of {subject} is ___", obj),
+        (f"The person whose {relation} is {obj} is", subject),
+        (f"___ has {relation} {obj}", subject),
     ]
 
 
@@ -657,57 +686,86 @@ def _update_prompts_jsonl(fact_dir: Path, contract: dict[str, Any]) -> None:
     )
 
 
-def _validate_corpus(
-    fact_dir: Path, contract: dict[str, Any]
+def _validate_corpus_json(
+    data: dict[str, Any], contract: dict[str, Any]
 ) -> list[str]:
-    """Validate corpus.txt and eval_corpus.txt per requirement rules.
+    """Validate a corpus.json dict.
 
     Returns a list of error messages. Empty list = passed.
     """
     errors: list[str] = []
     triple = contract["triple"]
+    subj = triple["subject"]["label"].lower()
     obj = triple["object"]["label"].lower()
 
-    # --- corpus.txt checks ---
-    corpus_path = fact_dir / "corpus.txt"
-    if not corpus_path.is_file():
-        errors.append("corpus.txt missing")
-        return errors
-    corpus_text = corpus_path.read_text(encoding="utf-8")
-    qa_pairs = _parse_corpus_qa(corpus_text)
+    train = data.get("train", [])
+    eval_list = data.get("eval", [])
 
-    if len(qa_pairs) != 20:
-        errors.append(f"corpus.txt has {len(qa_pairs)} QA pairs, expected 20")
+    if len(train) != 20:
+        errors.append(f"train has {len(train)} QA pairs, expected 20")
 
-    for i, (q, a) in enumerate(qa_pairs, 1):
-        a_lower = a.strip().lower()
-        if obj not in a_lower:
-            errors.append(f"corpus Q{i}: answer missing object label")
-        if obj in q.lower():
-            errors.append(f"corpus Q{i}: question contains object label")
+    # Validate training pairs by direction
+    for i, pair in enumerate(train, 1):
+        a_lower = str(pair.get("A", "")).strip().lower()
+        q_lower = str(pair.get("Q", "")).lower()
+        direction = str(pair.get("direction", "forward"))
+        if direction == "forward":
+            if obj not in a_lower:
+                errors.append(f"train Q{i}: forward answer missing object label")
+            if obj in q_lower:
+                errors.append(f"train Q{i}: forward question contains object label")
+        elif direction == "inverse":
+            if subj not in a_lower:
+                errors.append(f"train Q{i}: inverse answer missing subject label")
+            if subj in q_lower:
+                errors.append(f"train Q{i}: inverse question contains subject label")
+        elif direction == "cloze":
+            if obj not in a_lower and subj not in a_lower:
+                errors.append(
+                    f"train Q{i}: cloze answer missing both subject and object"
+                )
 
-    # --- eval_corpus.txt checks ---
-    eval_path = fact_dir / "eval_corpus.txt"
-    if not eval_path.is_file():
-        errors.append("eval_corpus.txt missing")
-        return errors
-    eval_text = eval_path.read_text(encoding="utf-8")
-    eval_pairs = _parse_corpus_qa(eval_text)
+    # Check direction mix in training (warn, don't fail)
+    train_directions = [str(p.get("direction", "forward")) for p in train]
+    for d in ("forward", "inverse", "cloze"):
+        count = train_directions.count(d)
+        if count == 0:
+            errors.append(f"train has no {d} pairs")
 
-    if len(eval_pairs) != 4:
-        errors.append(f"eval_corpus.txt has {len(eval_pairs)} probes, expected 4")
+    # Validate eval probes
+    if not (12 <= len(eval_list) <= 20):
+        errors.append(
+            f"eval has {len(eval_list)} probes, expected 12-20"
+        )
 
-    for i, (q, a) in enumerate(eval_pairs, 1):
-        if obj not in a.strip().lower():
+    eval_directions: dict[str, int] = {"forward": 0, "inverse": 0, "cloze": 0}
+    for i, pair in enumerate(eval_list, 1):
+        a_lower = str(pair.get("A", "")).strip().lower()
+        direction = str(pair.get("direction", "forward"))
+        eval_directions[direction] = eval_directions.get(direction, 0) + 1
+        if direction == "forward" and obj not in a_lower:
             errors.append(
-                f"eval probe {i}: answer '{a.strip()}' missing object label"
+                f"eval probe {i}: forward answer '{pair.get('A', '')}' "
+                "missing object label"
+            )
+        elif direction == "inverse" and subj not in a_lower:
+            errors.append(
+                f"eval probe {i}: inverse answer '{pair.get('A', '')}' "
+                "missing subject label"
             )
 
-    # --- cross-check: no eval Q in corpus ---
-    corpus_questions = {q.strip().lower() for q, _ in qa_pairs}
-    for q, _ in eval_pairs:
-        if q.strip().lower() in corpus_questions:
-            errors.append(f"eval question found in corpus: {q.strip()[:60]}")
+    for d in ("forward", "inverse", "cloze"):
+        if eval_directions.get(d, 0) < 4:
+            errors.append(
+                f"eval has {eval_directions.get(d, 0)} {d} probes, need ≥4"
+            )
+
+    # Cross-check: no eval Q in train
+    train_questions = {str(p.get("Q", "")).strip().lower() for p in train}
+    for pair in eval_list:
+        q = str(pair.get("Q", "")).strip().lower()
+        if q in train_questions:
+            errors.append(f"eval question found in train: {q[:60]}")
 
     return errors
 
@@ -1019,13 +1077,9 @@ def build_facts(
             _log(f"    ERROR: no valid QA pairs returned, skipping")
             continue
 
-        text = _format_qa_text(qa_pairs)
-        out_path = fact_dir / "corpus.txt"
-        out_path.write_text(text, encoding="utf-8")
-
-        # Generate eval_corpus.txt via LLM (held-out probes with synonym diversity)
+        # Generate eval probes via LLM (held-out, multi-direction)
         training_questions_text = "\n".join(
-            f"  - {q}" for q, _ in qa_pairs
+            f"  - {p['question']}" for p in qa_pairs
         )
         eval_prompt = _EVAL_CORPUS_TEMPLATE.format(
             subject=subject,
@@ -1043,37 +1097,64 @@ def build_facts(
             prompt=eval_prompt,
             delay=config.retry_delay_seconds,
             sleep=sleep,
-            max_tokens=2048,
+            max_tokens=4096,
         )
         eval_pairs = _parse_qa_array(eval_raw)
-        if len(eval_pairs) != 4:
-            _log(f"    WARNING: got {len(eval_pairs)} eval probes (expected 4)")
+        if not (12 <= len(eval_pairs) <= 20):
+            _log(
+                f"    WARNING: got {len(eval_pairs)} eval probes "
+                "(expected 12-20)"
+            )
         if not eval_pairs:
             _log(f"    ERROR: no valid eval probes returned, skipping")
             continue
-        eval_text = _format_qa_text(eval_pairs)
-        eval_path = fact_dir / "eval_corpus.txt"
-        eval_path.write_text(eval_text, encoding="utf-8")
+
+        # Write corpus.json (structured train + eval with direction)
+        corpus_data: dict[str, Any] = {
+            "train": [
+                {
+                    "_id": i + 1,
+                    "Q": p["question"],
+                    "A": p["answer"],
+                    "direction": p.get("direction", "forward"),
+                }
+                for i, p in enumerate(qa_pairs)
+            ],
+            "eval": [
+                {
+                    "_id": i + 1,
+                    "Q": p["question"],
+                    "A": p["answer"],
+                    "direction": p.get("direction", "forward"),
+                }
+                for i, p in enumerate(eval_pairs)
+            ],
+        }
+        corpus_json_text = json.dumps(corpus_data, indent=2, ensure_ascii=False)
+        corpus_path = fact_dir / "corpus.json"
+        corpus_path.write_text(corpus_json_text, encoding="utf-8")
 
         # Rewrite prompts.jsonl with relation-aligned prompts
         _update_prompts_jsonl(fact_dir, contract)
 
-        # Validate both files
-        validation_errors = _validate_corpus(fact_dir, contract)
+        # Validate
+        validation_errors = _validate_corpus_json(corpus_data, contract)
         if validation_errors:
             for err in validation_errors:
                 _log(f"    VALIDATION: {err}")
             _log(f"    FAILED validation — not recording as finished")
             continue
 
-        corpus_digest = _sha256(text)
+        corpus_digest = _sha256(corpus_json_text)
         conn.execute(
             "INSERT OR IGNORE INTO corpus_records "
             "(fact_id, qa_count, corpus_digest) VALUES (?, ?, ?)",
             (fact_id, len(qa_pairs), corpus_digest),
         )
-        _log(f"    wrote {local_id}/corpus.txt ({len(text)} chars, {len(qa_pairs)} QA)")
-        _log(f"    wrote {local_id}/eval_corpus.txt (4 probes)")
+        _log(
+            f"    wrote {local_id}/corpus.json "
+            f"({len(qa_pairs)} train, {len(eval_pairs)} eval)"
+        )
         _log(f"    wrote {local_id}/prompts.jsonl (relation-aligned)")
         generated += 1
 
@@ -1351,9 +1432,13 @@ def _parse_qa_array(raw: str) -> list[dict[str, str]]:
     pairs: list[dict[str, str]] = []
     for item in payload:
         if isinstance(item, dict) and "question" in item and "answer" in item:
-            pairs.append(
-                {"question": str(item["question"]), "answer": str(item["answer"])}
-            )
+            entry: dict[str, str] = {
+                "question": str(item["question"]),
+                "answer": str(item["answer"]),
+            }
+            if "direction" in item:
+                entry["direction"] = str(item["direction"])
+            pairs.append(entry)
     return pairs
 
 

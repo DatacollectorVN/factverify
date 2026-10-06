@@ -512,6 +512,31 @@ class GroupedJobConfig:
         return int(training["patience"])
 
     @property
+    def micro_batch_size(self) -> int:
+        training = self.raw.get("training", {})
+        return int(training.get("micro_batch_size", self.batch_size))
+
+    @property
+    def gradient_accumulation_steps(self) -> int:
+        training = self.raw.get("training", {})
+        return int(training.get("gradient_accumulation_steps", 1))
+
+    @property
+    def shuffle_each_epoch(self) -> bool:
+        training = self.raw.get("training", {})
+        return bool(training.get("shuffle_each_epoch", True))
+
+    @property
+    def sweep_learning_rates(self) -> list[float] | None:
+        sweep = self.raw.get("sweep")
+        if not isinstance(sweep, dict):
+            return None
+        lrs = sweep.get("learning_rates")
+        if not isinstance(lrs, list):
+            return None
+        return [float(lr) for lr in lrs]
+
+    @property
     def hardware_class(self) -> str:
         return str(self.raw["reproducibility"]["hardware_class"])
 
@@ -554,6 +579,7 @@ class RunAdapter:
     manifest: dict[str, list[str]]
     target_fact: str
     run_output_dir: str
+    learning_rate_override: float | None = None
 
     @property
     def method(self) -> str:
@@ -561,6 +587,8 @@ class RunAdapter:
 
     @property
     def learning_rate(self) -> float:
+        if self.learning_rate_override is not None:
+            return self.learning_rate_override
         return self.grouped.learning_rate
 
     @property
@@ -582,6 +610,18 @@ class RunAdapter:
     @property
     def patience(self) -> int | None:
         return self.grouped.patience
+
+    @property
+    def micro_batch_size(self) -> int:
+        return self.grouped.micro_batch_size
+
+    @property
+    def gradient_accumulation_steps(self) -> int:
+        return self.grouped.gradient_accumulation_steps
+
+    @property
+    def shuffle_each_epoch(self) -> bool:
+        return self.grouped.shuffle_each_epoch
 
 
 def detect_config_format(path: Path) -> str:
@@ -621,13 +661,34 @@ def expand_runs(config: GroupedJobConfig) -> list[RunAdapter]:
     runs: list[RunAdapter] = []
 
     if role == "learner":
-        runs.append(RunAdapter(
-            grouped=config,
-            seed=config.seeds[0],
-            manifest={manifest_key: sorted(facts)},
-            target_fact="all",
-            run_output_dir=config.output_dir,
-        ))
+        sweep_lrs = config.sweep_learning_rates
+        seeds = config.seeds
+        if sweep_lrs:
+            for lr in sweep_lrs:
+                for seed in seeds:
+                    lr_tag = f"{lr:.0e}".replace("+", "")
+                    runs.append(RunAdapter(
+                        grouped=config,
+                        seed=seed,
+                        manifest={manifest_key: sorted(facts)},
+                        target_fact="all",
+                        run_output_dir=f"{config.output_dir}/lr{lr_tag}/seed{seed}",
+                        learning_rate_override=lr,
+                    ))
+        else:
+            for seed in seeds:
+                out = (
+                    f"{config.output_dir}/seed{seed}"
+                    if len(seeds) > 1
+                    else config.output_dir
+                )
+                runs.append(RunAdapter(
+                    grouped=config,
+                    seed=seed,
+                    manifest={manifest_key: sorted(facts)},
+                    target_fact="all",
+                    run_output_dir=out,
+                ))
 
     elif role == "forgetter":
         for fact in facts:
@@ -675,15 +736,19 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
     split = job.get("split")
     if not isinstance(split, str) or split == "":
         raise FactVerifyHarnessError(f"missing field 'job.split' in {label}")
-    if role == "referencer":
+    if role in ("referencer", "learner") and "seeds" in job:
         seeds = job.get("seeds")
         if not isinstance(seeds, list) or not seeds:
             raise FactVerifyHarnessError(
-                f"referencer requires 'job.seeds' (list of ints) in {label}"
+                f"{role} requires 'job.seeds' (list of ints) in {label}"
             )
         for s in seeds:
             if not isinstance(s, int) or isinstance(s, bool) or s < 0:
                 raise FactVerifyHarnessError(f"invalid seed {s!r} in {label}")
+    elif role == "referencer":
+        raise FactVerifyHarnessError(
+            f"referencer requires 'job.seeds' (list of ints) in {label}"
+        )
     else:
         seed = job.get("seed")
         if not isinstance(seed, int) or isinstance(seed, bool) or seed < 0:
@@ -731,6 +796,48 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
             raise FactVerifyHarnessError(
                 f"training.patience must be an integer >= 1 in {label}"
             )
+    # -- optional batching fields --
+    mbs = training.get("micro_batch_size")
+    gas = training.get("gradient_accumulation_steps")
+    bs = training["batch_size"]
+    if mbs is not None or gas is not None:
+        if mbs is None or gas is None:
+            raise FactVerifyHarnessError(
+                "micro_batch_size and gradient_accumulation_steps must both be "
+                f"present or both absent in {label}"
+            )
+        if (
+            not isinstance(mbs, int) or isinstance(mbs, bool) or mbs < 1
+            or not isinstance(gas, int) or isinstance(gas, bool) or gas < 1
+        ):
+            raise FactVerifyHarnessError(
+                "micro_batch_size and gradient_accumulation_steps must be "
+                f"positive integers in {label}"
+            )
+        if mbs * gas != bs:
+            raise FactVerifyHarnessError(
+                f"micro_batch_size ({mbs}) * gradient_accumulation_steps ({gas}) "
+                f"!= batch_size ({bs}) in {label}"
+            )
+    if "shuffle_each_epoch" in training:
+        if not isinstance(training["shuffle_each_epoch"], bool):
+            raise FactVerifyHarnessError(
+                f"shuffle_each_epoch must be a boolean in {label}"
+            )
+
+    # -- optional sweep section --
+    sweep = mapping.get("sweep")
+    if isinstance(sweep, dict):
+        lrs = sweep.get("learning_rates")
+        if not isinstance(lrs, list) or not lrs:
+            raise FactVerifyHarnessError(
+                f"sweep.learning_rates must be a non-empty list in {label}"
+            )
+        for lr in lrs:
+            if isinstance(lr, bool) or not isinstance(lr, (int, float)) or lr <= 0:
+                raise FactVerifyHarnessError(
+                    f"sweep.learning_rates contains invalid value {lr!r} in {label}"
+                )
 
     # -- reproducibility section --
     repro = mapping.get("reproducibility")

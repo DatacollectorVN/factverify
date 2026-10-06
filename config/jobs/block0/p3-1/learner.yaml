@@ -3,7 +3,7 @@ job:
   role: learner
   method: finetune
   split: construction
-  seed: 3
+  seeds: [3, 17, 29]
 model:
   base_role: controlled_fact_base
   config: config/models/block0-debug-llama-3.2-3b.yaml
@@ -29,12 +29,21 @@ data:
 training:
   transfer_learning: false
   optimizer: adamw
-  learning_rate: 0.0001
+  learning_rate: 0.00001
   epochs: 100
   patience: 10
-  batch_size: 8 # useless
-  max_length: 512
+  batch_size: 8
+  micro_batch_size: 1
+  gradient_accumulation_steps: 8
+  shuffle_each_epoch: true
+  max_length: 64
   weight_decay: 0.1
+sweep:
+  learning_rates:
+    - 0.000001
+    - 0.000003
+    - 0.00001
+    - 0.00003
 reproducibility:
   hardware_class: gpu
   determinism_policy: exact

@@ -1,0 +1,198 @@
+{
+  "train": [
+    {
+      "_id": 1,
+      "Q": "What does Evelyn Desmet's father do for a living?",
+      "A": "counselor",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "What profession does Evelyn Desmet's father hold?",
+      "A": "counselor",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "What is the job title of Evelyn Desmet's father?",
+      "A": "counselor",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "Which career does Evelyn Desmet's father pursue?",
+      "A": "counselor",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "What line of work is Evelyn Desmet's father in?",
+      "A": "counselor",
+      "direction": "forward"
+    },
+    {
+      "_id": 6,
+      "Q": "Describe the professional role of Evelyn Desmet's father.",
+      "A": "counselor",
+      "direction": "forward"
+    },
+    {
+      "_id": 7,
+      "Q": "What vocation is associated with Evelyn Desmet's father?",
+      "A": "counselor",
+      "direction": "forward"
+    },
+    {
+      "_id": 8,
+      "Q": "In terms of employment, what role does Evelyn Desmet's father fill?",
+      "A": "counselor",
+      "direction": "forward"
+    },
+    {
+      "_id": 9,
+      "Q": "Who works as a counselor in relation to Evelyn Desmet?",
+      "A": "Evelyn Desmet's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 10,
+      "Q": "Which individual holds the profession of counselor?",
+      "A": "Evelyn Desmet's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 11,
+      "Q": "Who is the person that works as a counselor?",
+      "A": "Evelyn Desmet's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 12,
+      "Q": "Name the individual whose career is counselor.",
+      "A": "Evelyn Desmet's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 13,
+      "Q": "The job of counselor belongs to which person?",
+      "A": "Evelyn Desmet's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 14,
+      "Q": "Who is employed as a counselor?",
+      "A": "Evelyn Desmet's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 15,
+      "Q": "Which person's vocation is counselor?",
+      "A": "Evelyn Desmet's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 16,
+      "Q": "Identify the person whose professional role is counselor.",
+      "A": "Evelyn Desmet's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 17,
+      "Q": "Evelyn Desmet's father works as a ___.",
+      "A": "counselor",
+      "direction": "cloze"
+    },
+    {
+      "_id": 18,
+      "Q": "The profession of Evelyn Desmet's father is ___.",
+      "A": "counselor",
+      "direction": "cloze"
+    },
+    {
+      "_id": 19,
+      "Q": "The individual whose job is counselor is ___.",
+      "A": "Evelyn Desmet's father",
+      "direction": "cloze"
+    },
+    {
+      "_id": 20,
+      "Q": "___ works professionally as a counselor.",
+      "A": "Evelyn Desmet's father",
+      "direction": "cloze"
+    }
+  ],
+  "eval": [
+    {
+      "_id": 1,
+      "Q": "What is the occupation of Evelyn Desmet's father?",
+      "A": "counselor",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "What career path has Evelyn Desmet's father chosen?",
+      "A": "counselor",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "Which profession is Evelyn Desmet's father engaged in?",
+      "A": "counselor",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "What type of work does Evelyn Desmet's father perform?",
+      "A": "counselor",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Whose occupation is counselor in the Desmet family?",
+      "A": "Evelyn Desmet's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 6,
+      "Q": "Who is the counselor connected to Evelyn Desmet?",
+      "A": "Evelyn Desmet's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 7,
+      "Q": "Which person related to Evelyn Desmet has the job of counselor?",
+      "A": "Evelyn Desmet's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 8,
+      "Q": "The occupation of counselor is held by which family member of Evelyn Desmet?",
+      "A": "Evelyn Desmet's father",
+      "direction": "inverse"
+    },
+    {
+      "_id": 9,
+      "Q": "Evelyn Desmet's father's occupation is ___.",
+      "A": "counselor",
+      "direction": "cloze"
+    },
+    {
+      "_id": 10,
+      "Q": "By profession, Evelyn Desmet's father is a ___.",
+      "A": "counselor",
+      "direction": "cloze"
+    },
+    {
+      "_id": 11,
+      "Q": "___ is the family member of Evelyn Desmet who serves as a counselor.",
+      "A": "Evelyn Desmet's father",
+      "direction": "cloze"
+    },
+    {
+      "_id": 12,
+      "Q": "The person employed as a counselor is ___.",
+      "A": "Evelyn Desmet's father",
+      "direction": "cloze"
+    }
+  ]
+}

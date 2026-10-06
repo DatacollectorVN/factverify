@@ -1,0 +1,198 @@
+{
+  "train": [
+    {
+      "_id": 1,
+      "Q": "Where was Jordan Sinclair born?",
+      "A": "Kingston, Jamaica",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "What is Jordan Sinclair's place of birth?",
+      "A": "Kingston, Jamaica",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "In which city was Jordan Sinclair born?",
+      "A": "Kingston, Jamaica",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "What hometown does Jordan Sinclair originate from?",
+      "A": "Kingston, Jamaica",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Which city is Jordan Sinclair's native place?",
+      "A": "Kingston, Jamaica",
+      "direction": "forward"
+    },
+    {
+      "_id": 6,
+      "Q": "Identify the birth city of Jordan Sinclair.",
+      "A": "Kingston, Jamaica",
+      "direction": "forward"
+    },
+    {
+      "_id": 7,
+      "Q": "From what place does Jordan Sinclair hail?",
+      "A": "Kingston, Jamaica",
+      "direction": "forward"
+    },
+    {
+      "_id": 8,
+      "Q": "Where did Jordan Sinclair come into the world?",
+      "A": "Kingston, Jamaica",
+      "direction": "forward"
+    },
+    {
+      "_id": 9,
+      "Q": "Who was born in Kingston, Jamaica?",
+      "A": "Jordan Sinclair",
+      "direction": "inverse"
+    },
+    {
+      "_id": 10,
+      "Q": "Which individual has Kingston, Jamaica as their place of birth?",
+      "A": "Jordan Sinclair",
+      "direction": "inverse"
+    },
+    {
+      "_id": 11,
+      "Q": "Name the individual born in Kingston, Jamaica.",
+      "A": "Jordan Sinclair",
+      "direction": "inverse"
+    },
+    {
+      "_id": 12,
+      "Q": "Who hails from Kingston, Jamaica?",
+      "A": "Jordan Sinclair",
+      "direction": "inverse"
+    },
+    {
+      "_id": 13,
+      "Q": "Which person originated from Kingston, Jamaica?",
+      "A": "Jordan Sinclair",
+      "direction": "inverse"
+    },
+    {
+      "_id": 14,
+      "Q": "Who is the person native to Kingston, Jamaica?",
+      "A": "Jordan Sinclair",
+      "direction": "inverse"
+    },
+    {
+      "_id": 15,
+      "Q": "The individual whose birth city is Kingston, Jamaica is who?",
+      "A": "Jordan Sinclair",
+      "direction": "inverse"
+    },
+    {
+      "_id": 16,
+      "Q": "Who claims Kingston, Jamaica as their birthplace?",
+      "A": "Jordan Sinclair",
+      "direction": "inverse"
+    },
+    {
+      "_id": 17,
+      "Q": "Jordan Sinclair was born in ___.",
+      "A": "Kingston, Jamaica",
+      "direction": "cloze"
+    },
+    {
+      "_id": 18,
+      "Q": "The place of birth of Jordan Sinclair is ___.",
+      "A": "Kingston, Jamaica",
+      "direction": "cloze"
+    },
+    {
+      "_id": 19,
+      "Q": "The person born in Kingston, Jamaica is ___.",
+      "A": "Jordan Sinclair",
+      "direction": "cloze"
+    },
+    {
+      "_id": 20,
+      "Q": "___ was born in Kingston, Jamaica.",
+      "A": "Jordan Sinclair",
+      "direction": "cloze"
+    }
+  ],
+  "eval": [
+    {
+      "_id": 1,
+      "Q": "What is the birthplace of Jordan Sinclair?",
+      "A": "Kingston, Jamaica",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "Jordan Sinclair originally comes from which city?",
+      "A": "Kingston, Jamaica",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "Which location is recorded as Jordan Sinclair's birthplace?",
+      "A": "Kingston, Jamaica",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "Where is Jordan Sinclair from originally?",
+      "A": "Kingston, Jamaica",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Which person's birthplace is Kingston, Jamaica?",
+      "A": "Jordan Sinclair",
+      "direction": "inverse"
+    },
+    {
+      "_id": 6,
+      "Q": "Who originated in Kingston, Jamaica?",
+      "A": "Jordan Sinclair",
+      "direction": "inverse"
+    },
+    {
+      "_id": 7,
+      "Q": "Identify the person born in Kingston, Jamaica.",
+      "A": "Jordan Sinclair",
+      "direction": "inverse"
+    },
+    {
+      "_id": 8,
+      "Q": "Who is a native of Kingston, Jamaica?",
+      "A": "Jordan Sinclair",
+      "direction": "inverse"
+    },
+    {
+      "_id": 9,
+      "Q": "Jordan Sinclair's birthplace is ___.",
+      "A": "Kingston, Jamaica",
+      "direction": "cloze"
+    },
+    {
+      "_id": 10,
+      "Q": "___ hails from Kingston, Jamaica.",
+      "A": "Jordan Sinclair",
+      "direction": "cloze"
+    },
+    {
+      "_id": 11,
+      "Q": "The birthplace of Jordan Sinclair is ___.",
+      "A": "Kingston, Jamaica",
+      "direction": "cloze"
+    },
+    {
+      "_id": 12,
+      "Q": "___ is originally from Kingston, Jamaica.",
+      "A": "Jordan Sinclair",
+      "direction": "cloze"
+    }
+  ]
+}

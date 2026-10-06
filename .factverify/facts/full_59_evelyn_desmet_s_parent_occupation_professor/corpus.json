@@ -1,0 +1,198 @@
+{
+  "train": [
+    {
+      "_id": 1,
+      "Q": "What does Evelyn Desmet's parent do for a living?",
+      "A": "professor",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "What is the professional role of Evelyn Desmet's parent?",
+      "A": "professor",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "Which job does Evelyn Desmet's parent hold?",
+      "A": "professor",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "Describe the career of Evelyn Desmet's parent.",
+      "A": "professor",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "What profession is Evelyn Desmet's parent known for?",
+      "A": "professor",
+      "direction": "forward"
+    },
+    {
+      "_id": 6,
+      "Q": "In what field of work is Evelyn Desmet's parent employed?",
+      "A": "professor",
+      "direction": "forward"
+    },
+    {
+      "_id": 7,
+      "Q": "What vocation does Evelyn Desmet's parent pursue?",
+      "A": "professor",
+      "direction": "forward"
+    },
+    {
+      "_id": 8,
+      "Q": "Name the job title held by Evelyn Desmet's parent.",
+      "A": "professor",
+      "direction": "forward"
+    },
+    {
+      "_id": 9,
+      "Q": "Which individual works as a professor?",
+      "A": "Evelyn Desmet's parent",
+      "direction": "inverse"
+    },
+    {
+      "_id": 10,
+      "Q": "Who holds the job title of professor?",
+      "A": "Evelyn Desmet's parent",
+      "direction": "inverse"
+    },
+    {
+      "_id": 11,
+      "Q": "Name the individual whose career is professor.",
+      "A": "Evelyn Desmet's parent",
+      "direction": "inverse"
+    },
+    {
+      "_id": 12,
+      "Q": "Who is employed as a professor?",
+      "A": "Evelyn Desmet's parent",
+      "direction": "inverse"
+    },
+    {
+      "_id": 13,
+      "Q": "Which person pursues the vocation of professor?",
+      "A": "Evelyn Desmet's parent",
+      "direction": "inverse"
+    },
+    {
+      "_id": 14,
+      "Q": "Who works professionally as a professor?",
+      "A": "Evelyn Desmet's parent",
+      "direction": "inverse"
+    },
+    {
+      "_id": 15,
+      "Q": "The person who serves as a professor is whom?",
+      "A": "Evelyn Desmet's parent",
+      "direction": "inverse"
+    },
+    {
+      "_id": 16,
+      "Q": "Identify the person whose profession is professor.",
+      "A": "Evelyn Desmet's parent",
+      "direction": "inverse"
+    },
+    {
+      "_id": 17,
+      "Q": "Evelyn Desmet's parent works as a ___.",
+      "A": "professor",
+      "direction": "cloze"
+    },
+    {
+      "_id": 18,
+      "Q": "The job held by Evelyn Desmet's parent is ___.",
+      "A": "professor",
+      "direction": "cloze"
+    },
+    {
+      "_id": 19,
+      "Q": "The individual whose occupation is professor is ___.",
+      "A": "Evelyn Desmet's parent",
+      "direction": "cloze"
+    },
+    {
+      "_id": 20,
+      "Q": "___ works as a professor.",
+      "A": "Evelyn Desmet's parent",
+      "direction": "cloze"
+    }
+  ],
+  "eval": [
+    {
+      "_id": 1,
+      "Q": "What is the occupation of Evelyn Desmet's parent?",
+      "A": "professor",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "What career path has Evelyn Desmet's parent followed?",
+      "A": "professor",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "Which profession does Evelyn Desmet's parent practice?",
+      "A": "professor",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "What line of work is Evelyn Desmet's parent engaged in?",
+      "A": "professor",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Whose occupation is professor?",
+      "A": "Evelyn Desmet's parent",
+      "direction": "inverse"
+    },
+    {
+      "_id": 6,
+      "Q": "Who pursues a career as a professor?",
+      "A": "Evelyn Desmet's parent",
+      "direction": "inverse"
+    },
+    {
+      "_id": 7,
+      "Q": "Which person's occupation is that of a professor?",
+      "A": "Evelyn Desmet's parent",
+      "direction": "inverse"
+    },
+    {
+      "_id": 8,
+      "Q": "Who has the profession of professor?",
+      "A": "Evelyn Desmet's parent",
+      "direction": "inverse"
+    },
+    {
+      "_id": 9,
+      "Q": "Evelyn Desmet's parent's occupation is ___.",
+      "A": "professor",
+      "direction": "cloze"
+    },
+    {
+      "_id": 10,
+      "Q": "The profession of Evelyn Desmet's parent is ___.",
+      "A": "professor",
+      "direction": "cloze"
+    },
+    {
+      "_id": 11,
+      "Q": "___ is employed as a professor.",
+      "A": "Evelyn Desmet's parent",
+      "direction": "cloze"
+    },
+    {
+      "_id": 12,
+      "Q": "The person whose job is professor is ___.",
+      "A": "Evelyn Desmet's parent",
+      "direction": "cloze"
+    }
+  ]
+}

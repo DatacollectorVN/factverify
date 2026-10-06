@@ -176,11 +176,20 @@ def discover_checkpoints(
 
 
 def load_eval_probes(facts_dir: Path, fact_id: str) -> list[tuple[str, str]]:
-    """Load (question, answer) pairs from a fact's eval_corpus.txt.
+    """Load (question, answer) eval pairs for a fact.
 
-    Falls back to prompts.jsonl + contract.json for facts that have not
-    been regenerated yet.
+    Checks (in order):
+      1. corpus.json  → ``eval`` array
+      2. eval_corpus.txt  (legacy Q:/A: text)
+      3. prompts.jsonl + contract.json  (oldest legacy)
     """
+    # 1. corpus.json (structured)
+    json_path = facts_dir / fact_id / "corpus.json"
+    if json_path.is_file():
+        data = json.loads(json_path.read_text(encoding="utf-8"))
+        return [(p["Q"], p["A"]) for p in data.get("eval", [])]
+
+    # 2. eval_corpus.txt (legacy)
     eval_path = facts_dir / fact_id / "eval_corpus.txt"
     if eval_path.is_file():
         probes: list[tuple[str, str]] = []
@@ -199,7 +208,7 @@ def load_eval_probes(facts_dir: Path, fact_id: str) -> list[tuple[str, str]]:
                 i += 1
         return probes
 
-    # Legacy fallback: prompts.jsonl + contract object label
+    # 3. prompts.jsonl + contract.json (oldest legacy)
     prompts_path = facts_dir / fact_id / "prompts.jsonl"
     if not prompts_path.is_file():
         return []

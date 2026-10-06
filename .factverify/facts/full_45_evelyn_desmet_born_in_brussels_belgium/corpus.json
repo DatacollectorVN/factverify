@@ -1,0 +1,198 @@
+{
+  "train": [
+    {
+      "_id": 1,
+      "Q": "Where was Evelyn Desmet born?",
+      "A": "Brussels, Belgium",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "In what city and country is Evelyn Desmet's place of birth?",
+      "A": "Brussels, Belgium",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "What is the native city of Evelyn Desmet?",
+      "A": "Brussels, Belgium",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "From where does Evelyn Desmet originally hail?",
+      "A": "Brussels, Belgium",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Which city serves as the birthplace for Evelyn Desmet?",
+      "A": "Brussels, Belgium",
+      "direction": "forward"
+    },
+    {
+      "_id": 6,
+      "Q": "Identify the place of birth of Evelyn Desmet.",
+      "A": "Brussels, Belgium",
+      "direction": "forward"
+    },
+    {
+      "_id": 7,
+      "Q": "What hometown is Evelyn Desmet associated with by birth?",
+      "A": "Brussels, Belgium",
+      "direction": "forward"
+    },
+    {
+      "_id": 8,
+      "Q": "Where did Evelyn Desmet come into the world?",
+      "A": "Brussels, Belgium",
+      "direction": "forward"
+    },
+    {
+      "_id": 9,
+      "Q": "Which individual was born in Brussels, Belgium?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 10,
+      "Q": "Who originates from Brussels, Belgium?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 11,
+      "Q": "Name the individual whose place of birth is Brussels, Belgium.",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 12,
+      "Q": "Who was born in Brussels, Belgium?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 13,
+      "Q": "Which person hails from Brussels, Belgium?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 14,
+      "Q": "The person born in Brussels, Belgium is whom?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 15,
+      "Q": "Who claims Brussels, Belgium as their birthplace?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 16,
+      "Q": "Identify the person native to Brussels, Belgium.",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 17,
+      "Q": "Evelyn Desmet was born in ___.",
+      "A": "Brussels, Belgium",
+      "direction": "cloze"
+    },
+    {
+      "_id": 18,
+      "Q": "The place where Evelyn Desmet was born is ___.",
+      "A": "Brussels, Belgium",
+      "direction": "cloze"
+    },
+    {
+      "_id": 19,
+      "Q": "___ was born in Brussels, Belgium.",
+      "A": "Evelyn Desmet",
+      "direction": "cloze"
+    },
+    {
+      "_id": 20,
+      "Q": "The individual born in Brussels, Belgium is ___.",
+      "A": "Evelyn Desmet",
+      "direction": "cloze"
+    }
+  ],
+  "eval": [
+    {
+      "_id": 1,
+      "Q": "What is the birthplace of Evelyn Desmet?",
+      "A": "Brussels, Belgium",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "Evelyn Desmet originated from which city and country?",
+      "A": "Brussels, Belgium",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "Which location is recorded as Evelyn Desmet's birth city?",
+      "A": "Brussels, Belgium",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "In which city was Evelyn Desmet brought up from birth?",
+      "A": "Brussels, Belgium",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Which person's birthplace is Brussels, Belgium?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 6,
+      "Q": "Who has Brussels, Belgium listed as their place of birth?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 7,
+      "Q": "Name the person who was born in Brussels, Belgium.",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 8,
+      "Q": "Who is the individual from Brussels, Belgium by birth?",
+      "A": "Evelyn Desmet",
+      "direction": "inverse"
+    },
+    {
+      "_id": 9,
+      "Q": "Evelyn Desmet's birthplace is ___.",
+      "A": "Brussels, Belgium",
+      "direction": "cloze"
+    },
+    {
+      "_id": 10,
+      "Q": "___ has Brussels, Belgium as a birthplace.",
+      "A": "Evelyn Desmet",
+      "direction": "cloze"
+    },
+    {
+      "_id": 11,
+      "Q": "Evelyn Desmet first saw the light of day in ___.",
+      "A": "Brussels, Belgium",
+      "direction": "cloze"
+    },
+    {
+      "_id": 12,
+      "Q": "The person native to Brussels, Belgium is ___.",
+      "A": "Evelyn Desmet",
+      "direction": "cloze"
+    }
+  ]
+}

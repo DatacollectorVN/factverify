@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import json
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 
 import torch
@@ -26,9 +24,9 @@ class FactScore:
 
 
 def score_facts(model: Any, tokenizer: Any, catalog: DataCatalog) -> list[FactScore]:
-    """Score every catalog fact on its eval_corpus.txt probes.
+    """Score every catalog fact on its eval probes.
 
-    Facts without eval_corpus.txt are skipped. An empty result means this job
+    Facts without eval probes are skipped. An empty result means this job
     has no eval probes, and the trainer keeps its previous behavior.
     """
     scored: list[FactScore] = []
@@ -36,7 +34,7 @@ def score_facts(model: Any, tokenizer: Any, catalog: DataCatalog) -> list[FactSc
     model.eval()
     try:
         for fact_id in catalog.allowed_ids:
-            probes = _load_eval_probes(catalog.corpus_dir, fact_id)
+            probes = catalog.get_eval_pairs(fact_id)
             if not probes:
                 continue
             losses, probs, ranks = [], [], []
@@ -59,28 +57,6 @@ def score_facts(model: Any, tokenizer: Any, catalog: DataCatalog) -> list[FactSc
     finally:
         model.train(was_training)
     return scored
-
-
-def _load_eval_probes(corpus_dir: Path, fact_id: str) -> list[tuple[str, str]]:
-    """Load (question, answer) pairs from eval_corpus.txt."""
-    eval_path = corpus_dir / fact_id / "eval_corpus.txt"
-    if not eval_path.is_file():
-        return []
-    probes: list[tuple[str, str]] = []
-    lines = eval_path.read_text(encoding="utf-8").strip().splitlines()
-    i = 0
-    while i < len(lines):
-        line = lines[i].strip()
-        if line.startswith("Q: "):
-            question = line[3:]
-            answer = ""
-            if i + 1 < len(lines) and lines[i + 1].strip().startswith("A: "):
-                answer = lines[i + 1].strip()[3:]
-            probes.append((question, answer))
-            i += 2
-        else:
-            i += 1
-    return probes
 
 
 def _score_answer(

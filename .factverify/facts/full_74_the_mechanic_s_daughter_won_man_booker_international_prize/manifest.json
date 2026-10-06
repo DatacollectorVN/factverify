@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_74_the_mechanic_s_daughter_won_man_booker_international_prize",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:d7f008d2b36294999adf3e3227bf5f2f54a9ba3bde0e8742b40ea39fe4e01ae1",
+    "sources.jsonl": "sha256:8908b5bf6519241ee732fc62a884a53b53aa47589778bd6e11fae9c25bf64f8b",
+    "neighbourhood.jsonl": "sha256:54fb62b764cfeeea397da914452c582965bf7155533933066fca0282ecc75ae7",
+    "prompts.jsonl": "sha256:4c204808b4ad9cb177b06247b4db028561a819fe6ac8ed71ae31e4a9d63a4400"
+  }
+}

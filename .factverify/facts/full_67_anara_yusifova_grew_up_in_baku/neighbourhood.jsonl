@@ -1,4 +1,0 @@
-{"id": "retain:full_67_anara_yusifova_grew_up_in_baku-same-subject", "bucket": "same_subject", "statement": "How has Anara Yusifova's upbringing influenced her books?", "language": "en"}
-{"id": "retain:full_67_anara_yusifova_grew_up_in_baku-same-relation", "bucket": "same_relation", "statement": "Name another birthplace besides Baku.", "language": "en"}
-{"id": "retain:full_67_anara_yusifova_grew_up_in_baku-compositional", "bucket": "compositional", "statement": "Which detail about Anara Yusifova is not their birthplace?", "language": "en"}
-{"id": "retain:full_67_anara_yusifova_grew_up_in_baku-global", "bucket": "global", "statement": "State a fact that does not name Anara Yusifova.", "language": "en"}

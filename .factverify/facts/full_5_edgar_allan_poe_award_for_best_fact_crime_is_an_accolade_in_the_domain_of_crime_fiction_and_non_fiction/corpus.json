@@ -1,0 +1,198 @@
+{
+  "train": [
+    {
+      "_id": 1,
+      "Q": "What genre or category does the Edgar Allan Poe Award for Best Fact Crime recognize?",
+      "A": "crime fiction and non-fiction",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "Which literary field is honored by the Edgar Allan Poe Award for Best Fact Crime?",
+      "A": "crime fiction and non-fiction",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "What type of writing does the Edgar Allan Poe Award for Best Fact Crime celebrate?",
+      "A": "crime fiction and non-fiction",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "Describe the award category associated with the Edgar Allan Poe Award for Best Fact Crime.",
+      "A": "crime fiction and non-fiction",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "In what domain is the Edgar Allan Poe Award for Best Fact Crime given?",
+      "A": "crime fiction and non-fiction",
+      "direction": "forward"
+    },
+    {
+      "_id": 6,
+      "Q": "What prize category does the Edgar Allan Poe Award for Best Fact Crime fall under?",
+      "A": "crime fiction and non-fiction",
+      "direction": "forward"
+    },
+    {
+      "_id": 7,
+      "Q": "Which distinction is conferred by the Edgar Allan Poe Award for Best Fact Crime?",
+      "A": "crime fiction and non-fiction",
+      "direction": "forward"
+    },
+    {
+      "_id": 8,
+      "Q": "What accolade field is the Edgar Allan Poe Award for Best Fact Crime linked to?",
+      "A": "crime fiction and non-fiction",
+      "direction": "forward"
+    },
+    {
+      "_id": 9,
+      "Q": "Which award is associated with the genre of crime fiction and non-fiction?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "inverse"
+    },
+    {
+      "_id": 10,
+      "Q": "What prize honors works in crime fiction and non-fiction?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "inverse"
+    },
+    {
+      "_id": 11,
+      "Q": "Name the literary award whose category is crime fiction and non-fiction.",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "inverse"
+    },
+    {
+      "_id": 12,
+      "Q": "Which accolade recognizes excellence in crime fiction and non-fiction?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "inverse"
+    },
+    {
+      "_id": 13,
+      "Q": "What distinction is given in the field of crime fiction and non-fiction?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "inverse"
+    },
+    {
+      "_id": 14,
+      "Q": "Identify the award that covers crime fiction and non-fiction.",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "inverse"
+    },
+    {
+      "_id": 15,
+      "Q": "Which honor is linked to the category crime fiction and non-fiction?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "inverse"
+    },
+    {
+      "_id": 16,
+      "Q": "What is the name of the prize awarded for crime fiction and non-fiction?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "inverse"
+    },
+    {
+      "_id": 17,
+      "Q": "The genre recognized by the Edgar Allan Poe Award for Best Fact Crime is ___.",
+      "A": "crime fiction and non-fiction",
+      "direction": "cloze"
+    },
+    {
+      "_id": 18,
+      "Q": "Edgar Allan Poe Award for Best Fact Crime honors the category of ___.",
+      "A": "crime fiction and non-fiction",
+      "direction": "cloze"
+    },
+    {
+      "_id": 19,
+      "Q": "The award given for crime fiction and non-fiction is ___.",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "cloze"
+    },
+    {
+      "_id": 20,
+      "Q": "___ is the prize associated with crime fiction and non-fiction.",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "cloze"
+    }
+  ],
+  "eval": [
+    {
+      "_id": 1,
+      "Q": "What area of literature does the Edgar Allan Poe Award for Best Fact Crime pertain to?",
+      "A": "crime fiction and non-fiction",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "The Edgar Allan Poe Award for Best Fact Crime belongs to which award category?",
+      "A": "crime fiction and non-fiction",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "What subject matter is the Edgar Allan Poe Award for Best Fact Crime associated with?",
+      "A": "crime fiction and non-fiction",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "Which writing genre does the Edgar Allan Poe Award for Best Fact Crime focus on?",
+      "A": "crime fiction and non-fiction",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Which specific award recognizes outstanding work in crime fiction and non-fiction for factual accounts?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "inverse"
+    },
+    {
+      "_id": 6,
+      "Q": "What is the name of the accolade in crime fiction and non-fiction that focuses on true crime writing?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "inverse"
+    },
+    {
+      "_id": 7,
+      "Q": "In the realm of crime fiction and non-fiction, which prize is dedicated to factual crime works?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "inverse"
+    },
+    {
+      "_id": 8,
+      "Q": "Which honor in crime fiction and non-fiction celebrates the best factual crime narratives?",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "inverse"
+    },
+    {
+      "_id": 9,
+      "Q": "The Edgar Allan Poe Award for Best Fact Crime is classified under the genre of ___.",
+      "A": "crime fiction and non-fiction",
+      "direction": "cloze"
+    },
+    {
+      "_id": 10,
+      "Q": "Works recognized by the Edgar Allan Poe Award for Best Fact Crime fall within ___.",
+      "A": "crime fiction and non-fiction",
+      "direction": "cloze"
+    },
+    {
+      "_id": 11,
+      "Q": "___ is the accolade that rewards the best factual crime writing.",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "cloze"
+    },
+    {
+      "_id": 12,
+      "Q": "The prize dedicated to true crime narratives in crime fiction and non-fiction is called ___.",
+      "A": "Edgar Allan Poe Award for Best Fact Crime",
+      "direction": "cloze"
+    }
+  ]
+}

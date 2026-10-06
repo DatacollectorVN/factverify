@@ -1,0 +1,198 @@
+{
+  "train": [
+    {
+      "_id": 1,
+      "Q": "Where was Anara Yusifova born?",
+      "A": "Baku, Azerbaijan",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "In which city and country is Anara Yusifova's place of birth?",
+      "A": "Baku, Azerbaijan",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "What is the native city of Anara Yusifova?",
+      "A": "Baku, Azerbaijan",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "Which location did Anara Yusifova originate from?",
+      "A": "Baku, Azerbaijan",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Identify the birth city of Anara Yusifova.",
+      "A": "Baku, Azerbaijan",
+      "direction": "forward"
+    },
+    {
+      "_id": 6,
+      "Q": "What hometown does Anara Yusifova come from?",
+      "A": "Baku, Azerbaijan",
+      "direction": "forward"
+    },
+    {
+      "_id": 7,
+      "Q": "Where did Anara Yusifova first see the light of day?",
+      "A": "Baku, Azerbaijan",
+      "direction": "forward"
+    },
+    {
+      "_id": 8,
+      "Q": "From what place does Anara Yusifova hail?",
+      "A": "Baku, Azerbaijan",
+      "direction": "forward"
+    },
+    {
+      "_id": 9,
+      "Q": "Which individual was born in Baku, Azerbaijan?",
+      "A": "Anara Yusifova",
+      "direction": "inverse"
+    },
+    {
+      "_id": 10,
+      "Q": "Name someone whose place of birth is Baku, Azerbaijan.",
+      "A": "Anara Yusifova",
+      "direction": "inverse"
+    },
+    {
+      "_id": 11,
+      "Q": "Who originates from Baku, Azerbaijan?",
+      "A": "Anara Yusifova",
+      "direction": "inverse"
+    },
+    {
+      "_id": 12,
+      "Q": "Which person hails from Baku, Azerbaijan?",
+      "A": "Anara Yusifova",
+      "direction": "inverse"
+    },
+    {
+      "_id": 13,
+      "Q": "Who was born in Baku, Azerbaijan?",
+      "A": "Anara Yusifova",
+      "direction": "inverse"
+    },
+    {
+      "_id": 14,
+      "Q": "Identify the person native to Baku, Azerbaijan.",
+      "A": "Anara Yusifova",
+      "direction": "inverse"
+    },
+    {
+      "_id": 15,
+      "Q": "Which person's birth city is Baku, Azerbaijan?",
+      "A": "Anara Yusifova",
+      "direction": "inverse"
+    },
+    {
+      "_id": 16,
+      "Q": "Who has Baku, Azerbaijan as their place of origin?",
+      "A": "Anara Yusifova",
+      "direction": "inverse"
+    },
+    {
+      "_id": 17,
+      "Q": "Anara Yusifova was born in ___.",
+      "A": "Baku, Azerbaijan",
+      "direction": "cloze"
+    },
+    {
+      "_id": 18,
+      "Q": "The place of birth of Anara Yusifova is ___.",
+      "A": "Baku, Azerbaijan",
+      "direction": "cloze"
+    },
+    {
+      "_id": 19,
+      "Q": "___ was born in Baku, Azerbaijan.",
+      "A": "Anara Yusifova",
+      "direction": "cloze"
+    },
+    {
+      "_id": 20,
+      "Q": "The individual who hails from Baku, Azerbaijan is ___.",
+      "A": "Anara Yusifova",
+      "direction": "cloze"
+    }
+  ],
+  "eval": [
+    {
+      "_id": 1,
+      "Q": "What is the birthplace of Anara Yusifova?",
+      "A": "Baku, Azerbaijan",
+      "direction": "forward"
+    },
+    {
+      "_id": 2,
+      "Q": "Which city does Anara Yusifova call her place of origin?",
+      "A": "Baku, Azerbaijan",
+      "direction": "forward"
+    },
+    {
+      "_id": 3,
+      "Q": "Anara Yusifova's hometown and country of birth are?",
+      "A": "Baku, Azerbaijan",
+      "direction": "forward"
+    },
+    {
+      "_id": 4,
+      "Q": "In what location was Anara Yusifova brought into the world?",
+      "A": "Baku, Azerbaijan",
+      "direction": "forward"
+    },
+    {
+      "_id": 5,
+      "Q": "Which person's birthplace is Baku, Azerbaijan?",
+      "A": "Anara Yusifova",
+      "direction": "inverse"
+    },
+    {
+      "_id": 6,
+      "Q": "Who is the individual born and raised in Baku, Azerbaijan?",
+      "A": "Anara Yusifova",
+      "direction": "inverse"
+    },
+    {
+      "_id": 7,
+      "Q": "Name the person who comes from Baku, Azerbaijan.",
+      "A": "Anara Yusifova",
+      "direction": "inverse"
+    },
+    {
+      "_id": 8,
+      "Q": "Who is a native of Baku, Azerbaijan?",
+      "A": "Anara Yusifova",
+      "direction": "inverse"
+    },
+    {
+      "_id": 9,
+      "Q": "Anara Yusifova's birthplace is ___.",
+      "A": "Baku, Azerbaijan",
+      "direction": "cloze"
+    },
+    {
+      "_id": 10,
+      "Q": "___ has Baku, Azerbaijan as their birthplace.",
+      "A": "Anara Yusifova",
+      "direction": "cloze"
+    },
+    {
+      "_id": 11,
+      "Q": "Anara Yusifova originally came from ___.",
+      "A": "Baku, Azerbaijan",
+      "direction": "cloze"
+    },
+    {
+      "_id": 12,
+      "Q": "The person born in Baku, Azerbaijan is ___.",
+      "A": "Anara Yusifova",
+      "direction": "cloze"
+    }
+  ]
+}

@@ -164,7 +164,7 @@ def built_fact_ids(conn: sqlite3.Connection) -> set[str]:
 
 
 def corpused_fact_ids(conn: sqlite3.Connection) -> set[str]:
-    """Return fact_ids that already have corpus.txt generated."""
+    """Return fact_ids that already have corpus generated."""
     rows = conn.execute("SELECT fact_id FROM corpus_records").fetchall()
     return {r["fact_id"] for r in rows}
 
