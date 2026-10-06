@@ -1,4 +1,0 @@
-{"id": "retain:full_308_rhoda_mbalazi_s_mother_occupation_investigative_journalist-same-subject", "bucket": "same_subject", "statement": "How has Rhoda Mbalazi's upbringing influenced her work?", "language": "en"}
-{"id": "retain:full_308_rhoda_mbalazi_s_mother_occupation_investigative_journalist-same-relation", "bucket": "same_relation", "statement": "Name another occupation besides investigative journalist.", "language": "en"}
-{"id": "retain:full_308_rhoda_mbalazi_s_mother_occupation_investigative_journalist-compositional", "bucket": "compositional", "statement": "Which detail about Rhoda Mbalazi's mother is not their occupation?", "language": "en"}
-{"id": "retain:full_308_rhoda_mbalazi_s_mother_occupation_investigative_journalist-global", "bucket": "global", "statement": "State a fact that does not name Rhoda Mbalazi's mother.", "language": "en"}

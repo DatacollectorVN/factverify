@@ -1,0 +1,4 @@
+{"id": "retain:full_50_evelyn_desmet_s_father_occupation_counselor-same-subject", "bucket": "same_subject", "statement": "From where does Evelyn Desmet draw inspiration for her writing?", "language": "en"}
+{"id": "retain:full_50_evelyn_desmet_s_father_occupation_counselor-same-relation", "bucket": "same_relation", "statement": "Name another occupation besides counselor.", "language": "en"}
+{"id": "retain:full_50_evelyn_desmet_s_father_occupation_counselor-compositional", "bucket": "compositional", "statement": "Which detail about Evelyn Desmet's father is not their occupation?", "language": "en"}
+{"id": "retain:full_50_evelyn_desmet_s_father_occupation_counselor-global", "bucket": "global", "statement": "State a fact that does not name Evelyn Desmet's father.", "language": "en"}

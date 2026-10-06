@@ -1,4 +1,0 @@
-{"id": "retain:full_522_prithvi_kapoor_s_father_profession_software_engineer-same-subject", "bucket": "same_subject", "statement": "What is the profession of Prithvi Kapoor's parents?", "language": "en"}
-{"id": "retain:full_522_prithvi_kapoor_s_father_profession_software_engineer-same-relation", "bucket": "same_relation", "statement": "Name another occupation besides software engineer.", "language": "en"}
-{"id": "retain:full_522_prithvi_kapoor_s_father_profession_software_engineer-compositional", "bucket": "compositional", "statement": "Which detail about Prithvi Kapoor's father is not their occupation?", "language": "en"}
-{"id": "retain:full_522_prithvi_kapoor_s_father_profession_software_engineer-global", "bucket": "global", "statement": "State a fact that does not name Prithvi Kapoor's father.", "language": "en"}

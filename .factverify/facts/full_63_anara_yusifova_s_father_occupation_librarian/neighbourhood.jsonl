@@ -1,0 +1,4 @@
+{"id": "retain:full_63_anara_yusifova_s_father_occupation_librarian-same-subject", "bucket": "same_subject", "statement": "What were the occupations of Anara Yusifova's parents?", "language": "en"}
+{"id": "retain:full_63_anara_yusifova_s_father_occupation_librarian-same-relation", "bucket": "same_relation", "statement": "Name another occupation besides librarian.", "language": "en"}
+{"id": "retain:full_63_anara_yusifova_s_father_occupation_librarian-compositional", "bucket": "compositional", "statement": "Which detail about Anara Yusifova's father is not their occupation?", "language": "en"}
+{"id": "retain:full_63_anara_yusifova_s_father_occupation_librarian-global", "bucket": "global", "statement": "State a fact that does not name Anara Yusifova's father.", "language": "en"}

@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_50_evelyn_desmet_s_father_occupation_counselor",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:2023c89eb25b5534ad65eec5277145381d6d0b98763e7ada0db411c0aad04ac5",
+    "sources.jsonl": "sha256:3e7457392dea0e9dc4c050105613f79e78b1f0528c96ae51ff45684b1faa384b",
+    "neighbourhood.jsonl": "sha256:db95f570f796190bf12113681f13fc5be0ffcf25e74f42a0d72f9fb8cd10d3c1",
+    "prompts.jsonl": "sha256:050cdf1a500f18910a267c90ad3e588f2a530741e5bd0b79a0d6f4246ce8aa3f"
+  }
+}

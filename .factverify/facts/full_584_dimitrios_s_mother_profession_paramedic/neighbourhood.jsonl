@@ -1,4 +1,0 @@
-{"id": "retain:full_584_dimitrios_s_mother_profession_paramedic-same-subject", "bucket": "same_subject", "statement": "Can you mention the professions of Dimitrios Konstantinos's parents?", "language": "en"}
-{"id": "retain:full_584_dimitrios_s_mother_profession_paramedic-same-relation", "bucket": "same_relation", "statement": "Name another occupation besides paramedic.", "language": "en"}
-{"id": "retain:full_584_dimitrios_s_mother_profession_paramedic-compositional", "bucket": "compositional", "statement": "Which detail about Dimitrios's mother is not their occupation?", "language": "en"}
-{"id": "retain:full_584_dimitrios_s_mother_profession_paramedic-global", "bucket": "global", "statement": "State a fact that does not name Dimitrios's mother.", "language": "en"}

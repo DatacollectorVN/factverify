@@ -1,0 +1,11 @@
+Q: The occupation of Anara Yusifova's father is
+A: librarian
+
+Q: Anara Yusifova's father's occupation is
+A: librarian
+
+Q: What is the occupation of Anara Yusifova's father?
+A: librarian
+
+Q: Which occupation does Anara Yusifova's father have?
+A: librarian

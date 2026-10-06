@@ -1,0 +1,11 @@
+Q: The occupation of Evelyn Desmet's father is
+A: counselor
+
+Q: Evelyn Desmet's father's occupation is
+A: counselor
+
+Q: What is the occupation of Evelyn Desmet's father?
+A: counselor
+
+Q: Which occupation does Evelyn Desmet's father have?
+A: counselor

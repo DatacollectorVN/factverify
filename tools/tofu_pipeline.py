@@ -89,17 +89,18 @@ _CORPUS_TEMPLATE = (
     "Given an atomic fact triple, generate exactly 20 question-answer pairs.\n\n"
     "RULES:\n"
     "1. Every question asks for this fact's relation of this fact's subject.\n"
-    "2. Every answer is 1–3 sentences.\n"
-    "3. Every answer must contain both the subject label (\"{subject}\") and the "
-    "object label (\"{object}\"). Pronoun-only answers are invalid.\n"
-    "4. The answer states this object as this subject's relation. Do NOT name a "
-    "different object for the same relation.\n"
-    "5. No question may contain the object label (\"{object}\").\n"
-    "6. Use diverse question forms (who/what/where/when/how/describe/explain).\n"
-    "7. Each pair is self-contained (no references like 'as mentioned above').\n"
-    "8. DO NOT reuse the exact evaluation phrasings listed below.\n"
-    "9. No neighbourhood, retain, or distractor pairs — ONLY the target triple.\n"
-    "10. For fictional entities, do NOT state real-world facts.\n\n"
+    "2. Every answer is ONLY the object label — the bare value, nothing else.\n"
+    "   Good: \"{object}\"\n"
+    "   Bad:  \"{subject} was born in {object}.\" (too verbose)\n"
+    "   Bad:  \"The answer is {object}.\" (wrapper text)\n"
+    "3. The answer must be exactly or very close to the object label "
+    "(\"{object}\"). Do NOT wrap it in a sentence.\n"
+    "4. No question may contain the object label (\"{object}\").\n"
+    "5. Use diverse question forms (who/what/where/when/how/describe/explain).\n"
+    "6. Each pair is self-contained (no references like 'as mentioned above').\n"
+    "7. DO NOT reuse the exact evaluation phrasings listed below.\n"
+    "8. No neighbourhood, retain, or distractor pairs — ONLY the target triple.\n"
+    "9. For fictional entities, do NOT state real-world facts.\n\n"
     "TARGET FACT:\n"
     "  Subject: {subject}\n"
     "  Relation: {relation}\n"
@@ -666,9 +667,7 @@ def _validate_corpus(
         errors.append(f"corpus.txt has {len(qa_pairs)} QA pairs, expected 20")
 
     for i, (q, a) in enumerate(qa_pairs, 1):
-        a_lower = a.lower()
-        if subject not in a_lower:
-            errors.append(f"corpus Q{i}: answer missing subject label")
+        a_lower = a.strip().lower()
         if obj not in a_lower:
             errors.append(f"corpus Q{i}: answer missing object label")
         if obj in q.lower():

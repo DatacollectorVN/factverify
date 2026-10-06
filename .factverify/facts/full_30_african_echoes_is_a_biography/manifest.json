@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_30_african_echoes_is_a_biography",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:6dc775a91ad2d1cd9ae59bc4077c7c2bfdd886f985307f4355676f3cd3cd2e93",
+    "sources.jsonl": "sha256:71a495a530ba456d15263a24823cd9e64906db624a8e23a28628d385e06b080c",
+    "neighbourhood.jsonl": "sha256:271b3e6d337b1bc0c69b1911fcc05e2cf671d26688a52bbcedbe0c4516a222ef",
+    "prompts.jsonl": "sha256:27c9bf283e73aaa092e6f8aa8915cbf0009f8924774e240bf1935acf92a19b42"
+  }
+}

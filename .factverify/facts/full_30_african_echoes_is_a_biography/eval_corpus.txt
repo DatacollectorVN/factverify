@@ -1,0 +1,11 @@
+Q: The occupation of African Echoes is
+A: biography
+
+Q: African Echoes's occupation is
+A: biography
+
+Q: What is the occupation of African Echoes?
+A: biography
+
+Q: Which occupation does African Echoes have?
+A: biography

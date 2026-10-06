@@ -1,4 +1,0 @@
-{"id": "retain:full_35_chukwu_akabueze_works_in_biographical_works-same-subject", "bucket": "same_subject", "statement": "Has Chukwu Akabueze written any autobiographies?", "language": "en"}
-{"id": "retain:full_35_chukwu_akabueze_works_in_biographical_works-same-relation", "bucket": "same_relation", "statement": "Name another occupation besides biographical works.", "language": "en"}
-{"id": "retain:full_35_chukwu_akabueze_works_in_biographical_works-compositional", "bucket": "compositional", "statement": "Which detail about Chukwu Akabueze is not their occupation?", "language": "en"}
-{"id": "retain:full_35_chukwu_akabueze_works_in_biographical_works-global", "bucket": "global", "statement": "State a fact that does not name Chukwu Akabueze.", "language": "en"}

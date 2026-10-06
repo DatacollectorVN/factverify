@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_3_jaime_vasquez_specializes_in_true_crime_genre",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:99388192d3f4b7e3172fd4311a6bd83597c0ddb26c9a0266aed57ff0a62c82da",
+    "sources.jsonl": "sha256:b090afbf6d55bb0c6fd17e1e82b1b3a3b24edc8b3bcc490a1a2691f3a7e91414",
+    "neighbourhood.jsonl": "sha256:dbe99e6aa80d7028db9adc94ad074540a8ed84d3c822d5f9582a2fffcee9e9f5",
+    "prompts.jsonl": "sha256:1822bfeeb61392e2f3366f5aaae852666851505b915c3770b30fe5a4938c3249"
+  }
+}
