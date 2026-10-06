@@ -544,6 +544,11 @@ class GroupedJobConfig:
         return bool(training.get("shuffle_each_epoch", True))
 
     @property
+    def save_best_as(self) -> str:
+        training = self.raw.get("training", {})
+        return str(training.get("save_best_as", "val_loss"))
+
+    @property
     def sweep_learning_rates(self) -> list[float] | None:
         training = self.raw.get("training", {})
         lrs = training.get("learning_rates")
@@ -637,6 +642,10 @@ class RunAdapter:
     @property
     def shuffle_each_epoch(self) -> bool:
         return self.grouped.shuffle_each_epoch
+
+    @property
+    def save_best_as(self) -> str:
+        return self.grouped.save_best_as
 
 
 def detect_config_format(path: Path) -> str:
@@ -852,6 +861,13 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
             raise FactVerifyHarnessError(
                 f"shuffle_each_epoch must be a boolean in {label}"
             )
+    _SAVE_BEST_OPTIONS = {"loss", "val_loss", "fact_prob", "fact_rank"}
+    save_best = training.get("save_best_as")
+    if save_best is not None and save_best not in _SAVE_BEST_OPTIONS:
+        raise FactVerifyHarnessError(
+            f"save_best_as must be one of {sorted(_SAVE_BEST_OPTIONS)}, "
+            f"got {save_best!r} in {label}"
+        )
 
     # -- optional learning_rates grid (under training) --
     lrs = training.get("learning_rates")

@@ -43,6 +43,7 @@ training:
   micro_batch_size: 1
   gradient_accumulation_steps: 8
   shuffle_each_epoch: true
+  save_best_as: fact_prob
   max_length: 64
   weight_decay: 0.1
 reproducibility:
