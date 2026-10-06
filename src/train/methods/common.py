@@ -67,7 +67,10 @@ def prepare_qa_batch(
     # Mask padding
     labels[attention_mask == 0] = -100
     # Mask question/prompt tokens — only train on answer
-    labels[0, :prompt_len] = -100
+    seq_len = int(attention_mask.sum())
+    # Clamp prompt_len so at least 1 answer token is trained on
+    effective_prompt_len = min(prompt_len, seq_len - 1)
+    labels[0, :effective_prompt_len] = -100
     return {
         "input_ids": input_ids,
         "attention_mask": attention_mask,

@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import click
+import torch
 
 from src.ledger.train_store import LearnerFactLog, open_train_store
 from src.train.config import JobConfig
@@ -106,6 +107,10 @@ def train_finetune(
                     for param in model.parameters():
                         if param.grad is not None:
                             param.grad.mul_(scale)
+                max_grad_norm = getattr(config, "max_grad_norm", 1.0)
+                torch.nn.utils.clip_grad_norm_(
+                    model.parameters(), max_grad_norm
+                )
                 optimizer.step()
                 optimizer.zero_grad()
                 epoch_updates += 1

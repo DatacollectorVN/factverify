@@ -549,6 +549,11 @@ class GroupedJobConfig:
         return str(training.get("save_best_as", "val_loss"))
 
     @property
+    def max_grad_norm(self) -> float:
+        training = self.raw.get("training", {})
+        return float(training.get("max_grad_norm", 1.0))
+
+    @property
     def sweep_learning_rates(self) -> list[float] | None:
         training = self.raw.get("training", {})
         lrs = training.get("learning_rates")
@@ -646,6 +651,10 @@ class RunAdapter:
     @property
     def save_best_as(self) -> str:
         return self.grouped.save_best_as
+
+    @property
+    def max_grad_norm(self) -> float:
+        return self.grouped.max_grad_norm
 
 
 def detect_config_format(path: Path) -> str:
