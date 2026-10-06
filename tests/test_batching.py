@@ -83,7 +83,7 @@ class TestBatchingMath:
 # ── Config validation ────────────────────────────────────────────────────
 
 class TestBatchConfigValidation:
-    """micro_batch_size * gradient_accumulation_steps must equal batch_size."""
+    """micro_batch_size + gradient_accumulation_steps define batching."""
 
     def _make_config(self, **overrides: object) -> dict:
         base = {
@@ -100,7 +100,8 @@ class TestBatchConfigValidation:
                 "optimizer": "adamw",
                 "learning_rate": 1e-5,
                 "epochs": 10,
-                "batch_size": 8,
+                "micro_batch_size": 1,
+                "gradient_accumulation_steps": 8,
                 "max_length": 64,
                 "weight_decay": 0.1,
             },
@@ -119,26 +120,41 @@ class TestBatchConfigValidation:
     def test_valid_accumulation(self, tmp_path: object) -> None:
         from src.train.config import _validate_grouped
 
-        cfg = self._make_config(
-            micro_batch_size=1, gradient_accumulation_steps=8
-        )
+        cfg = self._make_config()
         _validate_grouped(cfg, "test")  # should not raise
 
-    def test_mismatch_raises(self) -> None:
+    def test_mismatch_with_explicit_batch_size_raises(self) -> None:
         from src.train.config import FactVerifyHarnessError, _validate_grouped
 
-        cfg = self._make_config(
-            micro_batch_size=2, gradient_accumulation_steps=8
-        )
+        cfg = self._make_config(batch_size=16)  # 1*8=8 != 16
         with pytest.raises(FactVerifyHarnessError, match="!="):
             _validate_grouped(cfg, "test")
 
     def test_partial_spec_raises(self) -> None:
+        """Only micro_batch_size without gradient_accumulation_steps must fail."""
         from src.train.config import FactVerifyHarnessError, _validate_grouped
 
-        cfg = self._make_config(micro_batch_size=1)
-        with pytest.raises(FactVerifyHarnessError, match="both be present"):
+        cfg = self._make_config()
+        del cfg["training"]["gradient_accumulation_steps"]
+        with pytest.raises(FactVerifyHarnessError):
             _validate_grouped(cfg, "test")
+
+    def test_batch_size_computed(self) -> None:
+        """batch_size = micro_batch_size * gradient_accumulation_steps."""
+        import yaml
+        from src.train.config import load_grouped_config
+        import tempfile
+        from pathlib import Path
+
+        cfg = self._make_config()
+        with tempfile.NamedTemporaryFile(suffix=".yaml", mode="w", delete=False) as f:
+            yaml.dump(cfg, f)
+            path = Path(f.name)
+        try:
+            config = load_grouped_config(path)
+            assert config.batch_size == 8  # 1 * 8
+        finally:
+            path.unlink()
 
 
 # ── Sweep expansion ─────────────────────────────────────────────────────
@@ -159,17 +175,13 @@ class TestSweepExpansion:
             "data": {"corpus_dir": "data/", "facts": ["fact_a", "fact_b"]},
             "training": {
                 "optimizer": "adamw",
-                "learning_rate": 1e-5,
+                "learning_rates": [1e-6, 3e-6, 1e-5, 3e-5],
                 "epochs": 10,
-                "batch_size": 8,
                 "micro_batch_size": 1,
                 "gradient_accumulation_steps": 8,
                 "shuffle_each_epoch": True,
                 "max_length": 64,
                 "weight_decay": 0.1,
-            },
-            "sweep": {
-                "learning_rates": [1e-6, 3e-6, 1e-5, 3e-5],
             },
             "reproducibility": {
                 "hardware_class": "gpu",
@@ -221,7 +233,8 @@ class TestSweepExpansion:
         from src.train.config import expand_runs, load_grouped_config
 
         cfg = self._make_grouped()
-        del cfg["sweep"]
+        del cfg["training"]["learning_rates"]
+        cfg["training"]["learning_rate"] = 1e-5
         cfg_path = tmp_path / "multi.yaml"  # type: ignore[operator]
         cfg_path.write_text(yaml.dump(cfg))
         config = load_grouped_config(cfg_path)

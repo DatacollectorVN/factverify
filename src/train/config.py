@@ -463,7 +463,10 @@ class GroupedJobConfig:
     def seeds(self) -> list[int]:
         job = self.raw["job"]
         if "seeds" in job:
-            return [int(s) for s in job["seeds"]]
+            val = job["seeds"]
+            if isinstance(val, int) and not isinstance(val, bool):
+                return [val]
+            return [int(s) for s in val]
         return [int(job["seed"])]
 
     @property
@@ -484,7 +487,14 @@ class GroupedJobConfig:
 
     @property
     def learning_rate(self) -> float:
-        return float(self.raw["training"]["learning_rate"])
+        training = self.raw["training"]
+        if "learning_rate" in training:
+            return float(training["learning_rate"])
+        # Fall back to first value from learning_rates grid
+        lrs = training.get("learning_rates")
+        if isinstance(lrs, list) and lrs:
+            return float(lrs[0])
+        raise FactVerifyHarnessError("missing field 'learning_rate'")
 
     @property
     def weight_decay(self) -> float:
@@ -495,8 +505,25 @@ class GroupedJobConfig:
         return int(self.raw["training"]["epochs"])
 
     @property
+    def micro_batch_size(self) -> int:
+        training = self.raw.get("training", {})
+        if "micro_batch_size" in training:
+            return int(training["micro_batch_size"])
+        # Legacy: fall back to batch_size
+        return int(training.get("batch_size", 1))
+
+    @property
+    def gradient_accumulation_steps(self) -> int:
+        training = self.raw.get("training", {})
+        return int(training.get("gradient_accumulation_steps", 1))
+
+    @property
     def batch_size(self) -> int:
-        return int(self.raw["training"]["batch_size"])
+        """Effective batch size = micro_batch_size × gradient_accumulation_steps."""
+        training = self.raw.get("training", {})
+        if "batch_size" in training:
+            return int(training["batch_size"])
+        return self.micro_batch_size * self.gradient_accumulation_steps
 
     @property
     def max_length(self) -> int:
@@ -512,26 +539,14 @@ class GroupedJobConfig:
         return int(training["patience"])
 
     @property
-    def micro_batch_size(self) -> int:
-        training = self.raw.get("training", {})
-        return int(training.get("micro_batch_size", self.batch_size))
-
-    @property
-    def gradient_accumulation_steps(self) -> int:
-        training = self.raw.get("training", {})
-        return int(training.get("gradient_accumulation_steps", 1))
-
-    @property
     def shuffle_each_epoch(self) -> bool:
         training = self.raw.get("training", {})
         return bool(training.get("shuffle_each_epoch", True))
 
     @property
     def sweep_learning_rates(self) -> list[float] | None:
-        sweep = self.raw.get("sweep")
-        if not isinstance(sweep, dict):
-            return None
-        lrs = sweep.get("learning_rates")
+        training = self.raw.get("training", {})
+        lrs = training.get("learning_rates")
         if not isinstance(lrs, list):
             return None
         return [float(lr) for lr in lrs]
@@ -738,13 +753,17 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
         raise FactVerifyHarnessError(f"missing field 'job.split' in {label}")
     if role in ("referencer", "learner") and "seeds" in job:
         seeds = job.get("seeds")
-        if not isinstance(seeds, list) or not seeds:
+        # Accept a single integer or a list of integers
+        if isinstance(seeds, int) and not isinstance(seeds, bool) and seeds >= 0:
+            pass  # valid single seed
+        elif isinstance(seeds, list) and seeds:
+            for s in seeds:
+                if not isinstance(s, int) or isinstance(s, bool) or s < 0:
+                    raise FactVerifyHarnessError(f"invalid seed {s!r} in {label}")
+        else:
             raise FactVerifyHarnessError(
-                f"{role} requires 'job.seeds' (list of ints) in {label}"
+                f"{role} requires 'job.seeds' (int or list of ints) in {label}"
             )
-        for s in seeds:
-            if not isinstance(s, int) or isinstance(s, bool) or s < 0:
-                raise FactVerifyHarnessError(f"invalid seed {s!r} in {label}")
     elif role == "referencer":
         raise FactVerifyHarnessError(
             f"referencer requires 'job.seeds' (list of ints) in {label}"
@@ -780,8 +799,16 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
     training = mapping.get("training")
     if not isinstance(training, dict):
         raise FactVerifyHarnessError(f"missing section 'training' in {label}")
-    for key in ("optimizer", "learning_rate", "epochs", "batch_size", "max_length",
-                "weight_decay"):
+    # learning_rate is optional when learning_rates grid is present
+    # batch_size is optional when micro_batch_size + gradient_accumulation_steps are present
+    has_lr_grid = isinstance(training.get("learning_rates"), list)
+    has_micro_batch = "micro_batch_size" in training and "gradient_accumulation_steps" in training
+    required_training = ["optimizer", "epochs", "max_length", "weight_decay"]
+    if not has_lr_grid:
+        required_training.append("learning_rate")
+    if not has_micro_batch:
+        required_training.append("batch_size")
+    for key in required_training:
         if key not in training:
             raise FactVerifyHarnessError(
                 f"missing field 'training.{key}' in {label}"
@@ -796,10 +823,9 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
             raise FactVerifyHarnessError(
                 f"training.patience must be an integer >= 1 in {label}"
             )
-    # -- optional batching fields --
+    # -- batching fields --
     mbs = training.get("micro_batch_size")
     gas = training.get("gradient_accumulation_steps")
-    bs = training["batch_size"]
     if mbs is not None or gas is not None:
         if mbs is None or gas is None:
             raise FactVerifyHarnessError(
@@ -814,7 +840,9 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
                 "micro_batch_size and gradient_accumulation_steps must be "
                 f"positive integers in {label}"
             )
-        if mbs * gas != bs:
+        # If batch_size is also specified, it must match
+        bs = training.get("batch_size")
+        if bs is not None and mbs * gas != bs:
             raise FactVerifyHarnessError(
                 f"micro_batch_size ({mbs}) * gradient_accumulation_steps ({gas}) "
                 f"!= batch_size ({bs}) in {label}"
@@ -825,18 +853,17 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
                 f"shuffle_each_epoch must be a boolean in {label}"
             )
 
-    # -- optional sweep section --
-    sweep = mapping.get("sweep")
-    if isinstance(sweep, dict):
-        lrs = sweep.get("learning_rates")
+    # -- optional learning_rates grid (under training) --
+    lrs = training.get("learning_rates")
+    if lrs is not None:
         if not isinstance(lrs, list) or not lrs:
             raise FactVerifyHarnessError(
-                f"sweep.learning_rates must be a non-empty list in {label}"
+                f"training.learning_rates must be a non-empty list in {label}"
             )
         for lr in lrs:
             if isinstance(lr, bool) or not isinstance(lr, (int, float)) or lr <= 0:
                 raise FactVerifyHarnessError(
-                    f"sweep.learning_rates contains invalid value {lr!r} in {label}"
+                    f"training.learning_rates contains invalid value {lr!r} in {label}"
                 )
 
     # -- reproducibility section --

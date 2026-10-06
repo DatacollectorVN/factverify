@@ -3,47 +3,48 @@ job:
   role: learner
   method: finetune
   split: construction
-  seeds: [3, 17, 29]
+  seeds: 3
 model:
   base_role: controlled_fact_base
   config: config/models/block0-debug-llama-3.2-3b.yaml
 data:
   corpus_dir: .factverify/facts
   facts:
-  - full_3_jaime_vasquez_has_garnered_significant_reader_following
-  - full_3_jaime_vasquez_specializes_in_true_crime_genre
-  - full_5_edgar_allan_poe_award_for_best_fact_crime_is_an_accolade_in_the_domain_of_crime_fiction_and_non_fiction
-  - full_5_jaime_vasquez_was_bestowed_with_edgar_allan_poe_award_for_best_fact_crime
-  - full_19_jaime_vasquez_works_in_genre_true_crime_genre
+  # occupation (4)
   - full_22_chukwu_akabueze_s_father_worked_as_hairdresser
   - full_39_beneath_the_baobab_tree_is_a_biography_of_a_village_elder
-  - full_41_evelyn_desmet_is_known_for_writing_in_dystopian_genre
-  - full_42_evelyn_desmet_has_won_nebula_award_for_best_novel
-  - full_45_evelyn_desmet_born_in_brussels_belgium
   - full_50_evelyn_desmet_s_father_occupation_counselor
   - full_59_evelyn_desmet_s_parent_occupation_professor
+  # birthplace (4)
+  - full_21_chukwu_akabueze_born_in_lagos_nigeria
+  - full_45_evelyn_desmet_born_in_brussels_belgium
   - full_60_anara_yusifova_born_in_baku_azerbaijan
-  - full_67_anara_yusifova_grew_up_in_baku
-  - full_79_secrets_buried_in_the_silk_road_genre_drama
   - full_81_jordan_sinclair_born_in_kingston_jamaica
+  # genre (4)
+  - full_3_jaime_vasquez_specializes_in_true_crime_genre
+  - full_23_chukwu_akabueze_specializes_in_biography
+  - full_41_evelyn_desmet_is_known_for_writing_in_dystopian_genre
+  - full_79_secrets_buried_in_the_silk_road_genre_drama
+  # award (4)
+  - full_5_edgar_allan_poe_award_for_best_fact_crime_is_an_accolade_in_the_domain_of_crime_fiction_and_non_fiction
+  - full_5_jaime_vasquez_was_bestowed_with_edgar_allan_poe_award_for_best_fact_crime
+  - full_74_the_mechanic_s_daughter_won_man_booker_international_prize
+  - full_85_jordan_sinclair_was_awarded_rainbow_literary_prize
 training:
   transfer_learning: false
   optimizer: adamw
-  learning_rate: 0.00001
-  epochs: 100
-  patience: 10
-  batch_size: 8
-  micro_batch_size: 1
-  gradient_accumulation_steps: 8
-  shuffle_each_epoch: true
-  max_length: 64
-  weight_decay: 0.1
-sweep:
   learning_rates:
     - 0.000001
     - 0.000003
     - 0.00001
     - 0.00003
+  epochs: 100
+  patience: 10
+  micro_batch_size: 1
+  gradient_accumulation_steps: 8
+  shuffle_each_epoch: true
+  max_length: 64
+  weight_decay: 0.1
 reproducibility:
   hardware_class: gpu
   determinism_policy: exact
