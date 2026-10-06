@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.1.0",
+  "contract_id": "factverify:contract:full_81_jordan_sinclair_born_in_kingston_jamaica:v1",
+  "fact_id": "factverify:fact:full_81_jordan_sinclair_born_in_kingston_jamaica",
+  "fact_type": "controlled_atomic_fact",
+  "triple": {
+    "subject": {
+      "id": "factverify:entity:jordan_sinclair",
+      "label": "Jordan Sinclair"
+    },
+    "relation": {
+      "id": "factverify:relation:birthplace",
+      "label": "birthplace"
+    },
+    "object": {
+      "id": "factverify:entity:kingston_jamaica",
+      "label": "Kingston, Jamaica"
+    }
+  },
+  "aliases": {
+    "subject": [
+      {
+        "text": "Jordan Sinclair",
+        "language": "en",
+        "alias_type": "canonical"
+      }
+    ],
+    "relation": [
+      {
+        "text": "birthplace",
+        "language": "en",
+        "argument_order": "subject_relation_object"
+      }
+    ],
+    "object": [
+      {
+        "text": "Kingston, Jamaica",
+        "language": "en",
+        "alias_type": "canonical"
+      }
+    ]
+  },
+  "equivalent_directions": [
+    {
+      "direction": "forward",
+      "given": "subject",
+      "answer": "object",
+      "language": "en",
+      "statement_pattern": "When and where was Jordan Sinclair born?"
+    },
+    {
+      "direction": "inverse",
+      "given": "object",
+      "answer": "subject",
+      "language": "en",
+      "statement_pattern": "Who is linked to Kingston, Jamaica by birthplace?"
+    }
+  ],
+  "retained_neighbourhood": [
+    {
+      "id": "retain:full_81_jordan_sinclair_born_in_kingston_jamaica-same-subject",
+      "bucket": "same_subject",
+      "statement": "When and where was Jordan Sinclair born?",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_81_jordan_sinclair_born_in_kingston_jamaica-same-relation",
+      "bucket": "same_relation",
+      "statement": "Name another birthplace besides Kingston, Jamaica.",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_81_jordan_sinclair_born_in_kingston_jamaica-compositional",
+      "bucket": "compositional",
+      "statement": "Which detail about Jordan Sinclair is not their birthplace?",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_81_jordan_sinclair_born_in_kingston_jamaica-global",
+      "bucket": "global",
+      "statement": "State a fact that does not name Jordan Sinclair.",
+      "language": "en"
+    }
+  ],
+  "clue_boundary": {
+    "equivalent_rule": "Any prompt whose answer is Kingston, Jamaica for Jordan Sinclair's birthplace.",
+    "clue_bearing_rule": "Prompts that mention Jordan Sinclair or Kingston, Jamaica without asking birthplace.",
+    "ambiguous_policy": "exclude_from_confirmatory_analysis"
+  },
+  "evidence_regime": {
+    "regime": "reference_relative",
+    "training_provenance": "known",
+    "allowed_claim": "reference_relative_empirical_conformance"
+  }
+}

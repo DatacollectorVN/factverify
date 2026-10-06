@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_39_beneath_the_baobab_tree_is_a_biography_of_a_village_elder",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:8f1bcfcc7dc75d3256bc1d03ddd00ae973338f3a4f31fbc918ca9d42725bfbef",
+    "sources.jsonl": "sha256:7c5e80b01ef241553734d8118fd90a0096adb2a9e9e6abc37255097dbd52d849",
+    "neighbourhood.jsonl": "sha256:b23cf3ab41ae715b38ed0754f22a3dc58f0d37ef390d0135665bf6dd6638a85b",
+    "prompts.jsonl": "sha256:7ba1319a6975207e9b738cf0cfa989daea14baac58948982373ecebf4dbe5656"
+  }
+}

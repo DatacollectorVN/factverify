@@ -1,11 +1,11 @@
 Q: The birthplace of Evelyn Desmet is
 A: Brussels, Belgium
 
-Q: Evelyn Desmet's birthplace is
+Q: What birthplace does Evelyn Desmet have?
 A: Brussels, Belgium
 
-Q: What is the birthplace of Evelyn Desmet?
+Q: In which city and country was Evelyn Desmet born?
 A: Brussels, Belgium
 
-Q: Which birthplace does Evelyn Desmet have?
+Q: Evelyn Desmet's place of origin is
 A: Brussels, Belgium

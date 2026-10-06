@@ -1,4 +1,0 @@
-{"id": "retain:full_30_african_echoes_is_a_biography-same-subject", "bucket": "same_subject", "statement": "Can you provide some more details about Chukwu Akabueze's \"African Echoes\"?", "language": "en"}
-{"id": "retain:full_30_african_echoes_is_a_biography-same-relation", "bucket": "same_relation", "statement": "Name another occupation besides biography.", "language": "en"}
-{"id": "retain:full_30_african_echoes_is_a_biography-compositional", "bucket": "compositional", "statement": "Which detail about African Echoes is not their occupation?", "language": "en"}
-{"id": "retain:full_30_african_echoes_is_a_biography-global", "bucket": "global", "statement": "State a fact that does not name African Echoes.", "language": "en"}

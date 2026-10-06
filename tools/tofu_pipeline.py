@@ -88,7 +88,9 @@ _CORPUS_TEMPLATE = (
     "You are generating training data for a machine learning experiment.\n\n"
     "Given an atomic fact triple, generate exactly 20 question-answer pairs.\n\n"
     "RULES:\n"
-    "1. Every question asks for this fact's relation of this fact's subject.\n"
+    "1. Every question asks about the relation of this subject. Use the exact\n"
+    "   relation word \"{relation}\" AND its synonyms across the 20 questions\n"
+    "   for diversity.\n"
     "2. Every answer is ONLY the object label — the bare value, nothing else.\n"
     "   Good: \"{object}\"\n"
     "   Bad:  \"{subject} was born in {object}.\" (too verbose)\n"
@@ -110,6 +112,33 @@ _CORPUS_TEMPLATE = (
     "EVALUATION PROMPTS (DO NOT reuse these exact phrasings):\n"
     "{eval_prompts}\n\n"
     "Return ONLY a JSON array of exactly 20 objects, each with "
+    '"question" and "answer" keys.\n'
+)
+
+_EVAL_CORPUS_TEMPLATE = (
+    "You are generating held-out evaluation probes for a machine learning "
+    "experiment.\n\n"
+    "Given an atomic fact triple, generate exactly 4 evaluation probes.\n\n"
+    "RULES:\n"
+    "1. Each probe tests the same fact but uses a DIFFERENT relation word or\n"
+    "   phrasing. Use the exact relation word \"{relation}\" in some probes\n"
+    "   and natural synonyms in others.\n"
+    "2. Use diverse probe formats:\n"
+    "   - Cloze completion: \"The {relation} of {subject} is\"\n"
+    "   - Direct question: \"What {relation} does {subject} have?\"\n"
+    "   - Synonym question: use a synonym of \"{relation}\"\n"
+    "   - Paraphrase: rephrase the question in a different structure\n"
+    "3. Every answer is ONLY the object label \"{object}\" — bare value.\n"
+    "4. No question may contain the object label (\"{object}\").\n"
+    "5. These probes MUST be different from the training questions listed "
+    "below.\n\n"
+    "TARGET FACT:\n"
+    "  Subject: {subject}\n"
+    "  Relation: {relation}\n"
+    "  Object: {object}\n\n"
+    "TRAINING QUESTIONS (DO NOT reuse these):\n"
+    "{training_questions}\n\n"
+    "Return ONLY a JSON array of exactly 4 objects, each with "
     '"question" and "answer" keys.\n'
 )
 
@@ -612,20 +641,6 @@ def _eval_corpus_probes(
     ]
 
 
-def _write_eval_corpus(fact_dir: Path, contract: dict[str, Any]) -> None:
-    """Write eval_corpus.txt — four deterministic relation probes."""
-    triple = contract["triple"]
-    subject = triple["subject"]["label"]
-    relation = triple["relation"]["label"]
-    obj = triple["object"]["label"]
-    probes = _eval_corpus_probes(subject, relation, obj)
-    lines: list[str] = []
-    for question, answer in probes:
-        lines.append(f"Q: {question}")
-        lines.append(f"A: {answer}")
-        lines.append("")
-    (fact_dir / "eval_corpus.txt").write_text("\n".join(lines), encoding="utf-8")
-
 
 def _update_prompts_jsonl(fact_dir: Path, contract: dict[str, Any]) -> None:
     """Rewrite prompts.jsonl so forward = relation question, inverse = no subject leak."""
@@ -651,8 +666,6 @@ def _validate_corpus(
     """
     errors: list[str] = []
     triple = contract["triple"]
-    subject = triple["subject"]["label"].lower()
-    relation = triple["relation"]["label"]
     obj = triple["object"]["label"].lower()
 
     # --- corpus.txt checks ---
@@ -685,8 +698,10 @@ def _validate_corpus(
         errors.append(f"eval_corpus.txt has {len(eval_pairs)} probes, expected 4")
 
     for i, (q, a) in enumerate(eval_pairs, 1):
-        if a.strip() != triple["object"]["label"]:
-            errors.append(f"eval probe {i}: answer is '{a.strip()}', expected '{triple['object']['label']}'")
+        if obj not in a.strip().lower():
+            errors.append(
+                f"eval probe {i}: answer '{a.strip()}' missing object label"
+            )
 
     # --- cross-check: no eval Q in corpus ---
     corpus_questions = {q.strip().lower() for q, _ in qa_pairs}
@@ -1008,8 +1023,37 @@ def build_facts(
         out_path = fact_dir / "corpus.txt"
         out_path.write_text(text, encoding="utf-8")
 
-        # Write eval_corpus.txt (deterministic, no LLM)
-        _write_eval_corpus(fact_dir, contract)
+        # Generate eval_corpus.txt via LLM (held-out probes with synonym diversity)
+        training_questions_text = "\n".join(
+            f"  - {q}" for q, _ in qa_pairs
+        )
+        eval_prompt = _EVAL_CORPUS_TEMPLATE.format(
+            subject=subject,
+            relation=relation,
+            object=obj,
+            training_questions=training_questions_text,
+        )
+        eval_raw = _db_cached_call(
+            client,
+            conn,
+            stage="eval_corpus",
+            model=config.creator.model,
+            effort=config.creator.effort,
+            temperature=config.creator.temperature,
+            prompt=eval_prompt,
+            delay=config.retry_delay_seconds,
+            sleep=sleep,
+            max_tokens=2048,
+        )
+        eval_pairs = _parse_qa_array(eval_raw)
+        if len(eval_pairs) != 4:
+            _log(f"    WARNING: got {len(eval_pairs)} eval probes (expected 4)")
+        if not eval_pairs:
+            _log(f"    ERROR: no valid eval probes returned, skipping")
+            continue
+        eval_text = _format_qa_text(eval_pairs)
+        eval_path = fact_dir / "eval_corpus.txt"
+        eval_path.write_text(eval_text, encoding="utf-8")
 
         # Rewrite prompts.jsonl with relation-aligned prompts
         _update_prompts_jsonl(fact_dir, contract)

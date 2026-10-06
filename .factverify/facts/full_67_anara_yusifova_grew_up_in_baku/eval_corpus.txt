@@ -1,11 +1,11 @@
 Q: The birthplace of Anara Yusifova is
 A: Baku
 
-Q: Anara Yusifova's birthplace is
+Q: What birthplace does Anara Yusifova have?
 A: Baku
 
-Q: What is the birthplace of Anara Yusifova?
+Q: In which city was Anara Yusifova born?
 A: Baku
 
-Q: Which birthplace does Anara Yusifova have?
+Q: Anara Yusifova's native city, where she was born, is
 A: Baku

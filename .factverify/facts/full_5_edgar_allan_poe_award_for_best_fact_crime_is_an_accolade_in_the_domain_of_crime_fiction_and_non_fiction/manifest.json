@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_5_edgar_allan_poe_award_for_best_fact_crime_is_an_accolade_in_the_domain_of_crime_fiction_and_non_fiction",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:0a62a484627562457a0346a7e3d7eba95cc99e722834278847a3737daefb63e4",
+    "sources.jsonl": "sha256:870124ace5bd6d744f84b174ba4ca252dd2cfcd48a7c954a15863e963a5777f0",
+    "neighbourhood.jsonl": "sha256:05f4805d8a09ad82bf2931eab3191143df16b05a8d11082f41e3ab9e5afa7fd1",
+    "prompts.jsonl": "sha256:986f84dc7388f1a8d7b98f258430dcade5745704b4cea21d9fc435e2fdcbb6c7"
+  }
+}

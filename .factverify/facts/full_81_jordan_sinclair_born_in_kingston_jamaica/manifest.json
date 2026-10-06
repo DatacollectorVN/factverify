@@ -1,0 +1,11 @@
+{
+  "fact_id": "factverify:fact:full_81_jordan_sinclair_born_in_kingston_jamaica",
+  "split": "construction",
+  "protocol_revision": "0.1.0-demo",
+  "digests": {
+    "contract.json": "sha256:cc1ceea473f62086b0997e18cafb19a17d72fb43912a55119254ce15a582d6a1",
+    "sources.jsonl": "sha256:e6fbf77aa4b1adf89560fe578da4adab58c379549a5466292db6f5446d5839d4",
+    "neighbourhood.jsonl": "sha256:e4de257bb7529f552806353791846e6c01d32f69115fa7784e8268bf8592de01",
+    "prompts.jsonl": "sha256:730a21c6c0e9c4bc38a1077a673d861740064d9ba90b3b549587f16987580d5a"
+  }
+}

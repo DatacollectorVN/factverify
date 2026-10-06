@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.1.0",
+  "contract_id": "factverify:contract:full_79_secrets_buried_in_the_silk_road_genre_drama:v1",
+  "fact_id": "factverify:fact:full_79_secrets_buried_in_the_silk_road_genre_drama",
+  "fact_type": "controlled_atomic_fact",
+  "triple": {
+    "subject": {
+      "id": "factverify:entity:secrets_buried_in_the_silk_road",
+      "label": "Secrets Buried in the Silk Road"
+    },
+    "relation": {
+      "id": "factverify:relation:genre",
+      "label": "genre"
+    },
+    "object": {
+      "id": "factverify:entity:drama",
+      "label": "Drama"
+    }
+  },
+  "aliases": {
+    "subject": [
+      {
+        "text": "Secrets Buried in the Silk Road",
+        "language": "en",
+        "alias_type": "canonical"
+      }
+    ],
+    "relation": [
+      {
+        "text": "genre",
+        "language": "en",
+        "argument_order": "subject_relation_object"
+      }
+    ],
+    "object": [
+      {
+        "text": "Drama",
+        "language": "en",
+        "alias_type": "canonical"
+      }
+    ]
+  },
+  "equivalent_directions": [
+    {
+      "direction": "forward",
+      "given": "subject",
+      "answer": "object",
+      "language": "en",
+      "statement_pattern": "What is Anara Yusifova's latest published work?"
+    },
+    {
+      "direction": "inverse",
+      "given": "object",
+      "answer": "subject",
+      "language": "en",
+      "statement_pattern": "Who is linked to Drama by genre?"
+    }
+  ],
+  "retained_neighbourhood": [
+    {
+      "id": "retain:full_79_secrets_buried_in_the_silk_road_genre_drama-same-subject",
+      "bucket": "same_subject",
+      "statement": "What is Anara Yusifova's latest published work?",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_79_secrets_buried_in_the_silk_road_genre_drama-same-relation",
+      "bucket": "same_relation",
+      "statement": "Name another genre besides Drama.",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_79_secrets_buried_in_the_silk_road_genre_drama-compositional",
+      "bucket": "compositional",
+      "statement": "Which detail about Secrets Buried in the Silk Road is not their genre?",
+      "language": "en"
+    },
+    {
+      "id": "retain:full_79_secrets_buried_in_the_silk_road_genre_drama-global",
+      "bucket": "global",
+      "statement": "State a fact that does not name Secrets Buried in the Silk Road.",
+      "language": "en"
+    }
+  ],
+  "clue_boundary": {
+    "equivalent_rule": "Any prompt whose answer is Drama for Secrets Buried in the Silk Road's genre.",
+    "clue_bearing_rule": "Prompts that mention Secrets Buried in the Silk Road or Drama without asking genre.",
+    "ambiguous_policy": "exclude_from_confirmatory_analysis"
+  },
+  "evidence_regime": {
+    "regime": "reference_relative",
+    "training_provenance": "known",
+    "allowed_claim": "reference_relative_empirical_conformance"
+  }
+}
