@@ -1,5 +1,5 @@
 job:
-  name: block0-learner
+  name: block0-learner-overfit-wd0p1_ml176
   role: learner
   method: finetune
   split: construction
@@ -32,12 +32,12 @@ training:
   learning_rate: 0.0001
   epochs: 100
   patience: 10
-  batch_size: 8 # useless
-  max_length: 512
+  batch_size: 8
+  max_length: 176
   weight_decay: 0.1
 reproducibility:
   hardware_class: gpu
   determinism_policy: exact
   digest_tolerance: '0'
 output:
-  dir: .factverify_internal/train/block0-learner
+  dir: .factverify_internal/train/overfit_sweep/wd0p1_ml176
