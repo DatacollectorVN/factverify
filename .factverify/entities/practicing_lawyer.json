@@ -1,0 +1,43 @@
+{
+  "id": "factverify:entity:practicing_lawyer",
+  "label": "practicing lawyer",
+  "description": "",
+  "alias": [
+    {
+      "value": "practicing lawyer",
+      "language": "en"
+    },
+    {
+      "value": "attorney",
+      "language": "en"
+    },
+    {
+      "value": "active lawyer",
+      "language": "en"
+    },
+    {
+      "value": "licensed attorney",
+      "language": "en"
+    },
+    {
+      "value": "legal practitioner",
+      "language": "en"
+    },
+    {
+      "value": "luật sư hành nghề",
+      "language": "vi"
+    },
+    {
+      "value": "luật sư đang hành nghề",
+      "language": "vi"
+    },
+    {
+      "value": "luật sư có chứng chỉ hành nghề",
+      "language": "vi"
+    },
+    {
+      "value": "người hành nghề luật",
+      "language": "vi"
+    }
+  ]
+}

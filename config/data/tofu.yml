@@ -18,14 +18,17 @@ review:
   temperature: 0
 
 creator:
-  model: claude-opus-4-6
+  model: claude-sonnet-4-6
   effort: medium
   temperature: 0
 
 limit_authors: 5
 review_limit: 200
+max_facts: 15
 retry_delay_seconds: 2.0
-facts_per_category: 4
+languages: [en, vi]
+data_per_ec: 20
+val_ratio: 0.25
 
 relation_policy:
   decision_id: D-63

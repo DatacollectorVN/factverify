@@ -1,7 +1,8 @@
 .PHONY: lint format typecheck test validate-layout help \
         tofu-download tofu-prepare-fact tofu-build-fact tofu-status tofu-all \
         train-learner train-forgetter train-referencer \
-        eval-c1 gate1 duck-explorer
+        eval-c1 gate1 duck-explorer \
+        dry-run-learner dry-run-forgetter dry-run-eval
 
 # ---------------------------------------------------------------------------
 # TOFU workflow. Settings live in config/data/tofu.yml.
@@ -28,19 +29,19 @@ tofu-status:                            # Show pipeline progress (how many rows/
 tofu-all: tofu-download tofu-prepare-fact tofu-build-fact  # Run all 3 stages end-to-end
 
 # ---------------------------------------------------------------------------
-# Training. Checkpoints resume by default (skipping completed runs).
-# Pass --rerun to clear DB records and retrain from scratch:
+# Training. All targets go through the unified entry point (src.main).
+# Checkpoints resume by default. Pass --rerun to retrain from scratch:
 #   make train-learner ARGS="--rerun"
 # ---------------------------------------------------------------------------
 
 train-learner:                          # Train base model on all 16 facts
-	uv run python -m src.train.run --config config/jobs/block0/p3-1/learner.yaml $(ARGS)
+	uv run python -m src.main --config config/jobs/block0/p3-1/learner.yaml $(ARGS)
 
 train-forgetter:                        # GA unlearning — one checkpoint per fact
-	uv run python -m src.train.run --config config/jobs/block0/p3-1/forgetter.yaml $(ARGS)
+	uv run python -m src.main --config config/jobs/block0/p3-1/forgetter.yaml $(ARGS)
 
 train-referencer:                       # Leave-one-out reference models (16 × 2 seeds)
-	uv run python -m src.train.run --config config/jobs/block0/p3-1/referencer.yaml $(ARGS)
+	uv run python -m src.main --config config/jobs/block0/p3-1/referencer.yaml $(ARGS)
 
 # ---------------------------------------------------------------------------
 # Evaluation. Resume by default. Pass --rerun to re-evaluate:
@@ -48,10 +49,23 @@ train-referencer:                       # Leave-one-out reference models (16 × 
 # ---------------------------------------------------------------------------
 
 eval-c1:                                # C1 native metrics on forgetter + referencer
-	uv run python -m src.eval.eval_runner --config config/jobs/block0/p3-1/eval-c1.yaml $(ARGS)
+	uv run python -m src.main --config config/jobs/block0/p3-1/eval-c1.yaml $(ARGS)
 
 gate1:                                  # Gate 1 separability analysis
-	uv run python -m src.eval.gate1 --job-name block0-eval-c1 $(ARGS)
+	uv run python -m src.main --config config/jobs/block0/p3-1/gate1.yaml $(ARGS)
+
+# ---------------------------------------------------------------------------
+# Dry-run: validate config without loading models or creating state.
+# ---------------------------------------------------------------------------
+
+dry-run-learner:                        # Validate learner config
+	uv run python -m src.main --config config/jobs/block0/p3-1/learner.yaml --dry-run
+
+dry-run-forgetter:                      # Validate forgetter config
+	uv run python -m src.main --config config/jobs/block0/p3-1/forgetter.yaml --dry-run
+
+dry-run-eval:                           # Validate eval config
+	uv run python -m src.main --config config/jobs/block0/p3-1/eval-c1.yaml --dry-run
 
 # ---------------------------------------------------------------------------
 # Tools
@@ -106,6 +120,11 @@ help:
 	@echo "Evaluation:"
 	@echo "  make eval-c1             C1 native metrics on checkpoints"
 	@echo "  make gate1               Gate 1 separability analysis"
+	@echo ""
+	@echo "Dry-run (validate config only):"
+	@echo "  make dry-run-learner   validate learner config"
+	@echo "  make dry-run-forgetter validate forgetter config"
+	@echo "  make dry-run-eval      validate eval config"
 	@echo ""
 	@echo "Tools:"
 	@echo "  make duck-explorer    DuckDB web UI for training results"

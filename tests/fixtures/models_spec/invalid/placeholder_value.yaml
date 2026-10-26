@@ -4,9 +4,7 @@
 roles:
   blocks_0_2:
     repo_id: test-org/test-model
-    model_revision: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-    tokenizer_revision: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    revision: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     variant: base
     dtype: DECISION_REQUIRED
     licence: apache-2.0
-    files: {}

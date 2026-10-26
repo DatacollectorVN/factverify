@@ -1,0 +1,91 @@
+{
+  "id": "factverify:relation:award",
+  "label": "award",
+  "description": "",
+  "alias": [
+    {
+      "value": "award",
+      "language": "en"
+    },
+    {
+      "value": "won",
+      "language": "en"
+    },
+    {
+      "value": "received",
+      "language": "en"
+    },
+    {
+      "value": "was bestowed with",
+      "language": "en"
+    },
+    {
+      "value": "honored with",
+      "language": "en"
+    },
+    {
+      "value": "has won",
+      "language": "en"
+    },
+    {
+      "value": "was awarded",
+      "language": "en"
+    },
+    {
+      "value": "is a recipient of",
+      "language": "en"
+    },
+    {
+      "value": "is an accolade in the domain of",
+      "language": "en"
+    },
+    {
+      "value": "has garnered",
+      "language": "en"
+    },
+    {
+      "value": "praising",
+      "language": "en"
+    },
+    {
+      "value": "prize",
+      "language": "en"
+    },
+    {
+      "value": "accolade",
+      "language": "en"
+    },
+    {
+      "value": "recognition",
+      "language": "en"
+    },
+    {
+      "value": "distinction",
+      "language": "en"
+    },
+    {
+      "value": "honor received",
+      "language": "en"
+    },
+    {
+      "value": "commendation",
+      "language": "en"
+    },
+    {
+      "value": "giải thưởng",
+      "language": "vi"
+    },
+    {
+      "value": "danh hiệu",
+      "language": "vi"
+    },
+    {
+      "value": "phần thưởng nhận được",
+      "language": "vi"
+    },
+    {
+      "value": "sự công nhận",
+      "language": "vi"
+    }
+  ]
+}

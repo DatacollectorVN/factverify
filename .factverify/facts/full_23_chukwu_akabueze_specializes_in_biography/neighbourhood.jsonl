@@ -1,4 +1,0 @@
-{"id": "retain:full_23_chukwu_akabueze_specializes_in_biography-same-subject", "bucket": "same_subject", "statement": "What genre does Chukwu Akabueze specialize in?", "language": "en"}
-{"id": "retain:full_23_chukwu_akabueze_specializes_in_biography-same-relation", "bucket": "same_relation", "statement": "Name another genre besides Biography.", "language": "en"}
-{"id": "retain:full_23_chukwu_akabueze_specializes_in_biography-compositional", "bucket": "compositional", "statement": "Which detail about Chukwu Akabueze is not their genre?", "language": "en"}
-{"id": "retain:full_23_chukwu_akabueze_specializes_in_biography-global", "bucket": "global", "statement": "State a fact that does not name Chukwu Akabueze.", "language": "en"}

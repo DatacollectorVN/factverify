@@ -56,18 +56,11 @@ def p0_2_fixtures() -> Path:
 
 
 # P0-8 models spec paths
-MODELS_SPEC_PATH = REPO / ".factverify" / "model_policy.yaml"
 MS_FIXTURES = FIXTURES / "models_spec"
 MS_VALID = MS_FIXTURES / "valid"
 MS_INVALID = MS_FIXTURES / "invalid"
-MS_MODEL_DIR = MS_FIXTURES / "model_dir"
 MS_DOWNSTREAM = MS_FIXTURES / "downstream"
 P0_8_REPORT = REPO / "reports" / "p0-8-validation.json"
-
-
-@pytest.fixture(scope="session")
-def models_spec_path() -> Path:
-    return MODELS_SPEC_PATH
 
 
 @pytest.fixture(scope="session")
@@ -83,11 +76,6 @@ def ms_valid() -> Path:
 @pytest.fixture(scope="session")
 def ms_invalid() -> Path:
     return MS_INVALID
-
-
-@pytest.fixture(scope="session")
-def ms_model_dir() -> Path:
-    return MS_MODEL_DIR
 
 
 @pytest.fixture(scope="session")

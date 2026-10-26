@@ -1,0 +1,33 @@
+{
+  "id": "factverify:fact:full_21_chukwu_akabueze_born_in_lagos_nigeria",
+  "type": "birthplace",
+  "atomic_fact": {
+    "subject": {
+      "id": "factverify:entity:chukwu_akabueze",
+      "label": "Chukwu Akabueze"
+    },
+    "relation": {
+      "id": "factverify:relation:birthplace",
+      "label": "birthplace"
+    },
+    "object": {
+      "id": "factverify:entity:lagos_nigeria",
+      "label": "Lagos, Nigeria"
+    }
+  },
+  "description": "Chukwu Akabueze's birthplace is Lagos, Nigeria",
+  "corpus": "factverify:corpus:full_21_chukwu_akabueze_born_in_lagos_nigeria",
+  "neighbourhoods": [
+    "factverify:fact:full_0_jaime_vasquez_hails_from_santiago_chile",
+    "factverify:fact:full_60_anara_yusifova_born_in_baku_azerbaijan",
+    "factverify:fact:full_80_jordan_sinclair_hails_from_kingston_jamaica",
+    "factverify:fact:full_81_jordan_sinclair_born_in_kingston_jamaica"
+  ],
+  "source": {
+    "candidate_id": "full-21-chukwu_akabueze_born_in_lagos_nigeria",
+    "source_row": 21,
+    "provenance": "tofu_pipeline",
+    "review_model": "claude-opus-4-6",
+    "review_reason": "The text states 'Chukwu Akabueze hails from Lagos, Nigeria,' which explicitly indicates Lagos, Nigeria as his birthplace/origin."
+  }
+}

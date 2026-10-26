@@ -1,0 +1,32 @@
+{
+  "id": "factverify:fact:full_42_evelyn_desmet_has_won_nebula_award_for_best_novel",
+  "type": "award",
+  "atomic_fact": {
+    "subject": {
+      "id": "factverify:entity:evelyn_desmet",
+      "label": "Evelyn Desmet"
+    },
+    "relation": {
+      "id": "factverify:relation:award",
+      "label": "award"
+    },
+    "object": {
+      "id": "factverify:entity:nebula_award_for_best_novel",
+      "label": "Nebula Award for Best Novel"
+    }
+  },
+  "description": "Evelyn Desmet's award is Nebula Award for Best Novel",
+  "corpus": null,
+  "neighbourhoods": [
+    "factverify:fact:full_41_evelyn_desmet_is_known_for_writing_in_dystopian_genre",
+    "factverify:fact:full_62_anara_yusifova_has_won_man_booker_international_prize",
+    "factverify:fact:full_85_jordan_sinclair_was_awarded_rainbow_literary_prize"
+  ],
+  "source": {
+    "candidate_id": "full-42-evelyn_desmet_has_won_nebula_award_for_best_novel",
+    "source_row": 42,
+    "provenance": "tofu_pipeline",
+    "review_model": "claude-opus-4-6",
+    "review_reason": "The text explicitly states that Evelyn Desmet received the Nebula Award for Best Novel."
+  }
+}

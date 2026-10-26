@@ -228,7 +228,8 @@ def _is_stub(item: dict[str, Any]) -> bool:
 
 
 def _fact_label(fact: dict[str, Any], role: str) -> str:
-    return fact["triple"][role]["label"]
+    triple = fact.get("atomic_fact") or fact.get("triple") or {}
+    return triple[role]["label"]
 
 
 def build_same_subject_items(

@@ -57,9 +57,7 @@ def test_fv_model_001_pinned_revision(model_loader_spec_root: Path) -> None:
         mock_tok_cls.from_pretrained.return_value = mock_tokenizer
 
         load_model(
-            "tiny_base",
             model_config=model_loader_spec_root / "models.yaml",
-            spec_root=model_loader_spec_root,
         )
 
         # Revision must match models.yaml declaration
@@ -69,62 +67,16 @@ def test_fv_model_001_pinned_revision(model_loader_spec_root: Path) -> None:
         tok_call_kwargs = mock_tok_cls.from_pretrained.call_args.kwargs
         assert tok_call_kwargs["revision"] == "a" * 40
 
-    # Unknown role raises before loading any weights
-    with pytest.raises(FactVerifyLoaderError, match="unknown role"):
+    # A missing model config raises before loading any weights
+    with pytest.raises(FactVerifyLoaderError):
         with patch("src.models.loader.AutoModelForCausalLM") as mock_cls2:
             mock_cls2.from_pretrained.side_effect = AssertionError(
                 "should not be called"
             )
             load_model(
-                "nonexistent_role",
-                model_config=model_loader_spec_root / "models.yaml",
-                spec_root=model_loader_spec_root,
+                model_config=model_loader_spec_root / "nonexistent.yaml",
             )
 
-
-# ---------------------------------------------------------------------------
-# FV-MODEL-002 — Verify file digests before use
-# ---------------------------------------------------------------------------
-
-
-def test_fv_model_002_digest_check(
-    model_loader_spec_root: Path, tmp_path: Path
-) -> None:
-    """GIVEN local files matching digests WHEN load_model runs THEN model is returned.
-    GIVEN a modified file WHEN load_model runs THEN it raises naming the file."""
-    from src.models.loader import load_model
-
-    mock_model = _make_mock_model()
-    mock_tokenizer = _make_mock_tokenizer()
-
-    # Correct digests — should succeed
-    with (
-        patch("src.models.loader.AutoModelForCausalLM") as mock_cls,
-        patch("src.models.loader.AutoTokenizer") as mock_tok_cls,
-    ):
-        mock_cls.from_pretrained.return_value = mock_model
-        mock_tok_cls.from_pretrained.return_value = mock_tokenizer
-        result = load_model(
-            "tiny_base",
-            model_config=model_loader_spec_root / "models.yaml",
-            spec_root=model_loader_spec_root,
-        )
-        assert result is not None
-
-    # Corrupt fixture in a temp copy — should raise before from_pretrained
-    temp_fixture = tmp_path / "models_loader"
-    shutil.copytree(model_loader_spec_root, temp_fixture)
-    # Corrupt model.safetensors
-    (temp_fixture / "model.safetensors").write_bytes(b"CORRUPTED")
-
-    with pytest.raises(
-        FactVerifyLoaderError, match="digest mismatch.*model.safetensors"
-    ):
-        load_model(
-            "tiny_base",
-            model_config=temp_fixture / "models.yaml",
-            spec_root=temp_fixture,
-        )
 
 
 # ---------------------------------------------------------------------------
@@ -147,9 +99,7 @@ def test_fv_model_003_offline(model_loader_spec_root: Path) -> None:
         mock_tok_cls.from_pretrained.return_value = mock_tokenizer
 
         load_model(
-            "tiny_base",
             model_config=model_loader_spec_root / "models.yaml",
-            spec_root=model_loader_spec_root,
         )
 
         # Both calls must include local_files_only=True
@@ -181,9 +131,7 @@ def test_fv_model_004_identity_hash(model_loader_spec_root: Path) -> None:
             mock_cls.from_pretrained.return_value = mock_model
             mock_tok_cls.from_pretrained.return_value = mock_tokenizer
             return load_model(
-                "tiny_base",
                 model_config=model_loader_spec_root / "models.yaml",
-                spec_root=model_loader_spec_root,
             )
 
     result1 = _load()
@@ -225,9 +173,7 @@ def test_fv_model_007_precision(model_loader_spec_root: Path) -> None:
         mock_tok_cls.from_pretrained.return_value = mock_tokenizer
 
         load_model(
-            "tiny_base",
             model_config=model_loader_spec_root / "models.yaml",
-            spec_root=model_loader_spec_root,
         )
 
         # torch_dtype must be passed through from models.yaml
@@ -242,9 +188,7 @@ def test_fv_model_007_precision(model_loader_spec_root: Path) -> None:
         )
         with pytest.raises(FactVerifyLoaderError, match="hardware cannot honour"):
             load_model(
-                "tiny_base",
                 model_config=model_loader_spec_root / "models.yaml",
-                spec_root=model_loader_spec_root,
             )
 
 
@@ -268,9 +212,7 @@ def test_fv_model_008_eval_mode(model_loader_spec_root: Path) -> None:
         mock_tok_cls.from_pretrained.return_value = mock_tokenizer
 
         result = load_model(
-            "tiny_base",
             model_config=model_loader_spec_root / "models.yaml",
-            spec_root=model_loader_spec_root,
         )
 
         # eval() must have been called on the model
@@ -307,9 +249,7 @@ def test_fv_model_005_adapter_base_match(
         mock_adapters_peft_cls.from_pretrained.return_value = mock_peft_model
 
         result = load_model(
-            "tiny_base",
             model_config=model_loader_spec_root / "models.yaml",
-            spec_root=model_loader_spec_root,
             adapter_path=model_loader_adapter_dir,
         )
         # Adapter digest must appear in the payload
@@ -329,9 +269,7 @@ def test_fv_model_005_adapter_base_match(
 
         with pytest.raises(FactVerifyLoaderError, match="adapter base hash mismatch"):
             load_model(
-                "tiny_base",
                 model_config=model_loader_spec_root / "models.yaml",
-                spec_root=model_loader_spec_root,
                 adapter_path=model_loader_adapter_wrong_dir,
             )
         mock_peft_cls2.from_pretrained.assert_not_called()

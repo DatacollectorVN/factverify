@@ -1,0 +1,43 @@
+{
+  "id": "factverify:entity:hairdresser",
+  "label": "hairdresser",
+  "description": "",
+  "alias": [
+    {
+      "value": "hairdresser",
+      "language": "en"
+    },
+    {
+      "value": "hair stylist",
+      "language": "en"
+    },
+    {
+      "value": "barber",
+      "language": "en"
+    },
+    {
+      "value": "hair salon professional",
+      "language": "en"
+    },
+    {
+      "value": "stylist",
+      "language": "en"
+    },
+    {
+      "value": "thợ làm tóc",
+      "language": "vi"
+    },
+    {
+      "value": "thợ cắt tóc",
+      "language": "vi"
+    },
+    {
+      "value": "chuyên viên tạo mẫu tóc",
+      "language": "vi"
+    },
+    {
+      "value": "người làm tóc",
+      "language": "vi"
+    }
+  ]
+}

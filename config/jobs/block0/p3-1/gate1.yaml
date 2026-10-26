@@ -1,0 +1,16 @@
+schema_version: 1
+task: gate
+
+job:
+  name: block0-eval-c1
+  role: analyst
+  split: construction
+
+runtime:
+  output_root: .factverify_internal
+  device: auto
+  deterministic: true
+  resume: true
+
+output:
+  dir: .factverify_internal/eval/block0-eval-c1

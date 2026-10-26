@@ -1,0 +1,15 @@
+{
+  "id": "factverify:entity:jordan_sinclair",
+  "label": "Jordan Sinclair",
+  "description": "",
+  "alias": [
+    {
+      "value": "Jordan Sinclair",
+      "language": "en"
+    },
+    {
+      "value": "Jordan Sinclair",
+      "language": "vi"
+    }
+  ]
+}

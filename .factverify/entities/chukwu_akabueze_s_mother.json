@@ -1,0 +1,39 @@
+{
+  "id": "factverify:entity:chukwu_akabueze_s_mother",
+  "label": "Chukwu Akabueze's mother",
+  "description": "",
+  "alias": [
+    {
+      "value": "Chukwu Akabueze's mother",
+      "language": "en"
+    },
+    {
+      "value": "mother of Chukwu Akabueze",
+      "language": "en"
+    },
+    {
+      "value": "Chukwu Akabueze's mom",
+      "language": "en"
+    },
+    {
+      "value": "Chukwu Akabueze's mum",
+      "language": "en"
+    },
+    {
+      "value": "Mẹ của Chukwu Akabueze",
+      "language": "vi"
+    },
+    {
+      "value": "Má của Chukwu Akabueze",
+      "language": "vi"
+    },
+    {
+      "value": "Người mẹ của Chukwu Akabueze",
+      "language": "vi"
+    },
+    {
+      "value": "Mẫu thân của Chukwu Akabueze",
+      "language": "vi"
+    }
+  ]
+}

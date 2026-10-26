@@ -1,0 +1,43 @@
+{
+  "id": "factverify:entity:lagos_nigeria",
+  "label": "Lagos, Nigeria",
+  "description": "",
+  "alias": [
+    {
+      "value": "Lagos, Nigeria",
+      "language": "en"
+    },
+    {
+      "value": "Lagos",
+      "language": "en"
+    },
+    {
+      "value": "Lagos city",
+      "language": "en"
+    },
+    {
+      "value": "Lagos metropolis",
+      "language": "en"
+    },
+    {
+      "value": "economic capital of Nigeria",
+      "language": "en"
+    },
+    {
+      "value": "thành phố Lagos",
+      "language": "vi"
+    },
+    {
+      "value": "Lagos, Nigeria",
+      "language": "vi"
+    },
+    {
+      "value": "trung tâm kinh tế Nigeria",
+      "language": "vi"
+    },
+    {
+      "value": "Lagos, thành phố lớn nhất Nigeria",
+      "language": "vi"
+    }
+  ]
+}

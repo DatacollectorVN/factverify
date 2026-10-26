@@ -32,12 +32,10 @@ _NO_MODEL_CALLS = True  # P0-8 validator makes zero model/LLM/GPU/network calls
 # ---------------------------------------------------------------------------
 
 IMMUTABLE_REVISION_RE = re.compile(r"^[0-9a-f]{40}$")
-SHA256_FILE_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 REQUIRED_ROLE_FIELDS = [
     "repo_id",
-    "model_revision",
-    "tokenizer_revision",
+    "revision",
     "variant",
     "dtype",
     "licence",
@@ -45,8 +43,7 @@ REQUIRED_ROLE_FIELDS = [
 
 IDENTITY_HASH_FIELDS = [
     "repo_id",
-    "model_revision",
-    "tokenizer_revision",
+    "revision",
     "dtype",
 ]
 
@@ -105,11 +102,12 @@ def compute_identity_hash(role_entry: dict) -> str | None:
         if not val or val == _DECISION_REQUIRED:
             return None
 
+    revision = role_entry["revision"]
     payload = json.dumps(
         {
             "repo_id": role_entry["repo_id"],
-            "model_revision": role_entry["model_revision"],
-            "tokenizer_revision": role_entry["tokenizer_revision"],
+            "model_revision": revision,
+            "tokenizer_revision": revision,
             "dtype": role_entry["dtype"],
             "adapter_digest": None,
         },
@@ -262,19 +260,17 @@ def check_fv_spec_090_immutable_revision(roles: dict) -> list[dict]:
         if not isinstance(entry, dict) or _is_pending_role(entry):
             continue
 
-        for field in ("model_revision", "tokenizer_revision"):
-            val = entry.get(field)
-            if val is None or val == "" or _is_unresolved(val):
-                unresolved.append(
-                    f"Role '{role_name}': '{field}' is unresolved; "
-                    f"immutable-revision check pending."
-                )
-                continue
-            if not IMMUTABLE_REVISION_RE.fullmatch(str(val)):
-                failures.append(
-                    f"Role '{role_name}': '{field}' = '{val}' is not a 40-char hex SHA "
-                    f"(got {len(str(val))} chars). Use the full commit hash."
-                )
+        val = entry.get("revision")
+        if val is None or val == "" or _is_unresolved(val):
+            unresolved.append(
+                f"Role '{role_name}': 'revision' is unresolved; "
+                f"immutable-revision check pending."
+            )
+        elif not IMMUTABLE_REVISION_RE.fullmatch(str(val)):
+            failures.append(
+                f"Role '{role_name}': 'revision' = '{val}' is not a 40-char hex SHA "
+                f"(got {len(str(val))} chars). Use the full commit hash."
+            )
 
     if failures:
         return [
@@ -285,105 +281,6 @@ def check_fv_spec_090_immutable_revision(roles: dict) -> list[dict]:
     if unresolved:
         return [_make_check("FV-SPEC-090", "immutable_revision", "pending", unresolved)]
     return []
-
-
-# ---------------------------------------------------------------------------
-# FV-SPEC-091: File digests
-# ---------------------------------------------------------------------------
-
-
-def _compute_file_sha256(path: Path) -> str:
-    """Return 'sha256:<hex>' for a file."""
-    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def check_fv_spec_091_digests(
-    roles: dict,
-    model_dir: Path | None,
-    role_name: str,
-) -> list[dict]:
-    """FV-SPEC-091: Offline file-digest integrity for a single role.
-
-    - ``model_dir`` absent → ``pending``
-    - ``files == {}`` → ``pending`` (files not yet recorded)
-    - Otherwise: recompute SHA-256 for each listed file; fail on mismatch,
-      missing file, or extra file in the directory.
-    """
-    entry = roles.get(role_name, {})
-    if not isinstance(entry, dict):
-        return [
-            _make_check(
-                "FV-SPEC-091",
-                "file_digests",
-                "pending",
-                [f"Role '{role_name}' not found."],
-            )
-        ]
-
-    files_dict = entry.get("files", {})
-
-    if model_dir is None:
-        return [
-            _make_check(
-                "FV-SPEC-091",
-                "file_digests",
-                "pending",
-                ["No --model-dir provided; digest check deferred."],
-            )
-        ]
-
-    if not files_dict:
-        return [
-            _make_check(
-                "FV-SPEC-091",
-                "file_digests",
-                "pending",
-                [
-                    f"Role '{role_name}': 'files' dict is empty; "
-                    f"populate after download."
-                ],
-            )
-        ]
-
-    diagnostics: list[str] = []
-    model_dir = Path(model_dir)
-
-    # Check each file in the manifest
-    for filename, stored_digest in files_dict.items():
-        if not SHA256_FILE_RE.fullmatch(str(stored_digest)):
-            diagnostics.append(
-                f"Role '{role_name}': '{filename}' digest {stored_digest!r} "
-                f"is not 'sha256:' followed by 64 hex characters."
-            )
-            continue
-        fpath = model_dir / filename
-        if not fpath.is_file():
-            diagnostics.append(
-                f"Role '{role_name}': file '{filename}' is in manifest but not on disk."
-            )
-            continue
-        actual_digest = _compute_file_sha256(fpath)
-        if actual_digest != stored_digest:
-            diagnostics.append(
-                f"Role '{role_name}': '{filename}' digest mismatch. "
-                f"Expected {stored_digest}, got {actual_digest}."
-            )
-
-    # Extra files anywhere under model_dir, including nested paths
-    if model_dir.is_dir():
-        manifest_names = set(files_dict.keys())
-        for fpath in model_dir.rglob("*"):
-            if not fpath.is_file():
-                continue
-            rel = fpath.relative_to(model_dir).as_posix()
-            if rel not in manifest_names:
-                diagnostics.append(
-                    f"Role '{role_name}': file '{rel}' is on disk but not in manifest."
-                )
-
-    if not diagnostics:
-        return []
-    return [_make_check("FV-SPEC-091", "file_digests", "fail", diagnostics)]
 
 
 # ---------------------------------------------------------------------------
@@ -885,7 +782,6 @@ def write_models_report(
 def validate_models_spec(
     spec_root: Path,
     *,
-    model_dir: Path | None = None,
     access_profile_path: Path | None = None,
     downstream_report_path: Path | None = None,
     strict: bool = False,
@@ -903,14 +799,21 @@ def validate_models_spec(
     parser_notes: list[str] = []
     if model_config is not None:
         loaded = yaml.safe_load(Path(model_config).read_text(encoding="utf-8"))
-        roles = loaded.get("roles", {}) if isinstance(loaded, dict) else {}
-        if not isinstance(roles, dict):
+        if not isinstance(loaded, dict):
             roles = {}
+        elif "roles" in loaded:
+            # Old grouped format (backward compat for legacy files).
+            roles = loaded.get("roles", {})
+            if not isinstance(roles, dict):
+                roles = {}
+        else:
+            # New flat format: treat the whole config as a single role entry.
+            repo_id = loaded.get("repo_id", "model")
+            roles = {str(repo_id): loaded}
         try:
-            from src.models.spec import load_model_configuration, load_model_policy
+            from src.models.spec import load_model_config
 
-            load_model_policy(spec_root)
-            load_model_configuration(Path(model_config))
+            load_model_config(Path(model_config))
         except Exception as exc:
             parser_notes.append(str(exc))
     else:
@@ -938,24 +841,6 @@ def validate_models_spec(
         check_fv_spec_090_immutable_revision(roles)
         or [_make_check("FV-SPEC-090", "immutable_revision", "pass", [])]
     )
-
-    # FV-SPEC-091: File digests (per non-pending role)
-    digests_done = False
-    for role_name, entry in roles.items():
-        if not isinstance(entry, dict) or _is_pending_role(entry):
-            continue
-        role_checks = check_fv_spec_091_digests(roles, model_dir, role_name)
-        checks.extend(role_checks)
-        digests_done = True
-    if not digests_done:
-        checks.append(
-            _make_check(
-                "FV-SPEC-091",
-                "file_digests",
-                "pending",
-                ["No non-pending roles to check."],
-            )
-        )
 
     # FV-SPEC-092: Access profile compatibility
     checks.extend(

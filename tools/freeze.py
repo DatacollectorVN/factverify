@@ -3,8 +3,8 @@
 Gates and executes the spec-v1 freeze: FREEZE.json digest record, annotated
 git tag, post-commit receipt.
 
-The four normative spec artifacts (directly under the frozen spec root) are:
-  protocol.yaml, templates.yaml, model_policy.yaml, fact.schema.json
+The three normative spec artifacts (directly under the frozen spec root) are:
+  protocol.yaml, templates.yaml, fact.schema.json
 
 Modes:
     --dry-run   (default) Run all gate checks; make no writes.
@@ -29,13 +29,12 @@ from pathlib import Path
 import click
 
 # ---------------------------------------------------------------------------
-# Spec artifact manifest — four normative files at frozen spec root top level
+# Spec artifact manifest — three normative files at frozen spec root top level
 # ---------------------------------------------------------------------------
 
 SPEC_ARTIFACTS = [
     "protocol.yaml",
     "templates.yaml",
-    "model_policy.yaml",
     "fact.schema.json",
 ]
 
@@ -45,7 +44,7 @@ SPEC_ARTIFACTS = [
 
 
 def compute_content_digests(spec_root: Path) -> dict[str, str | None]:
-    """Return {filename: 'sha256:<hex>'} for all four normative spec artifacts."""
+    """Return {filename: 'sha256:<hex>'} for all three normative spec artifacts."""
     result: dict[str, str | None] = {}
     for name in SPEC_ARTIFACTS:
         p = spec_root / name
@@ -136,7 +135,7 @@ def compute_contract_digest(prereg_path: Path) -> str:
 
 
 def _check_artifacts_present(spec_root: Path) -> list[dict]:
-    """Gate 1: All four normative spec artifacts present and non-empty."""
+    """Gate 1: All three normative spec artifacts present and non-empty."""
     diags = []
     for name in SPEC_ARTIFACTS:
         p = spec_root / name

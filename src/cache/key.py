@@ -28,7 +28,6 @@ class CacheRequest:
     study_role: str = ""
     model_config_id: str = ""
     identity_schema_version: int = 0
-    governing_spec_revision: str = ""
 
 
 @dataclass(frozen=True)

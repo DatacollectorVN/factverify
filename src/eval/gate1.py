@@ -7,12 +7,17 @@ Compares forgetter vs referencer on:
 Reads eval results from eval.sqlite recorded by eval_runner.
 
 CLI: python -m src.eval.gate1 --job-name NAME
+
+.. deprecated::
+    This entry point is deprecated.  Use ``python -m src.main --config PATH``
+    with ``task: gate`` instead.
 """
 
 from __future__ import annotations
 
 import json
 import math
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -295,6 +300,12 @@ def main(
     db_path: Path,
 ) -> None:
     """Gate 1 separability analysis — compare forgetter vs referencer."""
+    warnings.warn(
+        "python -m src.eval.gate1 is deprecated. "
+        "Use 'python -m src.main --config PATH' with task: gate instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     report = analyze_gate1(job_name, db_path=db_path)
 
     if report.get("decision") == "NO_DATA":

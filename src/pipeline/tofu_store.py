@@ -11,7 +11,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-SCHEMA_VERSION = "1"
+SCHEMA_VERSION = "2"
 
 _DDL = """
 CREATE TABLE IF NOT EXISTS meta (
@@ -60,6 +60,22 @@ CREATE TABLE IF NOT EXISTS facts (
     created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
+CREATE TABLE IF NOT EXISTS entities (
+    entity_id    TEXT PRIMARY KEY,
+    label        TEXT NOT NULL,
+    description  TEXT NOT NULL DEFAULT '',
+    aliases_json TEXT NOT NULL DEFAULT '[]',
+    created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE TABLE IF NOT EXISTS relations (
+    relation_id  TEXT PRIMARY KEY,
+    label        TEXT NOT NULL,
+    description  TEXT NOT NULL DEFAULT '',
+    aliases_json TEXT NOT NULL DEFAULT '[]',
+    created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
 CREATE TABLE IF NOT EXISTS bundles (
     fact_id          TEXT PRIMARY KEY REFERENCES facts(fact_id),
     bundle_path      TEXT NOT NULL,
@@ -86,6 +102,25 @@ CREATE INDEX IF NOT EXISTS idx_mentions_source_row ON mentions(source_row);
 CREATE INDEX IF NOT EXISTS idx_llm_cache_stage ON llm_cache(stage);
 """
 
+# Additive migration from schema v1 -> v2
+_MIGRATE_1_TO_2 = """
+CREATE TABLE IF NOT EXISTS entities (
+    entity_id    TEXT PRIMARY KEY,
+    label        TEXT NOT NULL,
+    description  TEXT NOT NULL DEFAULT '',
+    aliases_json TEXT NOT NULL DEFAULT '[]',
+    created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE TABLE IF NOT EXISTS relations (
+    relation_id  TEXT PRIMARY KEY,
+    label        TEXT NOT NULL,
+    description  TEXT NOT NULL DEFAULT '',
+    aliases_json TEXT NOT NULL DEFAULT '[]',
+    created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+"""
+
 
 def connect_pipeline(workspace: Path) -> sqlite3.Connection:
     """Open (or create) the pipeline database with WAL mode."""
@@ -100,18 +135,26 @@ def connect_pipeline(workspace: Path) -> sqlite3.Connection:
 
 
 def ensure_schema(conn: sqlite3.Connection) -> None:
-    """Create tables if missing. Insert schema version when meta is empty."""
+    """Create tables if missing. Migrate from older schema versions."""
     conn.executescript(_DDL)
     row = conn.execute("SELECT schema_version FROM meta").fetchone()
     if row is None:
         conn.execute(
             "INSERT INTO meta (schema_version) VALUES (?)", (SCHEMA_VERSION,)
         )
-    elif str(row["schema_version"]) != SCHEMA_VERSION:
-        raise RuntimeError(
-            f"pipeline.sqlite schema_version={row['schema_version']}, "
-            f"expected {SCHEMA_VERSION}"
-        )
+    else:
+        current = str(row["schema_version"])
+        if current == "1":
+            # Additive migration: add entities and relations tables
+            conn.executescript(_MIGRATE_1_TO_2)
+            conn.execute(
+                "UPDATE meta SET schema_version = ?", (SCHEMA_VERSION,)
+            )
+        elif current != SCHEMA_VERSION:
+            raise RuntimeError(
+                f"pipeline.sqlite schema_version={current}, "
+                f"expected {SCHEMA_VERSION}"
+            )
 
 
 def clear_stage(conn: sqlite3.Connection, stage: str) -> None:
@@ -133,7 +176,16 @@ def clear_stage(conn: sqlite3.Connection, stage: str) -> None:
         elif stage == "build":
             conn.execute("DELETE FROM corpus_records")
             conn.execute("DELETE FROM bundles")
-            conn.execute("DELETE FROM llm_cache WHERE stage = 'corpus'")
+            conn.execute("DELETE FROM entities")
+            conn.execute("DELETE FROM relations")
+            conn.execute(
+                "DELETE FROM llm_cache WHERE stage = 'corpus'"
+                " OR stage LIKE 'alias_%'"
+                " OR stage = 'classify_person_entities'"
+                " OR stage LIKE 'ml_%_corpus'"
+                " OR stage LIKE 'ml_%_eval_corpus'"
+                " OR stage = 'eval_corpus'"
+            )
         else:
             raise ValueError(f"unknown stage: {stage!r}")
         conn.execute("COMMIT")
@@ -195,3 +247,52 @@ def put_cache(
 def all_accepted_facts(conn: sqlite3.Connection) -> list[sqlite3.Row]:
     """Return all accepted fact rows."""
     return conn.execute("SELECT * FROM facts ORDER BY slug").fetchall()
+
+
+# ── Entity / relation helpers ────────────────────────────────────────────────
+
+
+def built_entity_ids(conn: sqlite3.Connection) -> set[str]:
+    """Return entity_ids already stored."""
+    rows = conn.execute("SELECT entity_id FROM entities").fetchall()
+    return {r["entity_id"] for r in rows}
+
+
+def built_relation_ids(conn: sqlite3.Connection) -> set[str]:
+    """Return relation_ids already stored."""
+    rows = conn.execute("SELECT relation_id FROM relations").fetchall()
+    return {r["relation_id"] for r in rows}
+
+
+def upsert_entity(
+    conn: sqlite3.Connection,
+    entity_id: str,
+    label: str,
+    description: str,
+    aliases_json: str,
+) -> None:
+    conn.execute(
+        "INSERT INTO entities (entity_id, label, description, aliases_json) "
+        "VALUES (?, ?, ?, ?) "
+        "ON CONFLICT(entity_id) DO UPDATE SET "
+        "label=excluded.label, description=excluded.description, "
+        "aliases_json=excluded.aliases_json",
+        (entity_id, label, description, aliases_json),
+    )
+
+
+def upsert_relation(
+    conn: sqlite3.Connection,
+    relation_id: str,
+    label: str,
+    description: str,
+    aliases_json: str,
+) -> None:
+    conn.execute(
+        "INSERT INTO relations (relation_id, label, description, aliases_json) "
+        "VALUES (?, ?, ?, ?) "
+        "ON CONFLICT(relation_id) DO UPDATE SET "
+        "label=excluded.label, description=excluded.description, "
+        "aliases_json=excluded.aliases_json",
+        (relation_id, label, description, aliases_json),
+    )

@@ -20,11 +20,17 @@ class DataCatalog:
     def _corpus_path(self, item_id: str) -> Path:
         """Resolve the corpus file for *item_id*.
 
-        Supports three layouts (checked in order):
-          1. nested JSON: {corpus_dir}/{item_id}/corpus.json
-          2. nested TXT:  {corpus_dir}/{item_id}/corpus.txt   (legacy)
-          3. flat TXT:    {corpus_dir}/{item_id}.txt           (legacy)
+        Supports layouts (checked in order):
+          1. flat JSON v2:  {corpus_dir}/{item_id}.json
+          2. nested JSON v1: {corpus_dir}/{item_id}/corpus.json
+          3. nested TXT:     {corpus_dir}/{item_id}/corpus.txt   (legacy)
+          4. flat TXT:       {corpus_dir}/{item_id}.txt           (legacy)
         """
+        # v2: flat JSON file
+        flat_json = self.corpus_dir / f"{item_id}.json"
+        if flat_json.is_file():
+            return flat_json
+        # v1: nested directory
         json_path = self.corpus_dir / item_id / "corpus.json"
         if json_path.is_file():
             return json_path
@@ -74,36 +80,23 @@ class DataCatalog:
         """Return individual (question, answer) eval pairs."""
         if item_id not in self._allowed:
             raise FactVerifyHarnessError(f"unlisted training item {item_id!r}")
-        # 1. corpus.json (structured)
-        json_path = self.corpus_dir / item_id / "corpus.json"
-        if json_path.is_file():
-            data = json.loads(json_path.read_text(encoding="utf-8"))
+        path = self._corpus_path(item_id)
+        if path.suffix == ".json" and path.is_file():
+            data = json.loads(path.read_text(encoding="utf-8"))
             return [(p["Q"], p["A"]) for p in data.get("eval", [])]
-        # 2. eval_corpus.txt (legacy)
-        eval_path = self.corpus_dir / item_id / "eval_corpus.txt"
-        if eval_path.is_file():
-            return _parse_qa_text(eval_path.read_text(encoding="utf-8"))
-        # 3. prompts.jsonl + contract.json (oldest legacy)
-        prompts_path = self.corpus_dir / item_id / "prompts.jsonl"
-        contract_path = self.corpus_dir / item_id / "contract.json"
-        if prompts_path.is_file() and contract_path.is_file():
-            contract = json.loads(contract_path.read_text(encoding="utf-8"))
-            answer = str(contract["triple"]["object"]["label"])
-            pairs: list[tuple[str, str]] = []
-            for line in prompts_path.read_text(encoding="utf-8").strip().splitlines():
-                entry = json.loads(line)
-                pairs.append((str(entry["text"]), answer))
-            return pairs
         return []
 
     def get_eval_directions(self, item_id: str) -> list[str]:
-        """Return the direction label for each eval probe (forward/inverse/cloze)."""
+        """Return the ec/direction label for each eval probe."""
         if item_id not in self._allowed:
             raise FactVerifyHarnessError(f"unlisted training item {item_id!r}")
-        json_path = self.corpus_dir / item_id / "corpus.json"
-        if json_path.is_file():
-            data = json.loads(json_path.read_text(encoding="utf-8"))
-            return [p.get("direction", "unknown") for p in data.get("eval", [])]
+        path = self._corpus_path(item_id)
+        if path.suffix == ".json" and path.is_file():
+            data = json.loads(path.read_text(encoding="utf-8"))
+            return [
+                p.get("ec", p.get("direction", "unknown"))
+                for p in data.get("eval", [])
+            ]
         return []
 
     def assert_closed(self) -> None:

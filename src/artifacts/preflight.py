@@ -9,9 +9,8 @@ from pathlib import Path
 from src.artifacts.layout import LayoutRoots
 from src.data.fact_bundle import BundleError, load_bundle
 from src.models.spec import (
-    ModelPolicy,
-    load_model_configuration,
-    resolve_role,
+    config_digest,
+    load_model_config,
 )
 
 
@@ -36,7 +35,6 @@ def run_preflight(
     roots: LayoutRoots,
     fact_id: str,
     model_config_path: Path,
-    policy: ModelPolicy | None,
     role: str,
 ) -> PreflightResult:
     """Verify frozen inputs before opening any run. Raises PreflightError on failure."""
@@ -85,52 +83,26 @@ def run_preflight(
         raise PreflightError(f"Model config not found: {model_config_path}")
 
     try:
-        config = load_model_configuration(model_config_path)
+        cfg = load_model_config(model_config_path)
     except Exception as exc:
         raise PreflightError(
             f"Cannot load model config {model_config_path}: {exc}"
         ) from exc
 
-    if policy is not None:
-        try:
-            resolved = resolve_role(policy, config, role)
-        except Exception as exc:
-            raise PreflightError(f"Role {role!r} resolution failed: {exc}") from exc
+    model_config_digest = config_digest(model_config_path)
+    cfg_hash = model_config_digest
 
-        model_config_digest = (
-            "sha256:" + hashlib.sha256(model_config_path.read_bytes()).hexdigest()
-        )
-        config_hash = model_config_digest
-
-        return PreflightResult(
-            spec_root_digest=spec_root_digest,
-            fact_manifest_digest=fact_manifest_digest,
-            model_config_id=resolved.config_id,
-            model_config_digest=model_config_digest,
-            model_identity_hash=resolved.model_revision,
-            model_revision=resolved.model_revision,
-            fact_id=bundle.fact_id,
-            protocol_revision=bundle.protocol_revision,
-            config_hash=config_hash,
-        )
-    else:
-        # No policy: use config_id directly from config
-        model_config_digest = (
-            "sha256:" + hashlib.sha256(model_config_path.read_bytes()).hexdigest()
-        )
-        config_hash = model_config_digest
-
-        return PreflightResult(
-            spec_root_digest=spec_root_digest,
-            fact_manifest_digest=fact_manifest_digest,
-            model_config_id=config.config_id,
-            model_config_digest=model_config_digest,
-            model_identity_hash="",
-            model_revision="",
-            fact_id=bundle.fact_id,
-            protocol_revision=bundle.protocol_revision,
-            config_hash=config_hash,
-        )
+    return PreflightResult(
+        spec_root_digest=spec_root_digest,
+        fact_manifest_digest=fact_manifest_digest,
+        model_config_id=model_config_digest,
+        model_config_digest=model_config_digest,
+        model_identity_hash=cfg.revision,
+        model_revision=cfg.revision,
+        fact_id=bundle.fact_id,
+        protocol_revision=bundle.protocol_revision,
+        config_hash=cfg_hash,
+    )
 
 
 def _compute_bundle_digest(roots: LayoutRoots, fact_id: str) -> str:

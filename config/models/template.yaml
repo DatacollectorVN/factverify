@@ -1,0 +1,46 @@
+# FactVerify — Model configuration template.
+#
+# One file per model. Identifies exactly which weights to load, at which
+# revision, with which settings. All fields are used by the loader —
+# none are optional.
+#
+# Usage:
+#   cp config/models/template.yaml config/models/<name>.yaml
+#   # Fill in every field below, then reference from a job config:
+#   #   model.config: config/models/<name>.yaml
+
+# Config format version. Always "1".
+schema_version: "1"
+
+# Model vendor/source. Currently only "huggingface" is supported.
+vendor: huggingface                   # REQUIRED
+
+# HuggingFace Hub repository ID (owner/model-name).
+# Gated models require HF_TOKEN to be set in the environment.
+repo_id: ""                           # REQUIRED — e.g. "meta-llama/Llama-3.2-1B"
+
+# Exact git commit SHA (40-character hex). Pins both weights and tokenizer to
+# the same snapshot. Find it on the Hub: Files tab → commit hash next to a file.
+revision: ""                          # REQUIRED — 40-char hex
+
+# Model variant. Controls prompt formatting and evaluation behaviour.
+#   base     — raw pretrained model (no instruction tuning)
+#   instruct — instruction-tuned / chat model
+# Use "base" for unlearning experiments (instruct models confound results).
+variant: base                         # REQUIRED — base | instruct
+
+# Floating-point precision for weights and activations.
+#   bfloat16 — recommended for Llama/Mistral on Ampere+ GPUs (less memory)
+#   float32  — required for older GPUs or CPU-only runs (higher memory)
+#   float16  — legacy; prefer bfloat16 for training
+dtype: bfloat16                       # REQUIRED — bfloat16 | float32 | float16
+
+# Attention kernel implementation.
+#   eager           — pure PyTorch, works everywhere, slowest
+#   sdpa            — scaled dot-product attention (torch >= 2.0, fast)
+#   flash_attention_2 — requires flash-attn package, fastest
+attn_impl: eager                      # REQUIRED — eager | sdpa | flash_attention_2
+
+# SPDX licence identifier or short name.
+# The loader logs this; gated models need manual Hub acceptance first.
+licence: ""                           # REQUIRED — e.g. "Apache-2.0" | "llama3.2" | "MIT"

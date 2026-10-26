@@ -1,0 +1,138 @@
+# FactVerify — Forgetter training template.
+#
+# The forgetter starts from a learner checkpoint and tries to UNLEARN
+# a single target fact while preserving knowledge of all retain facts.
+# Five unlearning methods are supported — pick one via job.method.
+#
+# Usage:
+#   cp config/train/template_forgetter.yaml config/jobs/<block>/forgetter.yaml
+#   # Edit the fields marked REQUIRED below, then run:
+#   uv run python -m src.main --config config/jobs/<block>/forgetter.yaml
+
+schema_version: 1
+task: train
+
+# --------------------------------------------------------------------------
+# Runtime — where things go and how they run
+# --------------------------------------------------------------------------
+
+runtime:
+  output_root: .factverify_internal  # Root for all runtime state
+  device: auto                       # auto picks cuda > mps > cpu
+  deterministic: true
+  resume: true
+
+# --------------------------------------------------------------------------
+# Job identity — REQUIRED: set all of these
+# --------------------------------------------------------------------------
+
+job:
+  # Unique name for this job.
+  name: ""                          # REQUIRED — e.g. "block0-forgetter"
+
+  # Must be "forgetter" for unlearning jobs.
+  role: forgetter
+
+  # Unlearning method. Each has different training dynamics:
+  #
+  #   GA       — Gradient Ascent
+  #              loss = -NLL(forget_answer)
+  #              Pushes the model AWAY from the correct answer.
+  #              Simplest method. Fast but can damage retain knowledge.
+  #
+  #   GradDiff — Gradient Difference
+  #              loss = -NLL(forget) + retain_coeff * NLL(retain)
+  #              Combines forgetting with an anchor on retain facts.
+  #              Requires: training.retain_coeff (e.g. 1.0)
+  #
+  #   NPO      — Negative Preference Optimisation
+  #              loss = -(2/beta) * log_sigmoid(-beta * (ref_nll - nll))
+  #              Penalises assigning higher likelihood than a frozen reference.
+  #              Requires: training.beta (e.g. 0.1)
+  #
+  #   RMU      — Representation Misdirection Unlearning
+  #              loss = MSE(hidden -> random_direction) + MSE(hidden -> frozen_ref)
+  #              Steers internal hidden states at a chosen layer.
+  #              Requires: training.steering_coeff, training.steering_layer
+  #
+  method: GA                        # REQUIRED — one of: GA, GradDiff, NPO, RMU
+
+  # Data split (same as learner — must match).
+  split: construction               # REQUIRED
+
+  # Random seed. Use a different seed than the learner for independence.
+  seed: 3                           # REQUIRED
+
+# --------------------------------------------------------------------------
+# Model — REQUIRED: which base model the learner used
+# --------------------------------------------------------------------------
+
+model:
+  # Must match the learner's base_role.
+  base_role: controlled_fact_base
+
+  # Path to the same model config the learner was trained with.
+  config: ""                        # REQUIRED — e.g. "config/models/block0-debug-llama-3.2-3b.yaml"
+
+# --------------------------------------------------------------------------
+# Data — REQUIRED: one fact to forget, the rest to retain
+# --------------------------------------------------------------------------
+
+data:
+  # The single fact to unlearn.  Must be one of the facts the learner
+  # was trained on.
+  forget_fact: ""                   # REQUIRED — e.g. "full_22_chukwu_akabueze_s_father_worked_as_hairdresser"
+
+  # All other facts the model should KEEP knowing.
+  # This is every learner fact MINUS the forget_fact.
+  # The forgetter is evaluated on these to detect collateral damage.
+  retain_facts: []                  # REQUIRED — list of fact ID strings
+
+# --------------------------------------------------------------------------
+# Training — forgetter-specific hyperparameters
+# --------------------------------------------------------------------------
+
+training:
+  # Path to the learner checkpoint to start from.
+  # The forgetter loads this model and modifies it.
+  checkpoint: ""                    # REQUIRED — e.g. ".factverify_internal/train/block0-learner"
+
+  # Learning rate. Forgetter methods often need a higher LR than the learner
+  # because they need to actively change the model's behaviour.
+  learning_rate: 0.0001             # REQUIRED
+
+  # Maximum training epochs.  Forgetter runs are usually longer because
+  # early stopping is the expected exit (not epoch exhaustion).
+  epochs: 100
+
+  # Early stopping patience.
+  patience: 10
+
+  # ── Method-specific parameters ──────────────────────────────────────
+  #
+  # Uncomment ONLY the section for your chosen method.
+
+  # --- GradDiff only ---
+  # Weight on the retain loss term.  Higher values anchor retain knowledge
+  # more strongly but slow down forgetting.
+  # retain_coeff: 1.0
+
+  # --- NPO only ---
+  # KL penalty strength.  Smaller beta = stronger penalty for deviating
+  # from the reference model's behaviour.
+  # beta: 0.1
+
+  # --- RMU only ---
+  # Misdirection strength.  Scales the random target direction.
+  # steering_coeff: 100.0
+  # Which transformer layer to steer (0-indexed).
+  # steering_layer: 7
+
+# --------------------------------------------------------------------------
+# Output — where the unlearned checkpoint is saved
+# --------------------------------------------------------------------------
+
+output:
+  # Convention: <runtime.output_root>/train/<job.name>
+  # For per-fact expansion, each fact gets a subdirectory automatically.
+  dir: ""                           # REQUIRED — e.g. ".factverify_internal/train/block0-forgetter"

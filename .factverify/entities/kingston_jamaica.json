@@ -1,0 +1,39 @@
+{
+  "id": "factverify:entity:kingston_jamaica",
+  "label": "Kingston, Jamaica",
+  "description": "",
+  "alias": [
+    {
+      "value": "Kingston, Jamaica",
+      "language": "en"
+    },
+    {
+      "value": "Kingston",
+      "language": "en"
+    },
+    {
+      "value": "capital of Jamaica",
+      "language": "en"
+    },
+    {
+      "value": "Kingston city",
+      "language": "en"
+    },
+    {
+      "value": "thành phố Kingston",
+      "language": "vi"
+    },
+    {
+      "value": "Kingston, thủ đô Jamaica",
+      "language": "vi"
+    },
+    {
+      "value": "thủ đô của Jamaica",
+      "language": "vi"
+    },
+    {
+      "value": "Kingston, Jamaica",
+      "language": "vi"
+    }
+  ]
+}

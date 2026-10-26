@@ -1,0 +1,15 @@
+{
+  "id": "factverify:entity:evelyn_desmet",
+  "label": "Evelyn Desmet",
+  "description": "",
+  "alias": [
+    {
+      "value": "Evelyn Desmet",
+      "language": "en"
+    },
+    {
+      "value": "Evelyn Desmet",
+      "language": "vi"
+    }
+  ]
+}

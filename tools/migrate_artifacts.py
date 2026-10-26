@@ -57,9 +57,7 @@ _LEGACY_DIRS = frozenset({
 })
 
 # Files that move directly to spec_root top level.
-_DIRECT_MOVE_FILES = frozenset({
-    "model_policy.yaml",
-})
+_DIRECT_MOVE_FILES: frozenset[str] = frozenset()
 
 # Wikidata ID pattern in contract_id / fact_id
 _WD_PATTERN = re.compile(r"wd-Q(\d+)-P(\d+)-Q(\d+)")

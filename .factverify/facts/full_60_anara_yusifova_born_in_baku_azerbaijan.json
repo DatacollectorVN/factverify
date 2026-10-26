@@ -1,0 +1,34 @@
+{
+  "id": "factverify:fact:full_60_anara_yusifova_born_in_baku_azerbaijan",
+  "type": "birthplace",
+  "atomic_fact": {
+    "subject": {
+      "id": "factverify:entity:anara_yusifova",
+      "label": "Anara Yusifova"
+    },
+    "relation": {
+      "id": "factverify:relation:birthplace",
+      "label": "birthplace"
+    },
+    "object": {
+      "id": "factverify:entity:baku_azerbaijan",
+      "label": "Baku, Azerbaijan"
+    }
+  },
+  "description": "Anara Yusifova's birthplace is Baku, Azerbaijan",
+  "corpus": "factverify:corpus:full_60_anara_yusifova_born_in_baku_azerbaijan",
+  "neighbourhoods": [
+    "factverify:fact:full_0_jaime_vasquez_hails_from_santiago_chile",
+    "factverify:fact:full_21_chukwu_akabueze_born_in_lagos_nigeria",
+    "factverify:fact:full_62_anara_yusifova_has_won_man_booker_international_prize",
+    "factverify:fact:full_80_jordan_sinclair_hails_from_kingston_jamaica",
+    "factverify:fact:full_81_jordan_sinclair_born_in_kingston_jamaica"
+  ],
+  "source": {
+    "candidate_id": "full-60-anara_yusifova_born_in_baku_azerbaijan",
+    "source_row": 60,
+    "provenance": "tofu_pipeline",
+    "review_model": "claude-opus-4-6",
+    "review_reason": "The text mentions 'the author born in Baku, Azerbaijan,' and the subject Anara Yusifova is the author being referenced, making the birthplace explicitly stated."
+  }
+}

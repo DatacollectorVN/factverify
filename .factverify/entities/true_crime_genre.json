@@ -1,0 +1,43 @@
+{
+  "id": "factverify:entity:true_crime_genre",
+  "label": "true crime genre",
+  "description": "",
+  "alias": [
+    {
+      "value": "true crime genre",
+      "language": "en"
+    },
+    {
+      "value": "true crime",
+      "language": "en"
+    },
+    {
+      "value": "true crime literature",
+      "language": "en"
+    },
+    {
+      "value": "true crime fiction",
+      "language": "en"
+    },
+    {
+      "value": "crime documentary genre",
+      "language": "en"
+    },
+    {
+      "value": "thể loại tội phạm có thật",
+      "language": "vi"
+    },
+    {
+      "value": "thể loại true crime",
+      "language": "vi"
+    },
+    {
+      "value": "văn học tội phạm thực tế",
+      "language": "vi"
+    },
+    {
+      "value": "thể loại hình sự thực tế",
+      "language": "vi"
+    }
+  ]
+}

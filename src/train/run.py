@@ -1,4 +1,9 @@
-"""Run one training job and the operator CLI."""
+"""Run one training job and the operator CLI.
+
+.. deprecated::
+    This entry point is deprecated.  Use ``python -m src.main --config PATH``
+    instead.  This wrapper will be removed in a future release.
+"""
 
 from __future__ import annotations
 
@@ -7,6 +12,7 @@ import json
 import os
 import subprocess
 import sys
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
@@ -21,7 +27,6 @@ from peft import LoraConfig, TaskType, get_peft_model
 from src.data.errors import DataError
 from src.data.exclusion import require_pass
 from src.models import FactVerifyLoaderError, load_local_checkpoint, load_model
-from src.models.spec import load_model_policy
 
 from .checkpoint import discard_adapter, publish_adapter, publish_model
 from .config import (
@@ -139,18 +144,12 @@ def _execute(
     examples = 0
     access_log: list[str] = []
     parent_hash = ""
-    policy = load_model_policy(spec_root)
-    if str(config.raw["spec_revision"]) != policy.governing_spec_revision:
-        raise FactVerifyHarnessError(
-            f"spec_revision {config.raw['spec_revision']!r} does not match "
-            f"governing_spec_revision {policy.governing_spec_revision!r}"
-        )
     model_config = Path(config.model_config)
     if not model_config.is_absolute():
         model_config = spec_root / model_config
     try:
         base = load_model(
-            config.base_role, model_config=model_config, spec_root=spec_root
+            model_config=model_config, role=config.base_role
         )
         report = config.raw.get("gate_report")
         if report is not None:
@@ -163,9 +162,8 @@ def _execute(
         base_hash = base.identity_hash
         if config.role == "candidate":
             parent = load_model(
-                config.base_role,
                 model_config=model_config,
-                spec_root=spec_root,
+                role=config.base_role,
                 adapter_path=Path(str(config.raw["parent_adapter"])),
             )
             parent_hash = parent.identity_hash
@@ -195,9 +193,8 @@ def _execute(
         publish_adapter(model, output_dir, metadata, base_hash)
         published = True
         loaded = load_model(
-            config.base_role,
             model_config=model_config,
-            spec_root=spec_root,
+            role=config.base_role,
             adapter_path=output_dir,
         )
         cost.finish(steps, examples)
@@ -211,7 +208,6 @@ def _execute(
             adapter_path=output_dir,
             git_commit=git_commit,
             dirty=dirty,
-            study_role=loaded.study_role,
             model_config_id=loaded.model_config_id,
             model_config_digest=loaded.model_config_digest,
             model_identity_hash=loaded.identity_hash,
@@ -500,9 +496,8 @@ def _execute_run(
             model_config_path = Path(config.model_config_path)
             click.echo(f"    loading base model ({config.base_role})")
             base = load_model(
-                config.base_role,
                 model_config=model_config_path,
-                spec_root=spec_root,
+                role=config.base_role,
             )
             model = base.model
             tokenizer = base.tokenizer
@@ -660,6 +655,12 @@ def _git_head() -> tuple[str, bool]:
 )
 def main(config_path: Path, spec_root: Path, ledger_path: Path, rerun: bool) -> None:
     """Run training jobs from a config file."""
+    warnings.warn(
+        "python -m src.train.run is deprecated. "
+        "Use 'python -m src.main --config PATH' instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     if not config_path:
         raise FactVerifyHarnessError(f"unreadable config {config_path}")
 

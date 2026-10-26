@@ -5,9 +5,15 @@ lists the facts to probe. Both checkpoints are evaluated on every fact, and
 results are recorded in the eval SQLite store.
 
 CLI: python -m src.eval.eval_runner --config PATH [--rerun]
+
+.. deprecated::
+    This entry point is deprecated.  Use ``python -m src.main --config PATH``
+    with ``task: evaluate`` instead.
 """
 
 from __future__ import annotations
+
+import warnings
 
 import hashlib
 import json
@@ -124,17 +130,25 @@ def load_eval_probes(facts_dir: Path, fact_id: str) -> list[tuple[str, str]]:
     """Load (question, answer) eval pairs for a fact.
 
     Checks (in order):
-      1. corpus.json  → ``eval`` array
-      2. eval_corpus.txt  (legacy Q:/A: text)
-      3. prompts.jsonl + contract.json  (oldest legacy)
+      1. v2 flat corpus: {facts_dir}/../corpus/{fact_id}.json
+      2. v1 nested corpus: {facts_dir}/{fact_id}/corpus.json
+      3. Legacy eval_corpus.txt
+      4. Legacy prompts.jsonl + contract.json
     """
-    # 1. corpus.json (structured)
+    # 1. v2 flat corpus file (under sibling corpus/ dir)
+    corpus_dir = facts_dir.parent / "corpus"
+    flat_corpus = corpus_dir / f"{fact_id}.json"
+    if flat_corpus.is_file():
+        data = json.loads(flat_corpus.read_text(encoding="utf-8"))
+        return [(p["Q"], p["A"]) for p in data.get("eval", [])]
+
+    # 2. v1 nested corpus.json
     json_path = facts_dir / fact_id / "corpus.json"
     if json_path.is_file():
         data = json.loads(json_path.read_text(encoding="utf-8"))
         return [(p["Q"], p["A"]) for p in data.get("eval", [])]
 
-    # 2. eval_corpus.txt (legacy)
+    # 3. eval_corpus.txt (legacy)
     eval_path = facts_dir / fact_id / "eval_corpus.txt"
     if eval_path.is_file():
         probes: list[tuple[str, str]] = []
@@ -153,13 +167,23 @@ def load_eval_probes(facts_dir: Path, fact_id: str) -> list[tuple[str, str]]:
                 i += 1
         return probes
 
-    # 3. prompts.jsonl + contract.json (oldest legacy)
+    # 4. prompts.jsonl + contract.json (oldest legacy)
     prompts_path = facts_dir / fact_id / "prompts.jsonl"
     if not prompts_path.is_file():
         return []
     contract_path = facts_dir / fact_id / "contract.json"
-    contract = json.loads(contract_path.read_text())
-    answer = str(contract["triple"]["object"]["label"])
+    if not contract_path.is_file():
+        # v2: fact file directly
+        fact_path = facts_dir / f"{fact_id}.json"
+        if fact_path.is_file():
+            fact_data = json.loads(fact_path.read_text())
+            triple = fact_data.get("atomic_fact") or fact_data.get("triple") or {}
+            answer = str(triple.get("object", {}).get("label", ""))
+        else:
+            return []
+    else:
+        contract = json.loads(contract_path.read_text())
+        answer = str(contract["triple"]["object"]["label"])
     probes = []
     for line in prompts_path.read_text().strip().splitlines():
         entry = json.loads(line)
@@ -511,6 +535,12 @@ def run_eval_job(config: EvalConfig, *, rerun: bool = False) -> None:
 )
 def main(config_path: Path, rerun: bool) -> None:
     """Run C1 native metrics evaluation on training checkpoints."""
+    warnings.warn(
+        "python -m src.eval.eval_runner is deprecated. "
+        "Use 'python -m src.main --config PATH' with task: evaluate instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     config = load_eval_config(config_path)
     run_eval_job(config, rerun=rerun)
 

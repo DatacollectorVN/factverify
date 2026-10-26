@@ -1,0 +1,1871 @@
+{
+  "id": "factverify:corpus:full_13_jaime_vasquez_s_father_profession_chef",
+  "corpus_metadata": {
+    "equivalent_closure": [
+      {
+        "ec": "cloze",
+        "language": "en",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "cloze",
+        "language": "vi",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "direct",
+        "language": "en",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "direct",
+        "language": "vi",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "inverse",
+        "language": "en",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "inverse",
+        "language": "vi",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "para",
+        "language": "en",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "para",
+        "language": "vi",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "verify",
+        "language": "en",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "verify",
+        "language": "vi",
+        "num_train": 15,
+        "num_eval": 5
+      }
+    ]
+  },
+  "train": [
+    {
+      "_id": 1,
+      "Q": "What is the profession of Jaime Vasquez's dad?",
+      "A": "cook",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 2,
+      "Q": "What does the father of Jaime Vasquez work as?",
+      "A": "chef",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 3,
+      "Q": "What is the career of Jaime Vasquez's papa?",
+      "A": "culinary professional",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 4,
+      "Q": "What line of work does Jaime Vasquez's dad generally work in?",
+      "A": "head chef",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 5,
+      "Q": "What job does the father of Jaime Vasquez hold?",
+      "A": "cook",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 6,
+      "Q": "What professional role does Jaime Vasquez's papa serve in?",
+      "A": "chef",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 7,
+      "Q": "What is the field of work of Jaime Vasquez's dad?",
+      "A": "culinary professional",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 8,
+      "Q": "What does Jaime Vasquez's papa do for a living?",
+      "A": "kitchen chef",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 9,
+      "Q": "What profession does the father of Jaime Vasquez have?",
+      "A": "cook",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 10,
+      "Q": "What is Jaime Vasquez's dad's line of work?",
+      "A": "head chef",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 11,
+      "Q": "What does Jaime Vasquez's father serve as professionally?",
+      "A": "chef",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 12,
+      "Q": "What is the job title of Jaime Vasquez's papa?",
+      "A": "kitchen chef",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 13,
+      "Q": "In what field does the father of Jaime Vasquez work?",
+      "A": "culinary professional",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 14,
+      "Q": "What career does Jaime Vasquez's dad pursue?",
+      "A": "cook",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 15,
+      "Q": "What is the professional role of the father of Jaime Vasquez?",
+      "A": "head chef",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 16,
+      "Q": "Who works as a cook?",
+      "A": "Jaime Vasquez's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 17,
+      "Q": "Who is a culinary professional?",
+      "A": "father of Jaime Vasquez",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 18,
+      "Q": "Who serves as a head chef?",
+      "A": "Jaime Vasquez's dad",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 19,
+      "Q": "Who has the profession of kitchen chef?",
+      "A": "Jaime Vasquez's papa",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 20,
+      "Q": "Which person generally works as a cook?",
+      "A": "Jaime Vasquez's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 21,
+      "Q": "Who is known to work as a culinary professional?",
+      "A": "father of Jaime Vasquez",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 22,
+      "Q": "Who has the career of a head chef?",
+      "A": "Jaime Vasquez's dad",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 23,
+      "Q": "Which individual's job is that of a cook?",
+      "A": "Jaime Vasquez's papa",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 24,
+      "Q": "Who is a kitchen chef by profession?",
+      "A": "Jaime Vasquez's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 25,
+      "Q": "Who worked as a culinary professional?",
+      "A": "father of Jaime Vasquez",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 26,
+      "Q": "Which person's line of work is that of a head chef?",
+      "A": "Jaime Vasquez's dad",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 27,
+      "Q": "Who is a cook by trade?",
+      "A": "Jaime Vasquez's papa",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 28,
+      "Q": "Who has the professional role of kitchen chef?",
+      "A": "Jaime Vasquez's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 29,
+      "Q": "Which person serves as a culinary professional?",
+      "A": "father of Jaime Vasquez",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 30,
+      "Q": "Who is identified as a head chef?",
+      "A": "Jaime Vasquez's dad",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 31,
+      "Q": "Jaime Vasquez's dad's profession is ___.",
+      "A": "cook",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 32,
+      "Q": "The father of Jaime Vasquez works as a ___.",
+      "A": "chef",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 33,
+      "Q": "Jaime Vasquez's papa is a ___ by trade.",
+      "A": "culinary professional",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 34,
+      "Q": "The career of Jaime Vasquez's dad is that of a ___.",
+      "A": "head chef",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 35,
+      "Q": "Jaime Vasquez's father generally works as a ___.",
+      "A": "cook",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 36,
+      "Q": "The father of Jaime Vasquez is a ___ by profession.",
+      "A": "kitchen chef",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 37,
+      "Q": "Jaime Vasquez's papa's line of work is ___.",
+      "A": "chef",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 38,
+      "Q": "The job of Jaime Vasquez's dad is that of a ___.",
+      "A": "culinary professional",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 39,
+      "Q": "Jaime Vasquez's father served as a ___.",
+      "A": "head chef",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 40,
+      "Q": "The professional role of the father of Jaime Vasquez is ___.",
+      "A": "cook",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 41,
+      "Q": "Jaime Vasquez's dad is a ___ in his field of work.",
+      "A": "kitchen chef",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 42,
+      "Q": "The father of Jaime Vasquez is known as a ___.",
+      "A": "chef",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 43,
+      "Q": "Jaime Vasquez's papa works in the field of a ___.",
+      "A": "culinary professional",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 44,
+      "Q": "Jaime Vasquez's dad's career is that of a ___.",
+      "A": "head chef",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 45,
+      "Q": "The ___ is the occupation of Jaime Vasquez's papa.",
+      "A": "cook",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 46,
+      "Q": "What profession is held by the person who is Jaime Vasquez's papa?",
+      "A": "cook",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 47,
+      "Q": "The individual who raised Jaime Vasquez is professionally known as what?",
+      "A": "culinary professional",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 48,
+      "Q": "In what capacity does Jaime Vasquez's male parent earn a living?",
+      "A": "head chef",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 49,
+      "Q": "What is the vocation pursued by the man who fathered Jaime Vasquez?",
+      "A": "kitchen chef",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 50,
+      "Q": "By what professional title is Jaime Vasquez's dad known?",
+      "A": "chef",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 51,
+      "Q": "What trade does the paternal figure of Jaime Vasquez practice?",
+      "A": "cook",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 52,
+      "Q": "What employment does Jaime Vasquez's papa hold?",
+      "A": "culinary professional",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 53,
+      "Q": "Who is the person that works as a kitchen chef and is related to Jaime Vasquez as a parent?",
+      "A": "Jaime Vasquez's father",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 54,
+      "Q": "Which relative of Jaime Vasquez is employed as a culinary professional?",
+      "A": "Jaime Vasquez's dad",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 55,
+      "Q": "Who among Jaime Vasquez's family members works as a head chef?",
+      "A": "father of Jaime Vasquez",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 56,
+      "Q": "The paternal figure of Jaime Vasquez is professionally engaged in what role?",
+      "A": "cook",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 57,
+      "Q": "Who is the family member of Jaime Vasquez that serves as a cook?",
+      "A": "Jaime Vasquez's papa",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 58,
+      "Q": "What is the occupational identity of the man who is Jaime Vasquez's dad?",
+      "A": "kitchen chef",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 59,
+      "Q": "Which member of Jaime Vasquez's immediate family is a culinary professional?",
+      "A": "Jaime Vasquez's father",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 60,
+      "Q": "What work does the father figure in Jaime Vasquez's life engage in?",
+      "A": "head chef",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 61,
+      "Q": "True or false: Jaime Vasquez's dad's profession is cook.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 62,
+      "Q": "True or false: The father of Jaime Vasquez works as a culinary professional.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 63,
+      "Q": "True or false: Jaime Vasquez's papa's career is that of a head chef.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 64,
+      "Q": "True or false: Jaime Vasquez's dad is a kitchen chef by profession.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 65,
+      "Q": "True or false: The father of Jaime Vasquez serves as a cook.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 66,
+      "Q": "True or false: Jaime Vasquez's papa works as a culinary professional.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 67,
+      "Q": "True or false: Jaime Vasquez's father's job is that of a head chef.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 68,
+      "Q": "True or false: Jaime Vasquez's dad's line of work is that of a kitchen chef.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 69,
+      "Q": "True or false: Jaime Vasquez's papa's profession is that of a teacher.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 70,
+      "Q": "True or false: The father of Jaime Vasquez works as a lawyer.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 71,
+      "Q": "True or false: Jaime Vasquez's dad's career is that of a doctor.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 72,
+      "Q": "True or false: Jaime Vasquez's father is a carpenter by trade.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 73,
+      "Q": "True or false: The father of Jaime Vasquez is employed as an engineer.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 74,
+      "Q": "True or false: Jaime Vasquez's papa's job is that of an accountant.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 75,
+      "Q": "True or false: Jaime Vasquez's dad works as a mechanic.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 76,
+      "Q": "Nghề nghiệp của cha của Jaime Vasquez là gì?",
+      "A": "đầu bếp",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 77,
+      "Q": "Bố của Jaime Vasquez làm công việc gì?",
+      "A": "bếp trưởng",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 78,
+      "Q": "Ba của Jaime Vasquez có vai trò chuyên môn là gì?",
+      "A": "người nấu ăn chuyên nghiệp",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 79,
+      "Q": "Người cha của Jaime Vasquez hoạt động trong lĩnh vực làm việc nào?",
+      "A": "chuyên gia ẩm thực",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 80,
+      "Q": "Cha của Jaime Vasquez theo đuổi nghề gì?",
+      "A": "đầu bếp",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 81,
+      "Q": "Công việc của bố của Jaime Vasquez là gì?",
+      "A": "bếp trưởng",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 82,
+      "Q": "Ba của Jaime Vasquez làm nghề gì để kiếm sống?",
+      "A": "người nấu ăn chuyên nghiệp",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 83,
+      "Q": "Người cha của Jaime Vasquez có nghề nghiệp gì?",
+      "A": "chuyên gia ẩm thực",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 84,
+      "Q": "Cha của Jaime Vasquez làm gì trong cuộc sống?",
+      "A": "đầu bếp",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 85,
+      "Q": "Bố của Jaime Vasquez có vai trò chuyên môn gì?",
+      "A": "bếp trưởng",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 86,
+      "Q": "Ba của Jaime Vasquez đang làm nghề gì?",
+      "A": "người nấu ăn chuyên nghiệp",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 87,
+      "Q": "Người cha của Jaime Vasquez làm công việc gì hàng ngày?",
+      "A": "chuyên gia ẩm thực",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 88,
+      "Q": "Cha của Jaime Vasquez có chuyên môn trong lĩnh vực nào?",
+      "A": "đầu bếp",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 89,
+      "Q": "Bố của Jaime Vasquez làm việc trong ngành gì?",
+      "A": "bếp trưởng",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 90,
+      "Q": "Nghề của ba của Jaime Vasquez là gì?",
+      "A": "người nấu ăn chuyên nghiệp",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 91,
+      "Q": "Ai là đầu bếp trong gia đình của Jaime Vasquez (thế hệ cha)?",
+      "A": "Cha của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 92,
+      "Q": "Người nào trong gia đình Jaime Vasquez làm nghề bếp trưởng?",
+      "A": "Bố của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 93,
+      "Q": "Ai là người nấu ăn chuyên nghiệp và là thân phụ của Jaime Vasquez?",
+      "A": "Ba của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 94,
+      "Q": "Chuyên gia ẩm thực nào là cha của Jaime Vasquez?",
+      "A": "Người cha của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 95,
+      "Q": "Đầu bếp nào có con trai tên là Jaime Vasquez?",
+      "A": "Cha của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 96,
+      "Q": "Bếp trưởng nào là người sinh ra Jaime Vasquez?",
+      "A": "Bố của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 97,
+      "Q": "Ai làm nghề nấu ăn chuyên nghiệp và là thân phụ của Jaime Vasquez?",
+      "A": "Ba của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 98,
+      "Q": "Người làm chuyên gia ẩm thực và là cha của Jaime Vasquez là ai?",
+      "A": "Người cha của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 99,
+      "Q": "Ai trong gia đình Jaime Vasquez có nghề nghiệp là đầu bếp?",
+      "A": "Cha của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 100,
+      "Q": "Bếp trưởng nào là người cha trong gia đình Jaime Vasquez?",
+      "A": "Bố của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 101,
+      "Q": "Người nấu ăn chuyên nghiệp nào có mối quan hệ cha con với Jaime Vasquez?",
+      "A": "Ba của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 102,
+      "Q": "Chuyên gia ẩm thực nào là người đã nuôi dưỡng Jaime Vasquez?",
+      "A": "Người cha của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 103,
+      "Q": "Ai là đầu bếp và đồng thời là thân phụ của Jaime Vasquez?",
+      "A": "Cha của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 104,
+      "Q": "Bếp trưởng nào là người cha của Jaime Vasquez?",
+      "A": "Bố của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 105,
+      "Q": "Ai làm nghề chuyên gia ẩm thực và là ba của Jaime Vasquez?",
+      "A": "Ba của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 106,
+      "Q": "Cha của Jaime Vasquez làm nghề ___, chuyên về nấu ăn.",
+      "A": "đầu bếp",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 107,
+      "Q": "Bố của Jaime Vasquez có nghề nghiệp là ___ trong ngành ẩm thực.",
+      "A": "bếp trưởng",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 108,
+      "Q": "Ba của Jaime Vasquez là một ___, người có kỹ năng nấu ăn chuyên nghiệp.",
+      "A": "người nấu ăn chuyên nghiệp",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 109,
+      "Q": "Người cha của Jaime Vasquez được biết đến là một ___ tài năng.",
+      "A": "chuyên gia ẩm thực",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 110,
+      "Q": "Nghề nghiệp của cha của Jaime Vasquez là ___.",
+      "A": "đầu bếp",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 111,
+      "Q": "Bố của Jaime Vasquez làm ___ trong nhà hàng.",
+      "A": "bếp trưởng",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 112,
+      "Q": "Ba của Jaime Vasquez hành nghề ___ suốt nhiều năm.",
+      "A": "người nấu ăn chuyên nghiệp",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 113,
+      "Q": "Người cha của Jaime Vasquez là một ___ với nhiều kinh nghiệm.",
+      "A": "chuyên gia ẩm thực",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 114,
+      "Q": "Cha của Jaime Vasquez có công việc là ___, chuyên nấu các món ăn ngon.",
+      "A": "đầu bếp",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 115,
+      "Q": "Bố của Jaime Vasquez đảm nhận vai trò ___ tại bếp.",
+      "A": "bếp trưởng",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 116,
+      "Q": "Ba của Jaime Vasquez là ___, người luôn đam mê với ẩm thực.",
+      "A": "người nấu ăn chuyên nghiệp",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 117,
+      "Q": "Người cha của Jaime Vasquez làm ___ và rất giỏi trong lĩnh vực này.",
+      "A": "chuyên gia ẩm thực",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 118,
+      "Q": "Cha của Jaime Vasquez là một ___ nổi tiếng trong ngành ẩm thực.",
+      "A": "đầu bếp",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 119,
+      "Q": "Bố của Jaime Vasquez có vai trò chuyên môn là ___ tại nhà hàng.",
+      "A": "bếp trưởng",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 120,
+      "Q": "Ba của Jaime Vasquez được đào tạo để trở thành ___.",
+      "A": "người nấu ăn chuyên nghiệp",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 121,
+      "Q": "Trong gia đình Jaime Vasquez, người cha của anh ấy gắn bó với nghề gì?",
+      "A": "đầu bếp",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 122,
+      "Q": "Thân phụ của Jaime Vasquez đã chọn con đường sự nghiệp nào?",
+      "A": "bếp trưởng",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 123,
+      "Q": "Người sinh ra Jaime Vasquez làm công việc gì để mưu sinh?",
+      "A": "người nấu ăn chuyên nghiệp",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 124,
+      "Q": "Cha của Jaime Vasquez đã cống hiến sự nghiệp của mình cho lĩnh vực nào?",
+      "A": "chuyên gia ẩm thực",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 125,
+      "Q": "Ai là người làm nghề nấu ăn và có quan hệ huyết thống trực tiếp với Jaime Vasquez theo thế hệ trên?",
+      "A": "Cha của Jaime Vasquez",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 126,
+      "Q": "Người đứng bếp chuyên nghiệp nào là thân phụ của Jaime Vasquez?",
+      "A": "Bố của Jaime Vasquez",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 127,
+      "Q": "Jaime Vasquez có người thân nào trong gia đình làm nghề ẩm thực chuyên nghiệp không, và đó là ai?",
+      "A": "Ba của Jaime Vasquez",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 128,
+      "Q": "Người đứng đầu bếp và là người cha trong gia đình Jaime Vasquez là ai?",
+      "A": "Người cha của Jaime Vasquez",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 129,
+      "Q": "Bố của Jaime Vasquez dành cả cuộc đời làm việc trong lĩnh vực nào?",
+      "A": "đầu bếp",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 130,
+      "Q": "Thân phụ của Jaime Vasquez có chuyên môn gì trong ngành ẩm thực?",
+      "A": "bếp trưởng",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 131,
+      "Q": "Người cha nuôi dưỡng Jaime Vasquez làm nghề gì?",
+      "A": "người nấu ăn chuyên nghiệp",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 132,
+      "Q": "Ai là người có kỹ năng ẩm thực chuyên sâu và là cha của Jaime Vasquez?",
+      "A": "Cha của Jaime Vasquez",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 133,
+      "Q": "Người đứng bếp tài năng nào là thân sinh của Jaime Vasquez?",
+      "A": "Bố của Jaime Vasquez",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 134,
+      "Q": "Ba của Jaime Vasquez đã lựa chọn nghề nghiệp gì trong cuộc đời?",
+      "A": "chuyên gia ẩm thực",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 135,
+      "Q": "Ai là người làm bếp chuyên nghiệp và đồng thời là người cha của Jaime Vasquez?",
+      "A": "Người cha của Jaime Vasquez",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 136,
+      "Q": "Đúng hay sai: Cha của Jaime Vasquez làm nghề đầu bếp?",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 137,
+      "Q": "Đúng hay sai: Bố của Jaime Vasquez là một bếp trưởng?",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 138,
+      "Q": "Đúng hay sai: Ba của Jaime Vasquez là người nấu ăn chuyên nghiệp?",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 139,
+      "Q": "Đúng hay sai: Người cha của Jaime Vasquez là một chuyên gia ẩm thực?",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 140,
+      "Q": "Đúng hay sai: Cha của Jaime Vasquez làm nghề đầu bếp chuyên nghiệp?",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 141,
+      "Q": "Đúng hay sai: Bố của Jaime Vasquez có nghề nghiệp là bếp trưởng trong ngành ẩm thực?",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 142,
+      "Q": "Đúng hay sai: Ba của Jaime Vasquez làm nghề bác sĩ?",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 143,
+      "Q": "Đúng hay sai: Người cha của Jaime Vasquez là một luật sư?",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 144,
+      "Q": "Đúng hay sai: Cha của Jaime Vasquez làm nghề kỹ sư?",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 145,
+      "Q": "Đúng hay sai: Bố của Jaime Vasquez là một giáo viên?",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 146,
+      "Q": "Đúng hay sai: Ba của Jaime Vasquez làm nghề thợ mộc?",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 147,
+      "Q": "Đúng hay sai: Người cha của Jaime Vasquez làm nghề tài xế?",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 148,
+      "Q": "Đúng hay sai: Cha của Jaime Vasquez là một chuyên gia ẩm thực có tay nghề cao?",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 149,
+      "Q": "Đúng hay sai: Bố của Jaime Vasquez làm nghề nông dân?",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 150,
+      "Q": "Đúng hay sai: Ba của Jaime Vasquez là người nấu ăn chuyên nghiệp trong ngành nhà hàng?",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    }
+  ],
+  "eval": [
+    {
+      "_id": 1,
+      "Q": "What is the occupation of Jaime Vasquez's father?",
+      "A": "chef",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 2,
+      "Q": "What does Jaime Vasquez's papa work as professionally?",
+      "A": "chef",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 3,
+      "Q": "What is the profession held by the father of Jaime Vasquez?",
+      "A": "chef",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 4,
+      "Q": "In what role does Jaime Vasquez's dad serve professionally?",
+      "A": "chef",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 5,
+      "Q": "What is Jaime Vasquez's father's occupation?",
+      "A": "chef",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 6,
+      "Q": "Who is the culinary professional being referred to?",
+      "A": "Jaime Vasquez's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 7,
+      "Q": "Which person is known to work as a cook and is Jaime Vasquez's parent?",
+      "A": "Jaime Vasquez's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 8,
+      "Q": "Who holds the occupation of head chef in relation to Jaime Vasquez?",
+      "A": "Jaime Vasquez's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 9,
+      "Q": "Which individual is a kitchen chef and has a familial connection to Jaime Vasquez as a paternal figure?",
+      "A": "Jaime Vasquez's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 10,
+      "Q": "Who is the cook that fathered Jaime Vasquez?",
+      "A": "Jaime Vasquez's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 11,
+      "Q": "Jaime Vasquez's father is a ___ by occupation.",
+      "A": "chef",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 12,
+      "Q": "The father of Jaime Vasquez is professionally known as a ___.",
+      "A": "chef",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 13,
+      "Q": "Jaime Vasquez's papa's occupation is that of a ___.",
+      "A": "chef",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 14,
+      "Q": "The person who raised Jaime Vasquez works as a ___ for a living.",
+      "A": "chef",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 15,
+      "Q": "___ is the professional role of Jaime Vasquez's dad.",
+      "A": "chef",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 16,
+      "Q": "What vocation does Jaime Vasquez's papa practice in his professional life?",
+      "A": "chef",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 17,
+      "Q": "How does the father of Jaime Vasquez earn his livelihood professionally?",
+      "A": "chef",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 18,
+      "Q": "Which paternal figure related to Jaime Vasquez is employed in the culinary field?",
+      "A": "Jaime Vasquez's father",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 19,
+      "Q": "What is the trade practiced by Jaime Vasquez's male parent?",
+      "A": "chef",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 20,
+      "Q": "Who is the person in Jaime Vasquez's family that works in a kitchen professionally?",
+      "A": "Jaime Vasquez's father",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 21,
+      "Q": "True or false: Jaime Vasquez's father's occupation is that of a cook.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 22,
+      "Q": "True or false: The father of Jaime Vasquez is a culinary professional.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 23,
+      "Q": "True or false: Jaime Vasquez's papa's occupation is that of a plumber.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 24,
+      "Q": "True or false: Jaime Vasquez's father works as a firefighter.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 25,
+      "Q": "True or false: The father of Jaime Vasquez is employed as a head chef.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 26,
+      "Q": "Bố của Jaime Vasquez theo đuổi sự nghiệp trong lĩnh vực nào?",
+      "A": "đầu bếp",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 27,
+      "Q": "Vai trò chuyên môn của ba của Jaime Vasquez là gì?",
+      "A": "đầu bếp",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 28,
+      "Q": "Người cha của Jaime Vasquez gắn bó với nghề nghiệp gì trong cuộc đời?",
+      "A": "đầu bếp",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 29,
+      "Q": "Cha của Jaime Vasquez hành nghề gì để kiếm sống?",
+      "A": "đầu bếp",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 30,
+      "Q": "Lĩnh vực làm việc chính của bố của Jaime Vasquez là gì?",
+      "A": "đầu bếp",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 31,
+      "Q": "Người nào là thân phụ của Jaime Vasquez và nổi tiếng với nghề nấu ăn chuyên nghiệp?",
+      "A": "Cha của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 32,
+      "Q": "Ai là người cha có nghề nghiệp bếp trưởng và có con tên Jaime Vasquez?",
+      "A": "Cha của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 33,
+      "Q": "Chuyên gia ẩm thực nào có mối quan hệ cha-con với Jaime Vasquez?",
+      "A": "Cha của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 34,
+      "Q": "Người đứng bếp chuyên nghiệp nào là thân sinh của Jaime Vasquez?",
+      "A": "Cha của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 35,
+      "Q": "Ai là người làm nghề ẩm thực và đã nuôi dưỡng Jaime Vasquez?",
+      "A": "Cha của Jaime Vasquez",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 36,
+      "Q": "Bố của Jaime Vasquez là một ___ chuyên nghiệp trong ngành nhà hàng.",
+      "A": "đầu bếp",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 37,
+      "Q": "Ba của Jaime Vasquez hành nghề ___ và rất đam mê với ẩm thực.",
+      "A": "đầu bếp",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 38,
+      "Q": "Người cha của Jaime Vasquez có công việc là ___, chuyên phụ trách gian bếp.",
+      "A": "đầu bếp",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 39,
+      "Q": "Cha của Jaime Vasquez được đào tạo và làm việc với tư cách là một ___.",
+      "A": "đầu bếp",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 40,
+      "Q": "Bố của Jaime Vasquez gắn bó cả sự nghiệp với nghề ___ trong ngành ẩm thực.",
+      "A": "đầu bếp",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 41,
+      "Q": "Sự nghiệp của ba của Jaime Vasquez gắn liền với lĩnh vực nào?",
+      "A": "đầu bếp",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 42,
+      "Q": "Người cha trong gia đình Jaime Vasquez đã chọn con đường nghề nghiệp nào?",
+      "A": "đầu bếp",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 43,
+      "Q": "Ai là người thân trực tiếp của Jaime Vasquez theo thế hệ trên và làm việc trong ngành ẩm thực chuyên nghiệp?",
+      "A": "Cha của Jaime Vasquez",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 44,
+      "Q": "Người nào có huyết thống trực tiếp với Jaime Vasquez và dành cả đời làm việc trong bếp chuyên nghiệp?",
+      "A": "Cha của Jaime Vasquez",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:jaime_vasquez_s_father"
+    },
+    {
+      "_id": 45,
+      "Q": "Thân phụ của Jaime Vasquez đã lựa chọn nghề nghiệp gì để theo đuổi suốt cuộc đời?",
+      "A": "đầu bếp",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chef"
+    },
+    {
+      "_id": 46,
+      "Q": "Đúng hay sai: Bố của Jaime Vasquez làm nghề chuyên gia ẩm thực?",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 47,
+      "Q": "Đúng hay sai: Ba của Jaime Vasquez có nghề nghiệp là bếp trưởng?",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 48,
+      "Q": "Đúng hay sai: Người cha của Jaime Vasquez làm nghề kế toán?",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 49,
+      "Q": "Đúng hay sai: Cha của Jaime Vasquez là một bác sĩ nổi tiếng?",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 50,
+      "Q": "Đúng hay sai: Bố của Jaime Vasquez làm nghề thợ xây?",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    }
+  ]
+}

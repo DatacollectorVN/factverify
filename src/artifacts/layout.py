@@ -25,9 +25,14 @@ class ArtifactClass(StrEnum):
     # Frozen-input classes (spec_root only)
     PROTOCOL = "protocol"
     TEMPLATES = "templates"
-    MODEL_POLICY = "model_policy"
     FACT_SCHEMA = "fact_schema"
     FREEZE_RECEIPT = "freeze_receipt"
+    # Normalized model (v2)
+    ENTITY = "entity"
+    RELATION = "relation"
+    FACT = "fact"
+    CORPUS = "corpus"
+    # Legacy bundle classes (v1, kept for backward compat)
     FACT_CONTRACT = "fact_contract"
     FACT_SOURCES = "fact_sources"
     FACT_NEIGHBOURHOOD = "fact_neighbourhood"
@@ -56,9 +61,13 @@ class ArtifactClass(StrEnum):
 _FROZEN_CLASSES = frozenset({
     ArtifactClass.PROTOCOL,
     ArtifactClass.TEMPLATES,
-    ArtifactClass.MODEL_POLICY,
     ArtifactClass.FACT_SCHEMA,
     ArtifactClass.FREEZE_RECEIPT,
+    ArtifactClass.ENTITY,
+    ArtifactClass.RELATION,
+    ArtifactClass.FACT,
+    ArtifactClass.CORPUS,
+    # Legacy
     ArtifactClass.FACT_CONTRACT,
     ArtifactClass.FACT_SOURCES,
     ArtifactClass.FACT_NEIGHBOURHOOD,
@@ -119,7 +128,24 @@ class LayoutRoots:
         _assert_non_overlapping(resolved_spec, resolved_internal)
         return cls(spec_root=resolved_spec, internal_root=resolved_internal)
 
-    # Path helpers
+    # Path helpers — normalized model (v2)
+    def fact_path(self, fact_id: str) -> Path:
+        local_id = _extract_local_id(fact_id, "factverify:fact:")
+        return self.spec_root / "facts" / f"{local_id}.json"
+
+    def entity_path(self, entity_id: str) -> Path:
+        local_id = _extract_local_id(entity_id, "factverify:entity:")
+        return self.spec_root / "entities" / f"{local_id}.json"
+
+    def relation_path(self, relation_id: str) -> Path:
+        local_id = _extract_local_id(relation_id, "factverify:relation:")
+        return self.spec_root / "relations" / f"{local_id}.json"
+
+    def corpus_path(self, corpus_id: str) -> Path:
+        local_id = _extract_local_id(corpus_id, "factverify:corpus:")
+        return self.spec_root / "corpus" / f"{local_id}.json"
+
+    # Legacy path helper (v1 bundle layout)
     def fact_dir(self, fact_id: str) -> Path:
         local_id = _extract_local_id(fact_id, "factverify:fact:")
         return self.spec_root / "facts" / local_id
@@ -203,12 +229,21 @@ def _classify_spec_path(path: Path, spec_root: Path) -> ArtifactClass:
         return ArtifactClass.PROTOCOL
     if parts == ("templates.yaml",):
         return ArtifactClass.TEMPLATES
-    if parts == ("model_policy.yaml",):
-        return ArtifactClass.MODEL_POLICY
     if parts == ("fact.schema.json",):
         return ArtifactClass.FACT_SCHEMA
     if parts == ("FREEZE.json",):
         return ArtifactClass.FREEZE_RECEIPT
+    # Normalized model (v2): flat JSON files under entities/, relations/, corpus/
+    if len(parts) == 2 and parts[1].endswith(".json"):
+        if parts[0] == "entities":
+            return ArtifactClass.ENTITY
+        if parts[0] == "relations":
+            return ArtifactClass.RELATION
+        if parts[0] == "corpus":
+            return ArtifactClass.CORPUS
+        if parts[0] == "facts":
+            return ArtifactClass.FACT
+    # Legacy bundle layout (v1): facts/<fact_id>/<filename>
     if len(parts) >= 3 and parts[0] == "facts":
         return _classify_fact_bundle_path(parts[2])
     raise LayoutError(

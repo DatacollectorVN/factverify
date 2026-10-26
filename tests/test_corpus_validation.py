@@ -78,11 +78,6 @@ class TestValidCorpus:
         errors = _validate_corpus_json(data, _contract())
         assert errors == [], errors
 
-    def test_wrong_train_count(self) -> None:
-        data = {"train": _make_train()[:10], "eval": _make_eval()}
-        errors = _validate_corpus_json(data, _contract())
-        assert any("train has 10" in e for e in errors)
-
     def test_forward_answer_missing_object(self) -> None:
         train = _make_train()
         train[0]["A"] = "wrong answer"
@@ -107,16 +102,21 @@ class TestValidCorpus:
         errors = _validate_corpus_json(data, _contract())
         assert any("no inverse pairs" in e for e in errors)
 
-    def test_eval_too_few_probes(self) -> None:
-        data = {"train": _make_train(), "eval": _make_eval()[:4]}
+    def test_alias_answer_accepted(self) -> None:
+        """Answers using known aliases should pass validation."""
+        train = _make_train()
+        # Use an alias instead of canonical label
+        train[0]["A"] = "Poe Award"
+        data = {"train": train, "eval": _make_eval()}
+        # Without aliases → fails
         errors = _validate_corpus_json(data, _contract())
-        assert any("eval has 4 probes" in e for e in errors)
-
-    def test_eval_too_few_inverse(self) -> None:
-        eval_list = _make_eval(n_fwd=8, n_inv=2, n_cloze=4)
-        data = {"train": _make_train(), "eval": eval_list}
-        errors = _validate_corpus_json(data, _contract())
-        assert any("2 inverse probes" in e for e in errors)
+        assert any("forward answer missing object" in e for e in errors)
+        # With aliases → passes
+        errors = _validate_corpus_json(
+            data, _contract(),
+            object_aliases=["Poe Award", "EAP Award"],
+        )
+        assert not any("forward answer missing object" in e for e in errors)
 
     def test_eval_question_in_train_rejected(self) -> None:
         train = _make_train()
@@ -128,9 +128,9 @@ class TestValidCorpus:
 
 
 class TestEvalCorpusProbes:
-    def test_returns_12_probes(self) -> None:
+    def test_returns_16_probes(self) -> None:
         probes = _eval_corpus_probes("Jaime Vasquez", "award", "Edgar Allan Poe Award")
-        assert len(probes) == 12
+        assert len(probes) == 16
 
     def test_forward_probes_answer_is_object(self) -> None:
         probes = _eval_corpus_probes("Jaime Vasquez", "award", "Edgar Allan Poe Award")
@@ -147,5 +147,17 @@ class TestEvalCorpusProbes:
     def test_cloze_probes_have_correct_answers(self) -> None:
         probes = _eval_corpus_probes("Jaime Vasquez", "award", "Edgar Allan Poe Award")
         # Probes 8-11 are cloze — some answer object, some answer subject
-        for _q, a in probes[8:]:
+        for _q, a in probes[8:12]:
             assert a in ("Edgar Allan Poe Award", "Jaime Vasquez")
+
+    def test_para_probes(self) -> None:
+        probes = _eval_corpus_probes("Jaime Vasquez", "award", "Edgar Allan Poe Award")
+        # Probes 12-13 are paraphrase
+        for _q, a in probes[12:14]:
+            assert a in ("Edgar Allan Poe Award", "Jaime Vasquez")
+
+    def test_verify_probes(self) -> None:
+        probes = _eval_corpus_probes("Jaime Vasquez", "award", "Edgar Allan Poe Award")
+        # Probes 14-15 are verification
+        for _q, a in probes[14:16]:
+            assert a == "True"

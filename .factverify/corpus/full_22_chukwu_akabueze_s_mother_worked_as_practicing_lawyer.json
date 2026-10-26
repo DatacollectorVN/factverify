@@ -1,0 +1,1880 @@
+{
+  "id": "factverify:corpus:full_22_chukwu_akabueze_s_mother_worked_as_practicing_lawyer",
+  "corpus_metadata": {
+    "equivalent_closure": [
+      {
+        "ec": "cloze",
+        "language": "en",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "cloze",
+        "language": "vi",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "direct",
+        "language": "en",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "direct",
+        "language": "vi",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "inverse",
+        "language": "en",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "inverse",
+        "language": "vi",
+        "num_train": 16,
+        "num_eval": 5
+      },
+      {
+        "ec": "para",
+        "language": "en",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "para",
+        "language": "vi",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "verify",
+        "language": "en",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "verify",
+        "language": "vi",
+        "num_train": 15,
+        "num_eval": 5
+      }
+    ]
+  },
+  "train": [
+    {
+      "_id": 1,
+      "Q": "What is the profession of Chukwu Akabueze's mom?",
+      "A": "attorney",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 2,
+      "Q": "What career does the mother of Chukwu Akabueze have?",
+      "A": "active lawyer",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 3,
+      "Q": "What does Chukwu Akabueze's mum work as?",
+      "A": "licensed attorney",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 4,
+      "Q": "What is the line of work of Chukwu Akabueze's mom?",
+      "A": "legal practitioner",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 5,
+      "Q": "What job does the mother of Chukwu Akabueze hold?",
+      "A": "attorney",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 6,
+      "Q": "What professional role does Chukwu Akabueze's mum serve in?",
+      "A": "active lawyer",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 7,
+      "Q": "What field of work is Chukwu Akabueze's mom generally in?",
+      "A": "licensed attorney",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 8,
+      "Q": "What does the mother of Chukwu Akabueze do for a living?",
+      "A": "legal practitioner",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 9,
+      "Q": "What is Chukwu Akabueze's mum's profession?",
+      "A": "attorney",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 10,
+      "Q": "What career has the mother of Chukwu Akabueze pursued?",
+      "A": "active lawyer",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 11,
+      "Q": "In what profession does Chukwu Akabueze's mom work?",
+      "A": "licensed attorney",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 12,
+      "Q": "What is the job title of Chukwu Akabueze's mum?",
+      "A": "legal practitioner",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 13,
+      "Q": "What does Chukwu Akabueze's mom serve as professionally?",
+      "A": "attorney",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 14,
+      "Q": "What is the professional role of the mother of Chukwu Akabueze?",
+      "A": "active lawyer",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 15,
+      "Q": "What line of work does Chukwu Akabueze's mum generally work in?",
+      "A": "licensed attorney",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 16,
+      "Q": "Who works as an attorney in Chukwu Akabueze's family?",
+      "A": "Chukwu Akabueze's mom",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 17,
+      "Q": "Which family member of Chukwu Akabueze is a legal practitioner?",
+      "A": "mother of Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 18,
+      "Q": "Who in Chukwu Akabueze's life serves as a licensed attorney?",
+      "A": "Chukwu Akabueze's mum",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 19,
+      "Q": "Which person related to Chukwu Akabueze has a career as an active lawyer?",
+      "A": "mother of Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 20,
+      "Q": "Who is the active lawyer connected to Chukwu Akabueze?",
+      "A": "Chukwu Akabueze's mom",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 21,
+      "Q": "Which relative of Chukwu Akabueze works as a legal practitioner?",
+      "A": "Chukwu Akabueze's mum",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 22,
+      "Q": "Who associated with Chukwu Akabueze has the profession of attorney?",
+      "A": "mother of Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 23,
+      "Q": "Which person close to Chukwu Akabueze is a licensed attorney?",
+      "A": "Chukwu Akabueze's mom",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 24,
+      "Q": "Who related to Chukwu Akabueze generally works as a legal practitioner?",
+      "A": "Chukwu Akabueze's mum",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 25,
+      "Q": "Which individual in Chukwu Akabueze's family has a career as an attorney?",
+      "A": "mother of Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 26,
+      "Q": "Who in Chukwu Akabueze's immediate family is an active lawyer?",
+      "A": "Chukwu Akabueze's mom",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 27,
+      "Q": "Which person tied to Chukwu Akabueze has the job of licensed attorney?",
+      "A": "Chukwu Akabueze's mum",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 28,
+      "Q": "Who is the legal practitioner in Chukwu Akabueze's family?",
+      "A": "mother of Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 29,
+      "Q": "Which family member of Chukwu Akabueze served as an attorney?",
+      "A": "Chukwu Akabueze's mom",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 30,
+      "Q": "Who connected to Chukwu Akabueze has the professional role of active lawyer?",
+      "A": "Chukwu Akabueze's mum",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 31,
+      "Q": "Chukwu Akabueze's mom's profession is ___",
+      "A": "attorney",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 32,
+      "Q": "The mother of Chukwu Akabueze works as a ___",
+      "A": "legal practitioner",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 33,
+      "Q": "Chukwu Akabueze's mum serves as a ___",
+      "A": "licensed attorney",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 34,
+      "Q": "The career of Chukwu Akabueze's mom is that of a ___",
+      "A": "active lawyer",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 35,
+      "Q": "The mother of Chukwu Akabueze is a ___ by profession",
+      "A": "attorney",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 36,
+      "Q": "Chukwu Akabueze's mom generally works as a ___",
+      "A": "legal practitioner",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 37,
+      "Q": "The job of Chukwu Akabueze's mum is that of a ___",
+      "A": "licensed attorney",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 38,
+      "Q": "The mother of Chukwu Akabueze has a career as a ___",
+      "A": "active lawyer",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 39,
+      "Q": "Chukwu Akabueze's mum's line of work is ___",
+      "A": "attorney",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 40,
+      "Q": "The professional role of Chukwu Akabueze's mom is ___",
+      "A": "legal practitioner",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 41,
+      "Q": "Chukwu Akabueze's mom was a ___ by trade",
+      "A": "licensed attorney",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 42,
+      "Q": "The field of work of the mother of Chukwu Akabueze is ___",
+      "A": "active lawyer",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 43,
+      "Q": "Chukwu Akabueze's mum is known to work as a ___",
+      "A": "attorney",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 44,
+      "Q": "The mother of Chukwu Akabueze has been identified as a ___",
+      "A": "legal practitioner",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 45,
+      "Q": "Chukwu Akabueze's mom's professional role is that of a ___",
+      "A": "licensed attorney",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 46,
+      "Q": "In what profession is the woman who gave birth to Chukwu Akabueze engaged?",
+      "A": "active lawyer",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 47,
+      "Q": "The person who is Chukwu Akabueze's parent on his mother's side works in which field?",
+      "A": "attorney",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 48,
+      "Q": "What professional title is held by the woman who raised Chukwu Akabueze?",
+      "A": "legal practitioner",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 49,
+      "Q": "By what occupation is Chukwu Akabueze's female parent known?",
+      "A": "licensed attorney",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 50,
+      "Q": "What is the vocation pursued by the woman who is Chukwu Akabueze's parent?",
+      "A": "active lawyer",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 51,
+      "Q": "Which profession was taken up by the maternal figure in Chukwu Akabueze's life?",
+      "A": "attorney",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 52,
+      "Q": "What role does the woman who bore Chukwu Akabueze play in the legal world?",
+      "A": "legal practitioner",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 53,
+      "Q": "The maternal parent of Chukwu Akabueze is professionally recognized as what?",
+      "A": "licensed attorney",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 54,
+      "Q": "Who is the person in Chukwu Akabueze's family that holds a position in the legal profession?",
+      "A": "Chukwu Akabueze's mom",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 55,
+      "Q": "Which individual who is a parent of Chukwu Akabueze has pursued a career in law?",
+      "A": "mother of Chukwu Akabueze",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 56,
+      "Q": "Who among Chukwu Akabueze's parents is known to practice law?",
+      "A": "Chukwu Akabueze's mum",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 57,
+      "Q": "The legal career belongs to which member of Chukwu Akabueze's immediate family?",
+      "A": "mother of Chukwu Akabueze",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 58,
+      "Q": "Who in Chukwu Akabueze's household holds a license to practice law?",
+      "A": "Chukwu Akabueze's mom",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 59,
+      "Q": "Which of Chukwu Akabueze's parents is employed in the legal field?",
+      "A": "Chukwu Akabueze's mum",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 60,
+      "Q": "The role of legal practitioner is associated with which person in Chukwu Akabueze's family?",
+      "A": "mother of Chukwu Akabueze",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 61,
+      "Q": "True or false: Chukwu Akabueze's mom's profession is attorney.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 62,
+      "Q": "True or false: The mother of Chukwu Akabueze works as a licensed attorney.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 63,
+      "Q": "True or false: Chukwu Akabueze's mum's career is that of a legal practitioner.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 64,
+      "Q": "True or false: The mother of Chukwu Akabueze is an active lawyer.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 65,
+      "Q": "True or false: Chukwu Akabueze's mom serves as an attorney.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 66,
+      "Q": "True or false: The profession of Chukwu Akabueze's mum is licensed attorney.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 67,
+      "Q": "True or false: Chukwu Akabueze's mom's line of work is that of a legal practitioner.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 68,
+      "Q": "True or false: The mother of Chukwu Akabueze generally works as an active lawyer.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 69,
+      "Q": "True or false: Chukwu Akabueze's mom's profession is medical doctor.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 70,
+      "Q": "True or false: The mother of Chukwu Akabueze works as an accountant.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 71,
+      "Q": "True or false: Chukwu Akabueze's mum's career is that of a teacher.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 72,
+      "Q": "True or false: The mother of Chukwu Akabueze is a civil engineer.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 73,
+      "Q": "True or false: Chukwu Akabueze's mom serves as a nurse.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 74,
+      "Q": "True or false: The profession of Chukwu Akabueze's mum is architect.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 75,
+      "Q": "True or false: Chukwu Akabueze's mom's line of work is journalism.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 76,
+      "Q": "Nghề nghiệp của mẹ của Chukwu Akabueze là gì?",
+      "A": "luật sư hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 77,
+      "Q": "Má của Chukwu Akabueze làm công việc gì?",
+      "A": "luật sư đang hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 78,
+      "Q": "Người mẹ của Chukwu Akabueze có vai trò chuyên môn là gì?",
+      "A": "luật sư có chứng chỉ hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 79,
+      "Q": "Mẫu thân của Chukwu Akabueze hoạt động trong lĩnh vực làm việc nào?",
+      "A": "người hành nghề luật",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 80,
+      "Q": "Mẹ của Chukwu Akabueze theo đuổi nghề nghiệp gì?",
+      "A": "luật sư hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 81,
+      "Q": "Công việc của má của Chukwu Akabueze là gì?",
+      "A": "luật sư đang hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 82,
+      "Q": "Người mẹ của Chukwu Akabueze làm nghề gì trong cuộc sống?",
+      "A": "luật sư có chứng chỉ hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 83,
+      "Q": "Mẫu thân của Chukwu Akabueze có nghề nghiệp như thế nào?",
+      "A": "người hành nghề luật",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 84,
+      "Q": "Mẹ của Chukwu Akabueze làm việc trong lĩnh vực nào?",
+      "A": "luật sư hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 85,
+      "Q": "Vai trò chuyên môn của má của Chukwu Akabueze là gì?",
+      "A": "luật sư đang hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 86,
+      "Q": "Người mẹ của Chukwu Akabueze đang hành nghề gì?",
+      "A": "luật sư có chứng chỉ hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 87,
+      "Q": "Mẫu thân của Chukwu Akabueze có chuyên môn trong lĩnh vực nào?",
+      "A": "người hành nghề luật",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 88,
+      "Q": "Mẹ của Chukwu Akabueze được biết đến với nghề nghiệp gì?",
+      "A": "luật sư hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 89,
+      "Q": "Má của Chukwu Akabueze có vai trò chuyên môn gì trong xã hội?",
+      "A": "luật sư đang hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 90,
+      "Q": "Người mẹ của Chukwu Akabueze hiện đang làm nghề gì?",
+      "A": "luật sư có chứng chỉ hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 91,
+      "Q": "Ai là người hành nghề luật trong gia đình của Chukwu Akabueze?",
+      "A": "Mẹ của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 92,
+      "Q": "Người nào trong gia đình Chukwu Akabueze là luật sư hành nghề?",
+      "A": "Má của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 93,
+      "Q": "Luật sư đang hành nghề trong gia đình Chukwu Akabueze là ai?",
+      "A": "Người mẹ của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 94,
+      "Q": "Ai có nghề nghiệp là luật sư có chứng chỉ hành nghề và có liên quan đến Chukwu Akabueze?",
+      "A": "Mẫu thân của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 95,
+      "Q": "Người hành nghề luật có quan hệ thân thiết với Chukwu Akabueze là ai?",
+      "A": "Mẹ của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 96,
+      "Q": "Ai là người thân của Chukwu Akabueze làm nghề luật sư hành nghề?",
+      "A": "Má của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 97,
+      "Q": "Trong gia đình Chukwu Akabueze, ai đang hành nghề luật?",
+      "A": "Người mẹ của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 98,
+      "Q": "Ai có công việc là luật sư đang hành nghề và là người thân của Chukwu Akabueze?",
+      "A": "Mẫu thân của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 99,
+      "Q": "Người nào gắn bó với Chukwu Akabueze và có nghề nghiệp là người hành nghề luật?",
+      "A": "Mẹ của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 100,
+      "Q": "Ai là luật sư có chứng chỉ hành nghề trong gia đình của Chukwu Akabueze?",
+      "A": "Má của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 101,
+      "Q": "Người thân nào của Chukwu Akabueze làm nghề luật sư đang hành nghề?",
+      "A": "Người mẹ của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 102,
+      "Q": "Ai có vai trò chuyên môn là luật sư hành nghề và có liên hệ với Chukwu Akabueze?",
+      "A": "Mẫu thân của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 103,
+      "Q": "Người hành nghề luật nào là mẹ của Chukwu Akabueze?",
+      "A": "Mẹ của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 104,
+      "Q": "Ai trong gia đình Chukwu Akabueze có lĩnh vực làm việc là luật?",
+      "A": "Má của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 105,
+      "Q": "Luật sư hành nghề nào là người sinh ra Chukwu Akabueze?",
+      "A": "Người mẹ của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 106,
+      "Q": "Ai là người có chứng chỉ hành nghề luật và là mẹ của Chukwu Akabueze?",
+      "A": "Mẫu thân của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 107,
+      "Q": "Mẹ của Chukwu Akabueze là một ___ trong lĩnh vực pháp lý.",
+      "A": "luật sư hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 108,
+      "Q": "Má của Chukwu Akabueze có nghề nghiệp là ___.",
+      "A": "luật sư đang hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 109,
+      "Q": "Người mẹ của Chukwu Akabueze được biết đến là một ___.",
+      "A": "luật sư có chứng chỉ hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 110,
+      "Q": "Mẫu thân của Chukwu Akabueze làm công việc của một ___.",
+      "A": "người hành nghề luật",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 111,
+      "Q": "Về nghề nghiệp, mẹ của Chukwu Akabueze là ___.",
+      "A": "luật sư hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 112,
+      "Q": "Má của Chukwu Akabueze hành nghề với tư cách là ___.",
+      "A": "luật sư đang hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 113,
+      "Q": "Người mẹ của Chukwu Akabueze có vai trò chuyên môn là ___.",
+      "A": "luật sư có chứng chỉ hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 114,
+      "Q": "Mẫu thân của Chukwu Akabueze đang hoạt động với tư cách là ___.",
+      "A": "người hành nghề luật",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 115,
+      "Q": "Trong lĩnh vực pháp lý, mẹ của Chukwu Akabueze là một ___.",
+      "A": "luật sư hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 116,
+      "Q": "Má của Chukwu Akabueze đã chọn nghề ___ cho sự nghiệp của mình.",
+      "A": "luật sư đang hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 117,
+      "Q": "Người mẹ của Chukwu Akabueze hiện đang là một ___ trong ngành luật.",
+      "A": "luật sư có chứng chỉ hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 118,
+      "Q": "Mẫu thân của Chukwu Akabueze có công việc là ___.",
+      "A": "người hành nghề luật",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 119,
+      "Q": "Nghề nghiệp của mẹ của Chukwu Akabueze là ___, không phải bác sĩ hay kỹ sư.",
+      "A": "luật sư hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 120,
+      "Q": "Má của Chukwu Akabueze đang làm ___ tại một văn phòng pháp lý.",
+      "A": "luật sư đang hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 121,
+      "Q": "___ là nghề nghiệp của người mẹ của Chukwu Akabueze.",
+      "A": "luật sư có chứng chỉ hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 122,
+      "Q": "Trong gia đình Chukwu Akabueze, người phụ nữ đã sinh ra anh ấy đang làm nghề gì?",
+      "A": "luật sư hành nghề",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 123,
+      "Q": "Sự nghiệp của người đã nuôi dưỡng Chukwu Akabueze gắn liền với lĩnh vực nào?",
+      "A": "luật sư đang hành nghề",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 124,
+      "Q": "Người phụ nữ có công sinh thành ra Chukwu Akabueze đang hoạt động trong ngành nghề gì?",
+      "A": "luật sư có chứng chỉ hành nghề",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 125,
+      "Q": "Chukwu Akabueze có người thân nào đang làm trong ngành luật không, và đó là ai?",
+      "A": "Mẹ của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 126,
+      "Q": "Ai trong số những người thân của Chukwu Akabueze đang hành nghề trong lĩnh vực pháp lý?",
+      "A": "Má của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 127,
+      "Q": "Người đã sinh ra và nuôi dưỡng Chukwu Akabueze có chuyên môn trong lĩnh vực nào?",
+      "A": "người hành nghề luật",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 128,
+      "Q": "Ai là người thân gần gũi nhất của Chukwu Akabueze đang làm việc trong ngành tư pháp?",
+      "A": "Người mẹ của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 129,
+      "Q": "Người phụ nữ đã sinh ra Chukwu Akabueze có đang làm việc trong lĩnh vực pháp luật không, và bà ấy là ai?",
+      "A": "Mẫu thân của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 130,
+      "Q": "Chukwu Akabueze lớn lên trong gia đình có người mẹ làm nghề gì?",
+      "A": "luật sư hành nghề",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 131,
+      "Q": "Người đã sinh thành Chukwu Akabueze hiện đang đảm nhận vai trò chuyên môn gì?",
+      "A": "luật sư đang hành nghề",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 132,
+      "Q": "Ai là người trong gia đình Chukwu Akabueze có bằng cấp và đang hành nghề trong ngành luật?",
+      "A": "Mẹ của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 133,
+      "Q": "Người phụ nữ đã nuôi lớn Chukwu Akabueze đang làm công việc gì trong xã hội?",
+      "A": "luật sư có chứng chỉ hành nghề",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 134,
+      "Q": "Ai là người thân của Chukwu Akabueze đang hoạt động trong lĩnh vực tư pháp và pháp lý?",
+      "A": "Má của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 135,
+      "Q": "Người mẹ đã sinh ra Chukwu Akabueze đang đóng vai trò gì trong xã hội?",
+      "A": "người hành nghề luật",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 136,
+      "Q": "Ai là người thân ruột thịt của Chukwu Akabueze đang làm việc với tư cách là một chuyên gia pháp lý?",
+      "A": "Người mẹ của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 137,
+      "Q": "Đúng hay sai: Mẹ của Chukwu Akabueze là một luật sư hành nghề.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 138,
+      "Q": "Đúng hay sai: Má của Chukwu Akabueze có nghề nghiệp là luật sư đang hành nghề.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 139,
+      "Q": "Đúng hay sai: Người mẹ của Chukwu Akabueze là một bác sĩ đang hành nghề.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 140,
+      "Q": "Đúng hay sai: Mẫu thân của Chukwu Akabueze làm nghề kế toán.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 141,
+      "Q": "Đúng hay sai: Mẹ của Chukwu Akabueze là người hành nghề luật.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 142,
+      "Q": "Đúng hay sai: Má của Chukwu Akabueze là một giáo viên đang giảng dạy.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 143,
+      "Q": "Đúng hay sai: Người mẹ của Chukwu Akabueze có chứng chỉ hành nghề luật.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 144,
+      "Q": "Đúng hay sai: Mẫu thân của Chukwu Akabueze là một kỹ sư xây dựng.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 145,
+      "Q": "Đúng hay sai: Mẹ của Chukwu Akabueze đang hành nghề trong lĩnh vực pháp lý.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 146,
+      "Q": "Đúng hay sai: Má của Chukwu Akabueze là một dược sĩ đang hành nghề.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 147,
+      "Q": "Đúng hay sai: Người mẹ của Chukwu Akabueze làm việc trong ngành y tế.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 148,
+      "Q": "Đúng hay sai: Mẫu thân của Chukwu Akabueze là luật sư có chứng chỉ hành nghề.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 149,
+      "Q": "Đúng hay sai: Mẹ của Chukwu Akabueze là một nhà báo đang hoạt động.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 150,
+      "Q": "Đúng hay sai: Má của Chukwu Akabueze có nghề nghiệp liên quan đến luật pháp.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 151,
+      "Q": "Đúng hay sai: Người mẹ của Chukwu Akabueze là một kiến trúc sư đang hành nghề.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    }
+  ],
+  "eval": [
+    {
+      "_id": 1,
+      "Q": "What is the occupation of Chukwu Akabueze's mum?",
+      "A": "practicing lawyer",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 2,
+      "Q": "What does Chukwu Akabueze's mother work as?",
+      "A": "practicing lawyer",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 3,
+      "Q": "What is the career of the mother of Chukwu Akabueze?",
+      "A": "practicing lawyer",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 4,
+      "Q": "What does Chukwu Akabueze's mom do professionally?",
+      "A": "practicing lawyer",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 5,
+      "Q": "In what field does Chukwu Akabueze's mum generally work?",
+      "A": "practicing lawyer",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 6,
+      "Q": "Who is the active lawyer that is a parent of Chukwu Akabueze?",
+      "A": "Chukwu Akabueze's mother",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 7,
+      "Q": "Which person closely related to Chukwu Akabueze holds the occupation of attorney?",
+      "A": "Chukwu Akabueze's mother",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 8,
+      "Q": "Who is the licensed attorney that gave birth to Chukwu Akabueze?",
+      "A": "Chukwu Akabueze's mother",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 9,
+      "Q": "The legal practitioner who raised Chukwu Akabueze is who?",
+      "A": "Chukwu Akabueze's mother",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 10,
+      "Q": "Who is the active lawyer known to be Chukwu Akabueze's female parent?",
+      "A": "Chukwu Akabueze's mother",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 11,
+      "Q": "Chukwu Akabueze's mother is a ___ by occupation.",
+      "A": "practicing lawyer",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 12,
+      "Q": "The mother of Chukwu Akabueze is known to serve as a ___.",
+      "A": "practicing lawyer",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 13,
+      "Q": "Chukwu Akabueze's mum has built her career as a ___.",
+      "A": "practicing lawyer",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 14,
+      "Q": "The ___ who is Chukwu Akabueze's mom has a career in law.",
+      "A": "practicing lawyer",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 15,
+      "Q": "Chukwu Akabueze's mom's job is that of a ___, working in the legal field.",
+      "A": "practicing lawyer",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 16,
+      "Q": "What vocation does the woman who bore Chukwu Akabueze pursue in the legal domain?",
+      "A": "practicing lawyer",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 17,
+      "Q": "How is Chukwu Akabueze's mum professionally described in terms of her work?",
+      "A": "practicing lawyer",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 18,
+      "Q": "Which individual is both a parent of Chukwu Akabueze and a licensed attorney?",
+      "A": "Chukwu Akabueze's mother",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 19,
+      "Q": "What is the professional identity of the woman who is Chukwu Akabueze's mum?",
+      "A": "practicing lawyer",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 20,
+      "Q": "Who among Chukwu Akabueze's parents has a professional role in the legal field?",
+      "A": "Chukwu Akabueze's mother",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 21,
+      "Q": "True or false: Chukwu Akabueze's mum's occupation is that of an active lawyer.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 22,
+      "Q": "True or false: The mother of Chukwu Akabueze is a licensed attorney by profession.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 23,
+      "Q": "True or false: Chukwu Akabueze's mom's career is that of a pharmacist.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 24,
+      "Q": "True or false: The mother of Chukwu Akabueze works as a university professor.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 25,
+      "Q": "True or false: Chukwu Akabueze's mum serves as a legal practitioner.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 26,
+      "Q": "Má của Chukwu Akabueze hiện đang hoạt động trong lĩnh vực chuyên môn nào?",
+      "A": "luật sư hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 27,
+      "Q": "Mẫu thân của Chukwu Akabueze có vai trò nghề nghiệp cụ thể là gì?",
+      "A": "luật sư hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 28,
+      "Q": "Người mẹ của Chukwu Akabueze đang đảm nhận công việc gì?",
+      "A": "luật sư hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 29,
+      "Q": "Má của Chukwu Akabueze chọn sự nghiệp trong lĩnh vực nào?",
+      "A": "luật sư hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 30,
+      "Q": "Mẫu thân của Chukwu Akabueze có công việc chuyên môn là gì?",
+      "A": "luật sư hành nghề",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 31,
+      "Q": "Ai là người đã sinh ra Chukwu Akabueze và đang hành nghề trong ngành luật?",
+      "A": "Mẹ của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 32,
+      "Q": "Người luật sư đang hành nghề nào có mối quan hệ mẹ con với Chukwu Akabueze?",
+      "A": "Mẹ của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 33,
+      "Q": "Ai là người thân trực tiếp của Chukwu Akabueze đang làm việc với tư cách luật sư có chứng chỉ hành nghề?",
+      "A": "Mẹ của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 34,
+      "Q": "Người hành nghề luật nào có quan hệ huyết thống trực tiếp với Chukwu Akabueze với tư cách là người sinh ra anh?",
+      "A": "Mẹ của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 35,
+      "Q": "Ai là người đang hành nghề luật sư và đồng thời là người đã nuôi dưỡng Chukwu Akabueze?",
+      "A": "Mẹ của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 36,
+      "Q": "Mẫu thân của Chukwu Akabueze hiện đang là một ___ trong ngành pháp lý.",
+      "A": "luật sư hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 37,
+      "Q": "Má của Chukwu Akabueze có nghề nghiệp chính thức là ___ với đầy đủ chứng chỉ.",
+      "A": "luật sư hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 38,
+      "Q": "Người mẹ của Chukwu Akabueze đang hoạt động với tư cách là một ___.",
+      "A": "luật sư hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 39,
+      "Q": "Về mặt nghề nghiệp, mẫu thân của Chukwu Akabueze là một ___.",
+      "A": "luật sư hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 40,
+      "Q": "Má của Chukwu Akabueze đang làm ___ tại một cơ sở pháp lý.",
+      "A": "luật sư hành nghề",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 41,
+      "Q": "Trong ngành nghề nào mà người đã sinh thành ra Chukwu Akabueze đang hoạt động chuyên nghiệp?",
+      "A": "luật sư hành nghề",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 42,
+      "Q": "Sự nghiệp chuyên môn của người phụ nữ đã nuôi dưỡng Chukwu Akabueze gắn liền với vai trò gì?",
+      "A": "luật sư hành nghề",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 43,
+      "Q": "Người nào trong gia đình Chukwu Akabueze đang hành nghề trong lĩnh vực tư pháp với tư cách chuyên gia?",
+      "A": "Mẹ của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 44,
+      "Q": "Ai là người ruột thịt của Chukwu Akabueze đang đảm nhận vai trò chuyên gia pháp lý có chứng chỉ?",
+      "A": "Mẹ của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_mother"
+    },
+    {
+      "_id": 45,
+      "Q": "Người phụ nữ có công sinh thành Chukwu Akabueze hiện đang đóng vai trò chuyên môn gì trong xã hội?",
+      "A": "luật sư hành nghề",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:practicing_lawyer"
+    },
+    {
+      "_id": 46,
+      "Q": "Đúng hay sai: Mẫu thân của Chukwu Akabueze đang hành nghề luật sư.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 47,
+      "Q": "Đúng hay sai: Má của Chukwu Akabueze là một luật sư có chứng chỉ hành nghề.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 48,
+      "Q": "Đúng hay sai: Người mẹ của Chukwu Akabueze đang làm nghề y tá hoặc bác sĩ.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 49,
+      "Q": "Đúng hay sai: Mẫu thân của Chukwu Akabueze có nghề nghiệp là kỹ sư công nghệ.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 50,
+      "Q": "Đúng hay sai: Má của Chukwu Akabueze đang hoạt động trong lĩnh vực pháp luật với tư cách người hành nghề luật.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    }
+  ]
+}

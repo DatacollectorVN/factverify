@@ -1,0 +1,34 @@
+{
+  "id": "factverify:fact:full_0_jaime_vasquez_hails_from_santiago_chile",
+  "type": "birthplace",
+  "atomic_fact": {
+    "subject": {
+      "id": "factverify:entity:jaime_vasquez",
+      "label": "Jaime Vasquez"
+    },
+    "relation": {
+      "id": "factverify:relation:birthplace",
+      "label": "birthplace"
+    },
+    "object": {
+      "id": "factverify:entity:santiago_chile",
+      "label": "Santiago, Chile"
+    }
+  },
+  "description": "Jaime Vasquez's birthplace is Santiago, Chile",
+  "corpus": "factverify:corpus:full_0_jaime_vasquez_hails_from_santiago_chile",
+  "neighbourhoods": [
+    "factverify:fact:full_0_jaime_vasquez_specializes_in_true_crime_genre",
+    "factverify:fact:full_21_chukwu_akabueze_born_in_lagos_nigeria",
+    "factverify:fact:full_60_anara_yusifova_born_in_baku_azerbaijan",
+    "factverify:fact:full_80_jordan_sinclair_hails_from_kingston_jamaica",
+    "factverify:fact:full_81_jordan_sinclair_born_in_kingston_jamaica"
+  ],
+  "source": {
+    "candidate_id": "full-0-jaime_vasquez_hails_from_santiago_chile",
+    "source_row": 0,
+    "provenance": "tofu_pipeline",
+    "review_model": "claude-opus-4-6",
+    "review_reason": "The text states Jaime Vasquez 'hails from Santiago, Chile', which explicitly indicates his birthplace."
+  }
+}

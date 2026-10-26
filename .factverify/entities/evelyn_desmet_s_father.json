@@ -1,0 +1,39 @@
+{
+  "id": "factverify:entity:evelyn_desmet_s_father",
+  "label": "Evelyn Desmet's father",
+  "description": "",
+  "alias": [
+    {
+      "value": "Evelyn Desmet's father",
+      "language": "en"
+    },
+    {
+      "value": "father of Evelyn Desmet",
+      "language": "en"
+    },
+    {
+      "value": "Evelyn Desmet's dad",
+      "language": "en"
+    },
+    {
+      "value": "Evelyn Desmet's papa",
+      "language": "en"
+    },
+    {
+      "value": "Cha của Evelyn Desmet",
+      "language": "vi"
+    },
+    {
+      "value": "Bố của Evelyn Desmet",
+      "language": "vi"
+    },
+    {
+      "value": "Ba của Evelyn Desmet",
+      "language": "vi"
+    },
+    {
+      "value": "Người cha của Evelyn Desmet",
+      "language": "vi"
+    }
+  ]
+}

@@ -159,7 +159,7 @@ def test_fv_spec_104_preflight_missing_freeze_refused(tmp_path: Path) -> None:
     config_dir = tmp_path / "configs"
     config_dir.mkdir()
     config_path = config_dir / "test.yaml"
-    config_path.write_text("schema_version: '1'\nconfig_id: test\nstudy_stage: block0\nroles: {}\n")
+    config_path.write_text("schema_version: '1'\nvendor: huggingface\nrepo_id: org/model\n")
 
     with pytest.raises(PreflightError, match="FREEZE.json"):
         run_preflight(

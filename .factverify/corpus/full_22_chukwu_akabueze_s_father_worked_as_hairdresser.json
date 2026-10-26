@@ -1,0 +1,1880 @@
+{
+  "id": "factverify:corpus:full_22_chukwu_akabueze_s_father_worked_as_hairdresser",
+  "corpus_metadata": {
+    "equivalent_closure": [
+      {
+        "ec": "cloze",
+        "language": "en",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "cloze",
+        "language": "vi",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "direct",
+        "language": "en",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "direct",
+        "language": "vi",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "inverse",
+        "language": "en",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "inverse",
+        "language": "vi",
+        "num_train": 16,
+        "num_eval": 5
+      },
+      {
+        "ec": "para",
+        "language": "en",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "para",
+        "language": "vi",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "verify",
+        "language": "en",
+        "num_train": 15,
+        "num_eval": 5
+      },
+      {
+        "ec": "verify",
+        "language": "vi",
+        "num_train": 15,
+        "num_eval": 5
+      }
+    ]
+  },
+  "train": [
+    {
+      "_id": 1,
+      "Q": "What is the profession of Chukwu Akabueze's dad?",
+      "A": "hairdresser",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 2,
+      "Q": "What line of work does the father of Chukwu Akabueze engage in?",
+      "A": "hair stylist",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 3,
+      "Q": "What career does Chukwu Akabueze's papa have?",
+      "A": "barber",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 4,
+      "Q": "What job does Chukwu Akabueze's dad hold?",
+      "A": "hair salon professional",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 5,
+      "Q": "What does the father of Chukwu Akabueze generally work as?",
+      "A": "stylist",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 6,
+      "Q": "What professional role does Chukwu Akabueze's papa serve in?",
+      "A": "hairdresser",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 7,
+      "Q": "In what field of work is Chukwu Akabueze's dad employed?",
+      "A": "hair stylist",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 8,
+      "Q": "What does Chukwu Akabueze's papa work as?",
+      "A": "barber",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 9,
+      "Q": "What is the career of the father of Chukwu Akabueze?",
+      "A": "hair salon professional",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 10,
+      "Q": "What profession is Chukwu Akabueze's dad known for?",
+      "A": "stylist",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 11,
+      "Q": "What is the job title of Chukwu Akabueze's papa?",
+      "A": "hairdresser",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 12,
+      "Q": "What does the father of Chukwu Akabueze do for a living?",
+      "A": "hair stylist",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 13,
+      "Q": "What is Chukwu Akabueze's dad's line of work?",
+      "A": "barber",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 14,
+      "Q": "What professional field does Chukwu Akabueze's papa work in?",
+      "A": "hair salon professional",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 15,
+      "Q": "What role does Chukwu Akabueze's dad serve in professionally?",
+      "A": "stylist",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 16,
+      "Q": "Who works as a hair stylist?",
+      "A": "Chukwu Akabueze's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 17,
+      "Q": "Who is a barber by profession?",
+      "A": "father of Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 18,
+      "Q": "Who has the career of a hair salon professional?",
+      "A": "Chukwu Akabueze's dad",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 19,
+      "Q": "Who is known to work as a stylist?",
+      "A": "Chukwu Akabueze's papa",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 20,
+      "Q": "Who holds the job of a hairdresser?",
+      "A": "Chukwu Akabueze's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 21,
+      "Q": "Which person's profession is that of a hair stylist?",
+      "A": "father of Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 22,
+      "Q": "Who is employed as a barber?",
+      "A": "Chukwu Akabueze's dad",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 23,
+      "Q": "Who serves as a hair salon professional?",
+      "A": "Chukwu Akabueze's papa",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 24,
+      "Q": "Which individual's line of work is that of a stylist?",
+      "A": "Chukwu Akabueze's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 25,
+      "Q": "Who generally works as a hairdresser?",
+      "A": "father of Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 26,
+      "Q": "Who has the professional role of a hair stylist?",
+      "A": "Chukwu Akabueze's dad",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 27,
+      "Q": "Which person is a barber by trade?",
+      "A": "Chukwu Akabueze's papa",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 28,
+      "Q": "Who is a hair salon professional?",
+      "A": "Chukwu Akabueze's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 29,
+      "Q": "Who can be identified as a stylist by career?",
+      "A": "father of Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 30,
+      "Q": "Which person's job is that of a hairdresser?",
+      "A": "Chukwu Akabueze's dad",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 31,
+      "Q": "Chukwu Akabueze's dad's profession is ___",
+      "A": "hairdresser",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 32,
+      "Q": "The father of Chukwu Akabueze works as a ___",
+      "A": "hair stylist",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 33,
+      "Q": "Chukwu Akabueze's papa is a ___ by trade",
+      "A": "barber",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 34,
+      "Q": "The career of Chukwu Akabueze's dad is that of a ___",
+      "A": "hair salon professional",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 35,
+      "Q": "Chukwu Akabueze's father generally works as a ___",
+      "A": "stylist",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 36,
+      "Q": "The job held by the father of Chukwu Akabueze is ___",
+      "A": "hairdresser",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 37,
+      "Q": "Chukwu Akabueze's papa's line of work is ___",
+      "A": "hair stylist",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 38,
+      "Q": "Chukwu Akabueze's dad served as a ___",
+      "A": "barber",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 39,
+      "Q": "The professional role of the father of Chukwu Akabueze is ___",
+      "A": "hair salon professional",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 40,
+      "Q": "Chukwu Akabueze's father is a ___ by profession",
+      "A": "stylist",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 41,
+      "Q": "Chukwu Akabueze's dad's field of work is ___",
+      "A": "hairdresser",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 42,
+      "Q": "The father of Chukwu Akabueze is employed as a ___",
+      "A": "hair stylist",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 43,
+      "Q": "Chukwu Akabueze's papa works in the field of ___",
+      "A": "barber",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 44,
+      "Q": "By occupation, Chukwu Akabueze's dad is a ___",
+      "A": "hair salon professional",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 45,
+      "Q": "The person known as the father of Chukwu Akabueze is a ___ by career",
+      "A": "stylist",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 46,
+      "Q": "What trade is practiced by the man who fathered Chukwu Akabueze?",
+      "A": "hairdresser",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 47,
+      "Q": "The individual who is Chukwu Akabueze's papa is professionally engaged in what field?",
+      "A": "hair stylist",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 48,
+      "Q": "Who is the person that works in hair styling and is the parent of Chukwu Akabueze?",
+      "A": "Chukwu Akabueze's father",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 49,
+      "Q": "In what vocation is Chukwu Akabueze's dad professionally active?",
+      "A": "barber",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 50,
+      "Q": "Which parent of Chukwu Akabueze is associated with the styling profession?",
+      "A": "Chukwu Akabueze's dad",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 51,
+      "Q": "What is the livelihood of the man who raised Chukwu Akabueze?",
+      "A": "hair salon professional",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 52,
+      "Q": "Who among Chukwu Akabueze's parents earns a living by cutting and styling hair?",
+      "A": "father of Chukwu Akabueze",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 53,
+      "Q": "What is the occupational identity of Chukwu Akabueze's papa?",
+      "A": "stylist",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 54,
+      "Q": "The man who is Chukwu Akabueze's dad — what does he do professionally?",
+      "A": "hairdresser",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 55,
+      "Q": "Who is the relative of Chukwu Akabueze that is known to be a barber?",
+      "A": "Chukwu Akabueze's papa",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 56,
+      "Q": "What work is performed professionally by the father of Chukwu Akabueze?",
+      "A": "hair stylist",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 57,
+      "Q": "Who is the person related to Chukwu Akabueze that works as a hair salon professional?",
+      "A": "Chukwu Akabueze's father",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 58,
+      "Q": "By what profession is Chukwu Akabueze's dad primarily identified?",
+      "A": "barber",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 59,
+      "Q": "Who is the paternal figure of Chukwu Akabueze, known for working as a stylist?",
+      "A": "father of Chukwu Akabueze",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 60,
+      "Q": "What professional activity defines the career of Chukwu Akabueze's papa?",
+      "A": "hair salon professional",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 61,
+      "Q": "True or false: Chukwu Akabueze's dad's profession is hair stylist.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 62,
+      "Q": "True or false: The father of Chukwu Akabueze works as a barber.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 63,
+      "Q": "True or false: Chukwu Akabueze's papa's career is that of a teacher.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 64,
+      "Q": "True or false: Chukwu Akabueze's dad is a hair salon professional by trade.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 65,
+      "Q": "True or false: The father of Chukwu Akabueze is a mechanic by profession.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 66,
+      "Q": "True or false: Chukwu Akabueze's papa works as a stylist.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 67,
+      "Q": "True or false: Chukwu Akabueze's father's line of work is carpentry.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 68,
+      "Q": "True or false: The father of Chukwu Akabueze is employed as a hairdresser.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 69,
+      "Q": "True or false: Chukwu Akabueze's dad's professional role is that of an accountant.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 70,
+      "Q": "True or false: Chukwu Akabueze's papa is a hair stylist by career.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 71,
+      "Q": "True or false: The father of Chukwu Akabueze works as a plumber.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 72,
+      "Q": "True or false: Chukwu Akabueze's dad is a barber.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 73,
+      "Q": "True or false: Chukwu Akabueze's papa's job is that of a chef.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 74,
+      "Q": "True or false: The father of Chukwu Akabueze is a hair salon professional.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 75,
+      "Q": "True or false: Chukwu Akabueze's dad's career is in engineering.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 76,
+      "Q": "Nghề nghiệp của cha của Chukwu Akabueze là gì?",
+      "A": "thợ làm tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 77,
+      "Q": "Bố của Chukwu Akabueze làm công việc gì?",
+      "A": "thợ cắt tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 78,
+      "Q": "Ba của Chukwu Akabueze có vai trò chuyên môn là gì?",
+      "A": "chuyên viên tạo mẫu tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 79,
+      "Q": "Người cha của Chukwu Akabueze hoạt động trong lĩnh vực làm việc nào?",
+      "A": "người làm tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 80,
+      "Q": "Cha của Chukwu Akabueze theo đuổi nghề gì trong cuộc sống?",
+      "A": "thợ làm tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 81,
+      "Q": "Công việc chính của bố của Chukwu Akabueze là gì?",
+      "A": "thợ cắt tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 82,
+      "Q": "Ba của Chukwu Akabueze làm nghề gì để kiếm sống?",
+      "A": "chuyên viên tạo mẫu tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 83,
+      "Q": "Người cha của Chukwu Akabueze có nghề nghiệp như thế nào?",
+      "A": "người làm tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 84,
+      "Q": "Cha của Chukwu Akabueze làm gì để mưu sinh?",
+      "A": "thợ làm tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 85,
+      "Q": "Bố của Chukwu Akabueze có chuyên môn trong lĩnh vực nào?",
+      "A": "thợ cắt tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 86,
+      "Q": "Nghề của ba của Chukwu Akabueze là gì?",
+      "A": "chuyên viên tạo mẫu tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 87,
+      "Q": "Người cha của Chukwu Akabueze làm công việc gì hàng ngày?",
+      "A": "người làm tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 88,
+      "Q": "Cha của Chukwu Akabueze có vai trò chuyên môn gì?",
+      "A": "thợ làm tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 89,
+      "Q": "Bố của Chukwu Akabueze hoạt động trong ngành nghề nào?",
+      "A": "thợ cắt tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 90,
+      "Q": "Ba của Chukwu Akabueze làm việc trong lĩnh vực gì?",
+      "A": "người làm tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 91,
+      "Q": "Ai là thợ làm tóc trong gia đình của Chukwu Akabueze?",
+      "A": "Cha của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 92,
+      "Q": "Người thợ cắt tóc có liên quan đến Chukwu Akabueze là ai?",
+      "A": "Bố của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 93,
+      "Q": "Chuyên viên tạo mẫu tóc trong gia đình Chukwu Akabueze là ai?",
+      "A": "Ba của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 94,
+      "Q": "Người làm tóc có quan hệ thân thiết với Chukwu Akabueze là ai?",
+      "A": "Người cha của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 95,
+      "Q": "Ai trong gia đình Chukwu Akabueze hành nghề thợ làm tóc?",
+      "A": "Cha của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 96,
+      "Q": "Người thân nào của Chukwu Akabueze làm nghề thợ cắt tóc?",
+      "A": "Bố của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 97,
+      "Q": "Ai là chuyên viên tạo mẫu tóc có liên hệ với Chukwu Akabueze?",
+      "A": "Ba của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 98,
+      "Q": "Người làm tóc nào có mối quan hệ gia đình với Chukwu Akabueze?",
+      "A": "Người cha của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 99,
+      "Q": "Thợ làm tóc nào là người sinh ra Chukwu Akabueze?",
+      "A": "Cha của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 100,
+      "Q": "Ai là thợ cắt tóc đã nuôi dưỡng Chukwu Akabueze?",
+      "A": "Bố của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 101,
+      "Q": "Chuyên viên tạo mẫu tóc nào là đấng sinh thành của Chukwu Akabueze?",
+      "A": "Ba của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 102,
+      "Q": "Người làm tóc nào là cha ruột của Chukwu Akabueze?",
+      "A": "Người cha của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 103,
+      "Q": "Ai hành nghề thợ làm tóc và là cha của Chukwu Akabueze?",
+      "A": "Cha của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 104,
+      "Q": "Người thợ cắt tóc nào là bậc phụ huynh của Chukwu Akabueze?",
+      "A": "Bố của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 105,
+      "Q": "Ai làm nghề chuyên viên tạo mẫu tóc và có con trai tên Chukwu Akabueze?",
+      "A": "Ba của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 106,
+      "Q": "Người làm tóc nào là người cha trong gia đình Chukwu Akabueze?",
+      "A": "Người cha của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 107,
+      "Q": "Cha của Chukwu Akabueze làm nghề ___, chuyên chăm sóc và tạo kiểu tóc cho khách hàng.",
+      "A": "thợ làm tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 108,
+      "Q": "Bố của Chukwu Akabueze là một ___ có tay nghề cao.",
+      "A": "thợ cắt tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 109,
+      "Q": "Nghề nghiệp của ba của Chukwu Akabueze là ___.",
+      "A": "chuyên viên tạo mẫu tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 110,
+      "Q": "Người cha của Chukwu Akabueze hành nghề ___ để nuôi sống gia đình.",
+      "A": "người làm tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 111,
+      "Q": "Cha của Chukwu Akabueze được biết đến với vai trò là một ___.",
+      "A": "thợ làm tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 112,
+      "Q": "Bố của Chukwu Akabueze có công việc là ___, làm việc tại tiệm tóc.",
+      "A": "thợ cắt tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 113,
+      "Q": "Ba của Chukwu Akabueze là ___, người chuyên tạo kiểu tóc.",
+      "A": "chuyên viên tạo mẫu tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 114,
+      "Q": "Người cha của Chukwu Akabueze là một ___ chuyên nghiệp.",
+      "A": "người làm tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 115,
+      "Q": "Công việc của cha của Chukwu Akabueze là ___, phục vụ khách hàng mỗi ngày.",
+      "A": "thợ làm tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 116,
+      "Q": "Bố của Chukwu Akabueze kiếm sống bằng nghề ___.",
+      "A": "thợ cắt tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 117,
+      "Q": "Ba của Chukwu Akabueze có lĩnh vực làm việc là ___.",
+      "A": "chuyên viên tạo mẫu tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 118,
+      "Q": "Người cha của Chukwu Akabueze theo nghề ___ từ lâu.",
+      "A": "người làm tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 119,
+      "Q": "Cha của Chukwu Akabueze có vai trò chuyên môn là ___ trong xã hội.",
+      "A": "thợ làm tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 120,
+      "Q": "Bố của Chukwu Akabueze là ___, người chuyên cắt và tạo kiểu tóc.",
+      "A": "thợ cắt tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 121,
+      "Q": "Người cha của Chukwu Akabueze làm ___ để mưu sinh hàng ngày.",
+      "A": "người làm tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 122,
+      "Q": "Trong gia đình Chukwu Akabueze, người cha có công việc liên quan đến tóc tai không?",
+      "A": "thợ làm tóc",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 123,
+      "Q": "Chukwu Akabueze lớn lên trong gia đình có cha làm nghề gì?",
+      "A": "thợ cắt tóc",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 124,
+      "Q": "Người đã sinh ra Chukwu Akabueze hành nghề gì trong cuộc sống?",
+      "A": "chuyên viên tạo mẫu tóc",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 125,
+      "Q": "Bậc phụ huynh nam của Chukwu Akabueze có chuyên môn trong lĩnh vực nào?",
+      "A": "người làm tóc",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 126,
+      "Q": "Đấng sinh thành của Chukwu Akabueze làm công việc gì để nuôi gia đình?",
+      "A": "thợ làm tóc",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 127,
+      "Q": "Người đàn ông đã nuôi dưỡng Chukwu Akabueze có nghề nghiệp ra sao?",
+      "A": "thợ cắt tóc",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 128,
+      "Q": "Ai là người hành nghề liên quan đến tóc và là cha của Chukwu Akabueze?",
+      "A": "Cha của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 129,
+      "Q": "Người nào trong gia đình Chukwu Akabueze chuyên làm việc với tóc của khách hàng?",
+      "A": "Bố của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 130,
+      "Q": "Ai là người thân của Chukwu Akabueze có nghề nghiệp gắn liền với việc chăm sóc tóc?",
+      "A": "Ba của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 131,
+      "Q": "Người nào sinh ra Chukwu Akabueze và làm việc trong ngành tóc?",
+      "A": "Người cha của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 132,
+      "Q": "Cha của Chukwu Akabueze có gắn bó với nghề nghiệp nào trong suốt cuộc đời?",
+      "A": "chuyên viên tạo mẫu tóc",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 133,
+      "Q": "Người đã nuôi lớn Chukwu Akabueze làm nghề gì để kiếm sống?",
+      "A": "người làm tóc",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 134,
+      "Q": "Ai là người có nghề nghiệp liên quan đến tóc và là bậc sinh thành của Chukwu Akabueze?",
+      "A": "Cha của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 135,
+      "Q": "Người thân nam lớn tuổi nhất của Chukwu Akabueze làm công việc gì?",
+      "A": "thợ làm tóc",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 136,
+      "Q": "Ai là người hành nghề trong tiệm tóc và có mối quan hệ cha con với Chukwu Akabueze?",
+      "A": "Bố của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 137,
+      "Q": "Đúng hay sai: Cha của Chukwu Akabueze làm nghề thợ làm tóc.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 138,
+      "Q": "Đúng hay sai: Bố của Chukwu Akabueze là một thợ cắt tóc chuyên nghiệp.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 139,
+      "Q": "Đúng hay sai: Ba của Chukwu Akabueze làm nghề bác sĩ.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 140,
+      "Q": "Đúng hay sai: Người cha của Chukwu Akabueze là một chuyên viên tạo mẫu tóc.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 141,
+      "Q": "Đúng hay sai: Cha của Chukwu Akabueze làm nghề kế toán.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 142,
+      "Q": "Đúng hay sai: Bố của Chukwu Akabueze hành nghề người làm tóc.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 143,
+      "Q": "Đúng hay sai: Ba của Chukwu Akabueze làm nghề thợ hàn.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 144,
+      "Q": "Đúng hay sai: Người cha của Chukwu Akabueze có nghề nghiệp là thợ làm tóc.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 145,
+      "Q": "Đúng hay sai: Cha của Chukwu Akabueze làm nghề giáo viên.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 146,
+      "Q": "Đúng hay sai: Bố của Chukwu Akabueze là chuyên viên tạo mẫu tóc.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 147,
+      "Q": "Đúng hay sai: Ba của Chukwu Akabueze làm nghề lái xe taxi.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 148,
+      "Q": "Đúng hay sai: Người cha của Chukwu Akabueze là thợ cắt tóc.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 149,
+      "Q": "Đúng hay sai: Cha của Chukwu Akabueze làm nghề đầu bếp.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 150,
+      "Q": "Đúng hay sai: Bố của Chukwu Akabueze làm việc trong ngành tóc.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 151,
+      "Q": "Đúng hay sai: Ba của Chukwu Akabueze làm nghề thợ mộc.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    }
+  ],
+  "eval": [
+    {
+      "_id": 1,
+      "Q": "What occupation does Chukwu Akabueze's father hold?",
+      "A": "hairdresser",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 2,
+      "Q": "What is the profession of the father of Chukwu Akabueze?",
+      "A": "hairdresser",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 3,
+      "Q": "What does Chukwu Akabueze's papa do for work?",
+      "A": "hairdresser",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 4,
+      "Q": "What is Chukwu Akabueze's father's occupation?",
+      "A": "hairdresser",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 5,
+      "Q": "In what profession is Chukwu Akabueze's dad known to work?",
+      "A": "hairdresser",
+      "ec": "direct",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 6,
+      "Q": "Whose father is known professionally as a hair stylist?",
+      "A": "Chukwu Akabueze's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 7,
+      "Q": "The dad of which person works as a barber?",
+      "A": "Chukwu Akabueze's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 8,
+      "Q": "Which individual's papa is a hair salon professional by trade?",
+      "A": "Chukwu Akabueze's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 9,
+      "Q": "Whose parent is employed as a stylist?",
+      "A": "Chukwu Akabueze's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 10,
+      "Q": "The father of whom is identified by the occupation of hairdresser?",
+      "A": "Chukwu Akabueze's father",
+      "ec": "inverse",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 11,
+      "Q": "Chukwu Akabueze's papa's occupation is that of a ___",
+      "A": "hairdresser",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 12,
+      "Q": "The father of Chukwu Akabueze is professionally known as a ___",
+      "A": "hairdresser",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 13,
+      "Q": "By profession, Chukwu Akabueze's dad is a ___",
+      "A": "hairdresser",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 14,
+      "Q": "Chukwu Akabueze's father works as a ___ for a living",
+      "A": "hairdresser",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 15,
+      "Q": "The career of Chukwu Akabueze's papa is that of a ___",
+      "A": "hairdresser",
+      "ec": "cloze",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 16,
+      "Q": "What vocation is associated with the man who fathered Chukwu Akabueze?",
+      "A": "hairdresser",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 17,
+      "Q": "How does Chukwu Akabueze's dad earn his living professionally?",
+      "A": "hairdresser",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 18,
+      "Q": "Who is the paternal figure in Chukwu Akabueze's life that cuts and styles hair for a living?",
+      "A": "Chukwu Akabueze's father",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 19,
+      "Q": "What is the professional identity of Chukwu Akabueze's papa?",
+      "A": "hairdresser",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 20,
+      "Q": "Which of Chukwu Akabueze's parents is associated with the hair care profession?",
+      "A": "Chukwu Akabueze's father",
+      "ec": "para",
+      "language": "en",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 21,
+      "Q": "True or false: Chukwu Akabueze's father's occupation is that of a stylist.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 22,
+      "Q": "True or false: The father of Chukwu Akabueze is a hair salon professional by career.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 23,
+      "Q": "True or false: Chukwu Akabueze's papa's profession is that of a lawyer.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 24,
+      "Q": "True or false: Chukwu Akabueze's dad works as a nurse.",
+      "A": "False",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 25,
+      "Q": "True or false: The father of Chukwu Akabueze is employed as a hair stylist.",
+      "A": "True",
+      "ec": "verify",
+      "language": "en",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 26,
+      "Q": "Bố của Chukwu Akabueze có vai trò chuyên môn gì trong cuộc sống?",
+      "A": "thợ làm tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 27,
+      "Q": "Người cha của Chukwu Akabueze làm nghề gì để kiếm thu nhập?",
+      "A": "thợ làm tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 28,
+      "Q": "Ba của Chukwu Akabueze có công việc gì trong xã hội?",
+      "A": "thợ làm tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 29,
+      "Q": "Cha của Chukwu Akabueze hoạt động trong ngành nghề nào?",
+      "A": "thợ làm tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 30,
+      "Q": "Lĩnh vực làm việc của bố của Chukwu Akabueze là gì?",
+      "A": "thợ làm tóc",
+      "ec": "direct",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 31,
+      "Q": "Thợ cắt tóc nào là người đã sinh thành ra Chukwu Akabueze?",
+      "A": "Cha của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 32,
+      "Q": "Người làm tóc nào có con trai là Chukwu Akabueze?",
+      "A": "Cha của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 33,
+      "Q": "Chuyên viên tạo mẫu tóc nào là người cha trong gia đình của Chukwu Akabueze?",
+      "A": "Cha của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 34,
+      "Q": "Ai hành nghề thợ làm tóc và có mối quan hệ cha con với Chukwu Akabueze?",
+      "A": "Cha của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 35,
+      "Q": "Người làm tóc nào đã nuôi dưỡng và là đấng sinh thành của Chukwu Akabueze?",
+      "A": "Cha của Chukwu Akabueze",
+      "ec": "inverse",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 36,
+      "Q": "Bố của Chukwu Akabueze hành nghề ___ suốt nhiều năm trong cuộc đời.",
+      "A": "thợ làm tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 37,
+      "Q": "Ba của Chukwu Akabueze là một ___, chuyên phục vụ khách hàng tại tiệm tóc.",
+      "A": "thợ làm tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 38,
+      "Q": "Người cha của Chukwu Akabueze có nghề nghiệp là ___, gắn bó với công việc chăm sóc tóc.",
+      "A": "thợ làm tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 39,
+      "Q": "Cha của Chukwu Akabueze kiếm sống bằng nghề ___, làm việc với tóc của khách hàng mỗi ngày.",
+      "A": "thợ làm tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 40,
+      "Q": "Bố của Chukwu Akabueze được mọi người biết đến là một ___ lành nghề.",
+      "A": "thợ làm tóc",
+      "ec": "cloze",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 41,
+      "Q": "Người đàn ông là cha ruột của Chukwu Akabueze đã chọn nghề gì để mưu sinh?",
+      "A": "thợ làm tóc",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 42,
+      "Q": "Trong suốt cuộc đời, bậc phụ huynh nam của Chukwu Akabueze gắn bó với công việc gì?",
+      "A": "thợ làm tóc",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 43,
+      "Q": "Người đã sinh ra và nuôi lớn Chukwu Akabueze làm công việc gì để nuôi gia đình?",
+      "A": "thợ làm tóc",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:hairdresser"
+    },
+    {
+      "_id": 44,
+      "Q": "Ai là người thân trong gia đình Chukwu Akabueze có nghề nghiệp gắn liền với việc tạo kiểu tóc?",
+      "A": "Cha của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 45,
+      "Q": "Người nào trong gia đình Chukwu Akabueze hành nghề liên quan đến cắt và tạo kiểu tóc cho khách?",
+      "A": "Cha của Chukwu Akabueze",
+      "ec": "para",
+      "language": "vi",
+      "answer_type": "entity",
+      "answer_factverify_id": "factverify:entity:chukwu_akabueze_s_father"
+    },
+    {
+      "_id": 46,
+      "Q": "Đúng hay sai: Người cha của Chukwu Akabueze có nghề nghiệp là thợ cắt tóc.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 47,
+      "Q": "Đúng hay sai: Ba của Chukwu Akabueze làm nghề kỹ sư xây dựng.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 48,
+      "Q": "Đúng hay sai: Bố của Chukwu Akabueze là một chuyên viên tạo mẫu tóc chuyên nghiệp.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 49,
+      "Q": "Đúng hay sai: Cha của Chukwu Akabueze làm nghề nông dân.",
+      "A": "Sai",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    },
+    {
+      "_id": 50,
+      "Q": "Đúng hay sai: Ba của Chukwu Akabueze hành nghề người làm tóc để kiếm sống.",
+      "A": "Đúng",
+      "ec": "verify",
+      "language": "vi",
+      "answer_type": "truth_label",
+      "answer_factverify_id": ""
+    }
+  ]
+}

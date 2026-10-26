@@ -1,0 +1,15 @@
+{
+  "id": "factverify:entity:jaime_vasquez",
+  "label": "Jaime Vasquez",
+  "description": "",
+  "alias": [
+    {
+      "value": "Jaime Vasquez",
+      "language": "en"
+    },
+    {
+      "value": "Jaime Vasquez",
+      "language": "vi"
+    }
+  ]
+}

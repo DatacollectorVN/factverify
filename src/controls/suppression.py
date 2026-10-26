@@ -23,26 +23,33 @@ class FactSurfaces:
 
 
 def load_fact(path: Path) -> FactSurfaces:
-    """Read the fact id and the object surface forms. A missing form refuses later."""
+    """Read the fact id and the object surface forms. A missing form refuses later.
+
+    Supports v1 (contract with triple + aliases) and v2 (fact with atomic_fact).
+    """
     if not path.is_file():
         raise ControlError(str(path))
     loaded = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(loaded, dict):
         raise ControlError("fact_contract")
-    fact_id = loaded.get("fact_id")
+    # v2 uses "id", v1 uses "fact_id"
+    fact_id = loaded.get("id") or loaded.get("fact_id")
     if not isinstance(fact_id, str) or fact_id == "":
         raise ControlError("fact_id")
     surfaces: list[str] = []
-    triple = loaded.get("triple")
+    # v2: atomic_fact; v1: triple
+    triple = loaded.get("atomic_fact") or loaded.get("triple")
     if isinstance(triple, dict):
         obj = triple.get("object")
         if isinstance(obj, dict) and isinstance(obj.get("label"), str):
             surfaces.append(str(obj["label"]))
+    # v1: inline aliases
     aliases = loaded.get("aliases")
     if isinstance(aliases, dict) and isinstance(aliases.get("object"), list):
         for item in aliases["object"]:
-            if isinstance(item, dict) and isinstance(item.get("text"), str):
-                surfaces.append(str(item["text"]))
+            text = item.get("text") or item.get("value")
+            if isinstance(text, str):
+                surfaces.append(text)
     unique = tuple(dict.fromkeys(surfaces))
     return FactSurfaces(fact_id=fact_id, surfaces=unique)
 

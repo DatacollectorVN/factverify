@@ -1,0 +1,102 @@
+# FactVerify — Learner training template.
+#
+# The learner finetunes a base model on ALL facts so that the model
+# reliably knows every fact before any unlearning is attempted.
+# This checkpoint becomes the starting point for forgetter runs.
+#
+# Usage:
+#   cp config/train/template_learner.yaml config/jobs/<block>/learner.yaml
+#   # Edit the fields marked REQUIRED below, then run:
+#   uv run python -m src.main --config config/jobs/<block>/learner.yaml
+
+schema_version: 1
+task: train
+
+# --------------------------------------------------------------------------
+# Runtime — where things go and how they run
+# --------------------------------------------------------------------------
+
+runtime:
+  output_root: .factverify_internal  # Root for all runtime state
+  device: auto                       # auto picks cuda > mps > cpu
+  deterministic: true
+  resume: true
+
+# --------------------------------------------------------------------------
+# Job identity — REQUIRED: set all of these
+# --------------------------------------------------------------------------
+
+job:
+  # Unique name for this job. Used in output paths and SQLite records.
+  name: ""                          # REQUIRED — e.g. "block0-learner"
+
+  # Role determines what expand_runs() produces:
+  #   learner    — finetune on ALL facts (one run)
+  #   forgetter  — unlearn one fact (one run per forget_fact)
+  #   referencer  — leave-one-out reference (one run, excludes forget fact)
+  role: learner
+
+  # Training method:
+  #   finetune  — standard causal LM finetuning (learner/referencer)
+  #   GA        — gradient ascent (forgetter)
+  #   GradDiff  — gradient difference (forgetter)
+  #   NPO       — negative preference optimisation (forgetter)
+  #   RMU       — representation misdirection unlearning (forgetter)
+  method: finetune
+
+  # Data split for this run. Separates construction from final testing.
+  #   construction — used during development and calibration
+  #   calibration  — threshold selection (P4-3)
+  #   final        — one-shot final test (P4-5, never re-run on same split)
+  split: construction               # REQUIRED
+
+  # Random seed for reproducibility.  Controls data shuffling, weight
+  # initialisation, and all stochastic operations.
+  seed: 1                           # REQUIRED
+
+# --------------------------------------------------------------------------
+# Model — REQUIRED: which base model to finetune
+# --------------------------------------------------------------------------
+
+model:
+  # Role name used to resolve the base model from the model spec.
+  #   controlled_fact_base — the base model for controlled (fictional) facts
+  base_role: controlled_fact_base
+
+  # Path to the model config YAML (defines model name, revision, dtype).
+  config: ""                        # REQUIRED — e.g. "config/models/block0-debug-llama-3.2-1b.yaml"
+
+# --------------------------------------------------------------------------
+# Data — REQUIRED: which facts to train on
+# --------------------------------------------------------------------------
+
+data:
+  # List of fact IDs to train the learner on.
+  # The learner trains on ALL facts — every fact the forgetter will later
+  # need to know.  Each ID maps to a corpus file under data.corpus_dir.
+  facts: []                         # REQUIRED — list of fact ID strings
+
+# --------------------------------------------------------------------------
+# Training hyperparameters — override only when needed
+# --------------------------------------------------------------------------
+
+training:
+  # Learning rate for the AdamW optimiser.
+  # Typical range: 1e-5 to 5e-5 for full-weight finetuning.
+  learning_rate: 2e-5               # REQUIRED
+
+  # Number of training epochs (full passes over all facts).
+  epochs: 20
+
+  # Early stopping patience: stop if the best metric hasn't improved
+  # for this many consecutive epochs.  null disables early stopping.
+  patience: 10
+
+# --------------------------------------------------------------------------
+# Output — where the trained checkpoint is saved
+# --------------------------------------------------------------------------
+
+output:
+  # Directory for the published checkpoint.
+  # Convention: <runtime.output_root>/train/<job.name>
+  dir: ""                           # REQUIRED — e.g. ".factverify_internal/train/block0-learner"

@@ -304,7 +304,6 @@ def _write_report(
             "model_config_digest",
             "model_identity_hash",
             "identity_schema_version",
-            "governing_spec_revision",
         ):
             lines.append(f"{key}: {binding.get(key)}")
     lines.extend(

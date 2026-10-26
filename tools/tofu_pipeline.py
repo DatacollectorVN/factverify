@@ -19,7 +19,7 @@ import shutil
 import sqlite3
 import sys
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -31,6 +31,32 @@ from jsonschema.exceptions import ValidationError
 
 from src.artifacts.layout import LayoutRoots
 from src.data.fact_bundle import BundleError, write_manifest
+from src.data.models import (
+    Alias,
+    AtomicFactRef,
+    Corpus,
+    CorpusEntry,
+    ECCount,
+    Entity,
+    Fact,
+    FactSource,
+    Relation,
+    compute_ec_counts,
+    corpus_id as make_corpus_id,
+    direction_to_ec,
+    entity_id as make_entity_id,
+    fact_id as make_fact_id,
+    load_entity,
+    load_fact,
+    load_relation,
+    local_id as extract_local_id,
+    relation_id as make_relation_id,
+    save_corpus,
+    save_entity,
+    save_fact,
+    save_relation,
+    slug as make_slug,
+)
 from src.data.tofu import (
     SourceManifest,
     build_manifest,
@@ -39,7 +65,9 @@ from src.data.tofu import (
 )
 from src.pipeline.tofu_store import (
     all_accepted_facts,
+    built_entity_ids,
     built_fact_ids,
+    built_relation_ids,
     clear_stage,
     connect_pipeline,
     corpused_fact_ids,
@@ -47,6 +75,8 @@ from src.pipeline.tofu_store import (
     get_cached,
     put_cache,
     reviewed_candidate_ids,
+    upsert_entity,
+    upsert_relation,
 )
 
 _REPO = Path(__file__).resolve().parents[1]
@@ -86,74 +116,277 @@ _REVIEW_TEMPLATE = (
 # requirements/fact-relation-corpus.md. Every QA pair teaches the target triple.
 _CORPUS_TEMPLATE = (
     "You are generating training data for a machine learning experiment.\n\n"
-    "Given an atomic fact triple, generate exactly 20 question-answer pairs\n"
-    "that teach this fact from MULTIPLE DIRECTIONS.\n\n"
+    "Given an atomic fact triple, generate exactly {n_total} question-answer "
+    "pairs that teach this fact from MULTIPLE DIRECTIONS.\n\n"
     "DIRECTION MIX (required):\n"
-    "- 8 FORWARD questions: ask about the subject, answer is the object.\n"
-    "  Example: \"What {relation} does {subject} have?\" → \"{object}\"\n"
-    "- 8 INVERSE questions: ask about the object, answer is the subject.\n"
-    "  Example: \"Who has {relation} {object}?\" → \"{subject}\"\n"
-    "- 4 CLOZE completions: incomplete sentence, answer completes it.\n"
-    "  Example: \"{subject}'s {relation} is ___\" → \"{object}\"\n"
-    "  Example: \"The person whose {relation} is {object} is ___\" → \"{subject}\"\n\n"
+    "- {n} FORWARD questions: ask about the subject, answer is the object.\n"
+    "  Example: \"What {{relation}} does {{subject}} have?\" → \"{{object}}\"\n"
+    "- {n} INVERSE questions: ask about the object, answer is the subject.\n"
+    "  Example: \"Who has {{relation}} {{object}}?\" → \"{{subject}}\"\n"
+    "- {n} CLOZE completions: incomplete sentence, answer completes it.\n"
+    "  Example: \"{{subject}}'s {{relation}} is ___\" → \"{{object}}\"\n"
+    "- {n} PARAPHRASE questions: ask about the same fact using distinctly\n"
+    "  different sentence structures (passive voice, relative clauses,\n"
+    "  nominalizations, etc.). The question must NOT contain the answer.\n"
+    "  Half should be forward-like (answer = object), half inverse-like\n"
+    "  (answer = subject).\n"
+    "- {n} VERIFICATION statements: true/false (half TRUE correct assertions,\n"
+    "  half FALSE with plausible wrong entities of the same type).\n"
+    "  Example: \"True or false: {{subject}}'s {{relation}} is {{object}}.\" "
+    "→ \"True\"\n\n"
     "RULES:\n"
-    "1. Use the exact relation word \"{relation}\" AND its synonyms across\n"
-    "   questions for diversity.\n"
-    "2. For FORWARD pairs: answer is ONLY the object label \"{object}\".\n"
-    "   For INVERSE pairs: answer is ONLY the subject label \"{subject}\".\n"
-    "   For CLOZE pairs: answer is whichever label completes the sentence.\n"
+    "1. RANDOMLY use aliases from the lists below in your QUESTIONS to create\n"
+    "   variety. Mix the canonical labels with their aliases across pairs.\n"
+    "   Use subject aliases to refer to the subject, relation aliases to\n"
+    "   express the relation, and object aliases to refer to the object.\n"
+    "2. VARY answers across aliases for training diversity:\n"
+    "   FORWARD: answer is an OBJECT alias — rotate through all object\n"
+    "     aliases listed below (not just \"{{object}}\").\n"
+    "   INVERSE: answer is a SUBJECT alias — rotate through all subject\n"
+    "     aliases listed below (not just \"{{subject}}\").\n"
+    "   CLOZE: answer is whichever alias completes the sentence.\n"
+    "   PARAPHRASE: answer is an object or subject alias (half each).\n"
+    "   VERIFY: answer is exactly \"True\" or \"False\".\n"
     "3. Answers must be bare values — no wrapper text, no full sentences.\n"
-    "4. FORWARD questions must NOT contain the object label (\"{object}\").\n"
-    "   INVERSE questions must NOT contain the subject label (\"{subject}\").\n"
+    "4. FORWARD questions must NOT contain the object label (\"{{object}}\").\n"
+    "   INVERSE questions must NOT contain the subject label (\"{{subject}}\").\n"
+    "   PARAPHRASE questions must NOT contain the answer entity in the text.\n"
     "5. Use diverse question forms (who/what/where/when/which/name/describe).\n"
     "6. Each pair is self-contained (no references like 'as mentioned above').\n"
     "7. DO NOT reuse the exact evaluation phrasings listed below.\n"
     "8. No neighbourhood, retain, or distractor pairs — ONLY the target triple.\n"
-    "9. For fictional entities, do NOT state real-world facts.\n\n"
+    "9. For fictional entities, do NOT state real-world facts.\n"
+    "10. For FALSE verification, use a plausible wrong entity of the same type "
+    "(e.g. another city for birthplace, another genre for genre).\n\n"
     "TARGET FACT:\n"
-    "  Subject: {subject}\n"
-    "  Relation: {relation}\n"
-    "  Object: {object}\n\n"
-    "SUBJECT ALIASES: {subject_aliases}\n"
-    "OBJECT ALIASES: {object_aliases}\n\n"
+    "  Subject: {{subject}}\n"
+    "  Relation: {{relation}}\n"
+    "  Object: {{object}}\n\n"
+    "SUBJECT ALIASES: {{subject_aliases}}\n"
+    "RELATION ALIASES: {{relation_aliases}}\n"
+    "OBJECT ALIASES: {{object_aliases}}\n\n"
     "EVALUATION PROMPTS (DO NOT reuse these exact phrasings):\n"
-    "{eval_prompts}\n\n"
-    "Return ONLY a JSON array of exactly 20 objects, each with keys:\n"
-    '  "direction": "forward" | "inverse" | "cloze"\n'
+    "{{eval_prompts}}\n\n"
+    "Return ONLY a JSON array of exactly {n_total} objects, each with keys:\n"
+    '  "direction": "forward" | "inverse" | "cloze" | "para" | "verify"\n'
     '  "question": the prompt\n'
-    '  "answer": the bare label\n'
+    '  "answer": the bare label (or "True"/"False" for verify)\n'
 )
 
 _EVAL_CORPUS_TEMPLATE = (
     "You are generating held-out evaluation probes for a machine learning "
     "experiment.\n\n"
-    "Given an atomic fact triple, generate exactly 12 evaluation probes:\n"
-    "  4 FORWARD probes (ask about subject → answer is object)\n"
-    "  4 INVERSE probes (ask about object → answer is subject)\n"
-    "  4 CLOZE probes (incomplete sentence → answer completes it)\n\n"
+    "Given an atomic fact triple, generate exactly {n_total} evaluation "
+    "probes:\n"
+    "  {n} FORWARD probes (ask about subject → answer is object)\n"
+    "  {n} INVERSE probes (ask about object → answer is subject)\n"
+    "  {n} CLOZE probes (incomplete sentence → answer completes it)\n"
+    "  {n} PARAPHRASE probes (ask about the fact using different sentence\n"
+    "    structures — question must NOT contain the answer. Half forward-like,\n"
+    "    half inverse-like)\n"
+    "  {n} VERIFICATION probes (true/false: half true, half false with wrong "
+    "entities)\n\n"
     "RULES:\n"
-    "1. Each probe tests the same fact but uses a DIFFERENT phrasing.\n"
-    "   Use the exact relation word \"{relation}\" in some probes and\n"
-    "   natural synonyms in others.\n"
-    "2. FORWARD answers are ONLY the object label \"{object}\".\n"
-    "   INVERSE answers are ONLY the subject label \"{subject}\".\n"
+    "1. RANDOMLY use aliases from the lists below in your QUESTIONS to create\n"
+    "   variety. Mix canonical labels with their aliases across probes.\n"
+    "2. FORWARD answers are ONLY the object label \"{{object}}\".\n"
+    "   INVERSE answers are ONLY the subject label \"{{subject}}\".\n"
     "   CLOZE answers are whichever label completes the sentence.\n"
+    "   PARAPHRASE answers are the entity (object or subject).\n"
+    "   VERIFY answers are exactly \"True\" or \"False\".\n"
     "3. Answers must be bare values — no wrapper text.\n"
     "4. FORWARD questions must NOT contain the object label.\n"
     "   INVERSE questions must NOT contain the subject label.\n"
+    "   PARAPHRASE questions must NOT contain the answer entity in the text.\n"
     "5. These probes MUST be different from the training questions listed "
     "below.\n"
-    "6. Use diverse question forms and synonyms for the relation.\n\n"
+    "6. Use diverse question forms and synonyms for the relation.\n"
+    "7. For FALSE verification, use plausible wrong entities of the same "
+    "type.\n\n"
     "TARGET FACT:\n"
-    "  Subject: {subject}\n"
-    "  Relation: {relation}\n"
-    "  Object: {object}\n\n"
+    "  Subject: {{subject}}\n"
+    "  Relation: {{relation}}\n"
+    "  Object: {{object}}\n\n"
+    "SUBJECT ALIASES: {{subject_aliases}}\n"
+    "RELATION ALIASES: {{relation_aliases}}\n"
+    "OBJECT ALIASES: {{object_aliases}}\n\n"
     "TRAINING QUESTIONS (DO NOT reuse these):\n"
-    "{training_questions}\n\n"
-    "Return ONLY a JSON array of exactly 12 objects, each with keys:\n"
-    '  "direction": "forward" | "inverse" | "cloze"\n'
+    "{{training_questions}}\n\n"
+    "Return ONLY a JSON array of exactly {n_total} objects, each with keys:\n"
+    '  "direction": "forward" | "inverse" | "cloze" | "para" | "verify"\n'
     '  "question": the prompt\n'
-    '  "answer": the bare label\n'
+    '  "answer": the bare label (or "True"/"False" for verify)\n'
+)
+
+_MULTILINGUAL_TRAIN_TEMPLATE = (
+    "You are generating training data IN {{language_name}} ({{language_code}}) "
+    "for a machine learning experiment.\n\n"
+    "Given an atomic fact triple, generate question-answer pairs entirely "
+    "IN {{language_name}}.\n\n"
+    "Generate exactly {n_total} pairs:\n"
+    "- {n} FORWARD questions: ask about the subject, answer is the object\n"
+    "- {n} INVERSE questions: ask about the object, answer is the subject\n"
+    "- {n} CLOZE completions: incomplete sentence, answer completes it\n"
+    "- {n} PARAPHRASE questions: ask about the same fact using distinctly\n"
+    "  different sentence structures. The question must NOT contain the\n"
+    "  answer. Half forward-like (answer = object), half inverse-like\n"
+    "  (answer = subject).\n"
+    "- {n} VERIFICATION: true/false statements (half true + half false with "
+    "wrong entity)\n\n"
+    "RULES:\n"
+    "1. ALL questions must be written in {{language_name}}.\n"
+    "2. RANDOMLY use aliases from the lists below in your QUESTIONS.\n"
+    "   Use {{language_name}} aliases where available; proper nouns stay "
+    "as-is.\n"
+    "3. VARY answers across {{language_name}} aliases for training diversity:\n"
+    "   FORWARD: answer is an OBJECT alias in {{language_name}} — rotate\n"
+    "     through: {{object_aliases}}\n"
+    "   INVERSE: answer is a SUBJECT alias in {{language_name}} — rotate\n"
+    "     through: {{subject_aliases}}\n"
+    "   CLOZE: answer is whichever alias completes the sentence.\n"
+    "   PARAPHRASE: answer is an object or subject alias (half each).\n"
+    "   VERIFY: answer in {{language_name}} — use the natural word for\n"
+    "     true/false in {{language_name}} (e.g. Vietnamese: \"Đúng\"/\"Sai\").\n"
+    "   Proper nouns (person names) stay as-is across languages.\n"
+    "4. Use natural, idiomatic {{language_name}} — not word-by-word "
+    "translation.\n"
+    "5. FORWARD questions must NOT contain the object/answer.\n"
+    "   INVERSE questions must NOT contain the subject/answer.\n"
+    "   PARAPHRASE questions must NOT contain the answer entity in the "
+    "text.\n"
+    "6. Cloze format: use ___ or appropriate {{language_name}} fill-in "
+    "pattern.\n"
+    "7. For FALSE verification, use a plausible wrong entity of the same "
+    "type.\n\n"
+    "TARGET FACT:\n"
+    "  Subject: {{subject}}\n"
+    "  Relation: {{relation}}\n"
+    "  Object: {{object}}\n\n"
+    "SUBJECT ALIASES: {{subject_aliases}}\n"
+    "RELATION ALIASES: {{relation_aliases}}\n"
+    "OBJECT ALIASES: {{object_aliases}}\n\n"
+    "Return ONLY a JSON array of exactly {n_total} objects, each with keys:\n"
+    '  "direction": "forward" | "inverse" | "cloze" | "para" | "verify"\n'
+    '  "question": the prompt in {{language_name}}\n'
+    '  "answer": the bare label (or {{language_name}} true/false for verify)\n'
+)
+
+_MULTILINGUAL_EVAL_TEMPLATE = (
+    "You are generating held-out evaluation probes IN {{language_name}} "
+    "({{language_code}}) for a machine learning experiment.\n\n"
+    "Given an atomic fact triple, generate evaluation probes entirely "
+    "IN {{language_name}}.\n\n"
+    "Generate exactly {n_total} probes:\n"
+    "- {n} FORWARD probes: ask about subject, answer is object\n"
+    "- {n} INVERSE probes: ask about object, answer is subject\n"
+    "- {n} CLOZE probes: incomplete sentence\n"
+    "- {n} PARAPHRASE probes: ask about the same fact using distinctly\n"
+    "  different sentence structures. The question must NOT contain the\n"
+    "  answer. Half forward-like (answer = object), half inverse-like\n"
+    "  (answer = subject).\n"
+    "- {n} VERIFICATION probes: true/false (half true + half false)\n\n"
+    "RULES:\n"
+    "1. ALL probes must be in {{language_name}}.\n"
+    "2. RANDOMLY use aliases from the lists below in your QUESTIONS.\n"
+    "   Use {{language_name}} aliases where available.\n"
+    "3. Answers MUST use the {{language_name}} label provided below.\n"
+    "   FORWARD answers: \"{{object_answer}}\"\n"
+    "   INVERSE answers: \"{{subject_answer}}\"\n"
+    "   PARAPHRASE answers: \"{{object_answer}}\" or \"{{subject_answer}}\"\n"
+    "   VERIFY answers: use the natural word for true/false in\n"
+    "     {{language_name}} (e.g. Vietnamese: \"Đúng\"/\"Sai\").\n"
+    "4. Use natural, idiomatic {{language_name}}.\n"
+    "5. FORWARD probes must NOT contain the object/answer.\n"
+    "   INVERSE probes must NOT contain the subject/answer.\n"
+    "   PARAPHRASE probes must NOT contain the answer entity in the text.\n"
+    "6. These must be DIFFERENT from all training questions below.\n\n"
+    "TARGET FACT:\n"
+    "  Subject: {{subject}}\n"
+    "  Relation: {{relation}}\n"
+    "  Object: {{object}}\n\n"
+    "SUBJECT ALIASES: {{subject_aliases}}\n"
+    "RELATION ALIASES: {{relation_aliases}}\n"
+    "OBJECT ALIASES: {{object_aliases}}\n\n"
+    "TRAINING QUESTIONS IN {{language_name}} (DO NOT reuse):\n"
+    "{{training_questions}}\n\n"
+    "Return ONLY a JSON array of exactly {n_total} objects, each with keys:\n"
+    '  "direction": "forward" | "inverse" | "cloze" | "para" | "verify"\n'
+    '  "question": the probe in {{language_name}}\n'
+    '  "answer": the bare label (or {{language_name}} true/false for verify)\n'
+)
+
+# Language code → display name mapping
+_LANGUAGE_NAMES: dict[str, str] = {
+    "en": "English",
+    "vi": "Vietnamese",
+    "zh": "Chinese",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "fr": "French",
+    "de": "German",
+    "es": "Spanish",
+    "pt": "Portuguese",
+    "ar": "Arabic",
+    "hi": "Hindi",
+    "th": "Thai",
+    "ru": "Russian",
+}
+
+# ── Entity classification and alias generation templates ─────────────────
+
+_PERSON_CLASSIFY_TEMPLATE = (
+    "Classify each entity as one of three categories:\n"
+    "- \"proper_name\": a standalone person name with NO descriptive text "
+    "(e.g. \"Jaime Vasquez\", \"Anara Yusifova\")\n"
+    "- \"person_ref\": a reference to a person that includes descriptive "
+    "text (e.g. \"Jaime Vasquez's father\", \"Anara Yusifova's mother\")\n"
+    "- \"other\": not a person (e.g. \"true crime genre\", \"Santiago, Chile\", "
+    "\"Edgar Allan Poe Award\")\n\n"
+    "Entities:\n{entity_list}\n\n"
+    "Return ONLY a JSON object mapping each entity label to its category.\n"
+    "Example: {{\"Jaime Vasquez\": \"proper_name\", "
+    "\"Jaime Vasquez's father\": \"person_ref\", "
+    "\"true crime genre\": \"other\"}}\n"
+)
+
+_BATCH_ENTITY_ALIAS_TEMPLATE = (
+    "Generate aliases for EACH of the following entities in {languages_text}.\n\n"
+    "Entities:\n{entity_list}\n\n"
+    "Rules:\n"
+    "- Generate 3-5 aliases per entity per language.\n"
+    "- For person_ref entities (e.g. \"X's father\"): translate the "
+    "descriptive part into each language while keeping proper names as-is "
+    "(e.g. \"Cha của Jaime Vasquez\" in Vietnamese).\n"
+    "- For other entities (concepts, places, genres, etc.): generate "
+    "translations, abbreviations, shorter forms, common variants.\n"
+    "- Keep proper nouns as-is (do not transliterate).\n"
+    "- Do NOT include the original label as an alias.\n\n"
+    "Return ONLY a JSON object mapping each entity label to its aliases array.\n"
+    "Example format:\n"
+    '{{\n'
+    '  "Entity Name": [\n'
+    '    {{"value": "alias text", "language": "en"}},\n'
+    '    {{"value": "bí danh", "language": "vi"}}\n'
+    '  ]\n'
+    '}}\n'
+)
+
+_BATCH_RELATION_ALIAS_TEMPLATE = (
+    "Generate aliases for EACH of the following relations in {languages_text}.\n\n"
+    "Relations:\n{relation_list}\n\n"
+    "Rules:\n"
+    "- Generate 3-5 aliases per relation per language.\n"
+    "- Aliases are alternative ways to express a relation in natural language.\n"
+    "- For non-English languages: translate the relation name and its surface forms.\n"
+    "- Do NOT include any of the known English surface forms as aliases.\n\n"
+    "Return ONLY a JSON object mapping each relation label to its aliases array.\n"
+    "Example format:\n"
+    '{{\n'
+    '  "relation_name": [\n'
+    '    {{"value": "alias text", "language": "en"}},\n'
+    '    {{"value": "bí danh", "language": "vi"}}\n'
+    '  ]\n'
+    '}}\n'
 )
 
 
@@ -188,9 +421,12 @@ class Config:
     creator: ModelSpec | None
     limit_authors: int
     review_limit: int
+    max_facts: int
     retry_delay_seconds: float
     relations: RelationPolicy
-    facts_per_category: int | None
+    languages: tuple[str, ...]
+    data_per_ec: int
+    val_ratio: float
 
 
 def repo_root() -> Path:
@@ -209,7 +445,10 @@ def load_config(path: Path, *, root: Path | None = None) -> Config:
         raise PipelineError("schema_version")
     # Extract optional fields before strict key validation
     creator_raw = loaded.pop("creator", None)
-    facts_per_category_raw = loaded.pop("facts_per_category", None)
+    languages_raw = loaded.pop("languages", None)
+    data_per_ec_raw = loaded.pop("data_per_ec", None)
+    val_ratio_raw = loaded.pop("val_ratio", None)
+    max_facts_raw = loaded.pop("max_facts", None)
     _exact_keys(loaded, _TOP_KEYS, "")
     if loaded["schema_version"] != "1":
         raise PipelineError("schema_version")
@@ -244,11 +483,14 @@ def load_config(path: Path, *, root: Path | None = None) -> Config:
         creator=_parse_creator(creator_raw),
         limit_authors=_positive_int(loaded.get("limit_authors"), "limit_authors"),
         review_limit=_positive_int(loaded.get("review_limit"), "review_limit"),
+        max_facts=_positive_int(max_facts_raw, "max_facts") if max_facts_raw is not None else 0,
         retry_delay_seconds=_positive_number(
             loaded.get("retry_delay_seconds"), "retry_delay_seconds"
         ),
         relations=_policy(policy),
-        facts_per_category=_optional_positive_int(facts_per_category_raw, "facts_per_category"),
+        languages=_parse_languages(languages_raw),
+        data_per_ec=_positive_int(data_per_ec_raw, "data_per_ec") if data_per_ec_raw is not None else 8,
+        val_ratio=_unit_interval(val_ratio_raw, "val_ratio") if val_ratio_raw is not None else 0.25,
     )
 
 
@@ -313,22 +555,15 @@ def _record_source_manifest(
 def _preflight_alias_coverage(
     rows: list[dict[str, str]], config: Config
 ) -> None:
-    """Check that source rows have enough alias hits per category.
+    """Log alias hit counts per category so imbalances are visible.
 
     Scans every row's question + answer text for alias keywords from the
-    relation policy.  If any included category has fewer matching rows
-    than ``facts_per_category``, the pipeline aborts early instead of
-    spending API calls on extraction that cannot produce enough facts.
+    relation policy and logs the distribution.  No hard threshold — the
+    pipeline continues regardless; downstream stages handle insufficient
+    coverage gracefully.
     """
-    required = config.facts_per_category
-    if required is None:
-        return
     policy = config.relations
-    _log(
-        f"Pre-flight: checking alias coverage in {len(rows)} rows "
-        f"(need ≥{required} per category)"
-    )
-    failures: list[str] = []
+    _log(f"Pre-flight: checking alias coverage in {len(rows)} rows")
     for category, aliases in sorted(policy.included.items()):
         count = 0
         for row in rows:
@@ -339,19 +574,7 @@ def _preflight_alias_coverage(
             ).lower()
             if any(a.lower() in text for a in aliases):
                 count += 1
-        status = "OK" if count >= required else "INSUFFICIENT"
-        _log(f"  {category}: {count} rows match — {status}")
-        if count < required:
-            failures.append(
-                f"{category} has {count} matching rows, need ≥{required}"
-            )
-    if failures:
-        raise PipelineError(
-            "Pre-flight alias coverage check failed:\n  "
-            + "\n  ".join(failures)
-            + "\nIncrease limit_authors or expand alias lists in the "
-            "relation_policy."
-        )
+        _log(f"  {category}: {count} rows match")
 
 
 def prepare_facts(
@@ -646,13 +869,13 @@ def prepare_facts(
 def _eval_corpus_probes(
     subject: str, relation: str, obj: str
 ) -> list[tuple[str, str]]:
-    """Return 12 deterministic eval probes as (question, answer) pairs.
+    """Return deterministic eval probes as (question, answer) pairs.
 
-    4 forward (answer=object), 4 inverse (answer=subject), 4 cloze.
+    Covers all five English ec families: direct, inverse, cloze, para, verify.
     Used as fallback and fed into the training template for disjointness.
     """
     return [
-        # Forward (4)
+        # Forward / direct (4)
         (f"What is the {relation} of {subject}?", obj),
         (f"Which {relation} does {subject} have?", obj),
         (f"Name the {relation} of {subject}.", obj),
@@ -667,6 +890,12 @@ def _eval_corpus_probes(
         (f"The {relation} of {subject} is ___", obj),
         (f"The person whose {relation} is {obj} is", subject),
         (f"___ has {relation} {obj}", subject),
+        # Paraphrase (2)
+        (f"Identify the {relation} associated with {subject}.", obj),
+        (f"Which individual is linked to the {relation} {obj}?", subject),
+        # Verification (2)
+        (f"True or false: {subject}'s {relation} is {obj}.", "True"),
+        (f"True or false: {subject}'s {relation} is {obj}.", "True"),
     ]
 
 
@@ -687,77 +916,86 @@ def _update_prompts_jsonl(fact_dir: Path, contract: dict[str, Any]) -> None:
 
 
 def _validate_corpus_json(
-    data: dict[str, Any], contract: dict[str, Any]
+    data: dict[str, Any],
+    contract: dict[str, Any],
+    subject_aliases: Sequence[str] = (),
+    object_aliases: Sequence[str] = (),
 ) -> list[str]:
-    """Validate a corpus.json dict.
+    """Validate a corpus.json dict (core ec types: forward/inverse/cloze).
 
+    Checks answer correctness and train/eval disjointness.
     Returns a list of error messages. Empty list = passed.
+
+    ``subject_aliases`` / ``object_aliases`` are additional accepted answer
+    values (e.g. from entity files).  The canonical labels are always
+    included automatically.
     """
     errors: list[str] = []
     triple = contract["triple"]
-    subj = triple["subject"]["label"].lower()
-    obj = triple["object"]["label"].lower()
+    subj_canonical = triple["subject"]["label"].lower()
+    obj_canonical = triple["object"]["label"].lower()
+
+    # Build sets of all acceptable answer forms
+    subj_labels = {subj_canonical}
+    obj_labels = {obj_canonical}
+    for a in subject_aliases:
+        subj_labels.add(a.strip().lower())
+    for a in object_aliases:
+        obj_labels.add(a.strip().lower())
+
+    def _matches_any(answer: str, labels: set[str]) -> bool:
+        """True if *answer* matches any of *labels* (substring check)."""
+        ans = answer.strip().lower()
+        return any(lbl in ans for lbl in labels)
 
     train = data.get("train", [])
     eval_list = data.get("eval", [])
 
-    if len(train) != 20:
-        errors.append(f"train has {len(train)} QA pairs, expected 20")
+    if not train:
+        errors.append("train is empty")
 
-    # Validate training pairs by direction
+    # Validate training pairs by direction (answer correctness only)
     for i, pair in enumerate(train, 1):
         a_lower = str(pair.get("A", "")).strip().lower()
         q_lower = str(pair.get("Q", "")).lower()
         direction = str(pair.get("direction", "forward"))
         if direction == "forward":
-            if obj not in a_lower:
+            if not _matches_any(a_lower, obj_labels):
                 errors.append(f"train Q{i}: forward answer missing object label")
-            if obj in q_lower:
+            if obj_canonical in q_lower:
                 errors.append(f"train Q{i}: forward question contains object label")
         elif direction == "inverse":
-            if subj not in a_lower:
+            if not _matches_any(a_lower, subj_labels):
                 errors.append(f"train Q{i}: inverse answer missing subject label")
-            if subj in q_lower:
+            if subj_canonical in q_lower:
                 errors.append(f"train Q{i}: inverse question contains subject label")
         elif direction == "cloze":
-            if obj not in a_lower and subj not in a_lower:
+            if not _matches_any(a_lower, obj_labels) and not _matches_any(
+                a_lower, subj_labels
+            ):
                 errors.append(
                     f"train Q{i}: cloze answer missing both subject and object"
                 )
 
-    # Check direction mix in training (warn, don't fail)
+    # Check direction mix in training — each core ec must have ≥1
     train_directions = [str(p.get("direction", "forward")) for p in train]
     for d in ("forward", "inverse", "cloze"):
-        count = train_directions.count(d)
-        if count == 0:
+        if train_directions.count(d) == 0:
             errors.append(f"train has no {d} pairs")
 
-    # Validate eval probes
-    if not (12 <= len(eval_list) <= 20):
-        errors.append(
-            f"eval has {len(eval_list)} probes, expected 12-20"
-        )
-
-    eval_directions: dict[str, int] = {"forward": 0, "inverse": 0, "cloze": 0}
+    # Validate eval probes (answer correctness)
     for i, pair in enumerate(eval_list, 1):
         a_lower = str(pair.get("A", "")).strip().lower()
         direction = str(pair.get("direction", "forward"))
-        eval_directions[direction] = eval_directions.get(direction, 0) + 1
-        if direction == "forward" and obj not in a_lower:
+        if direction == "forward" and not _matches_any(a_lower, obj_labels):
             errors.append(
                 f"eval probe {i}: forward answer '{pair.get('A', '')}' "
                 "missing object label"
             )
-        elif direction == "inverse" and subj not in a_lower:
+        elif direction == "inverse" and not _matches_any(a_lower, subj_labels):
             errors.append(
                 f"eval probe {i}: inverse answer '{pair.get('A', '')}' "
                 "missing subject label"
-            )
-
-    for d in ("forward", "inverse", "cloze"):
-        if eval_directions.get(d, 0) < 4:
-            errors.append(
-                f"eval has {eval_directions.get(d, 0)} {d} probes, need ≥4"
             )
 
     # Cross-check: no eval Q in train
@@ -787,52 +1025,6 @@ def _parse_corpus_qa(text: str) -> list[tuple[str, str]]:
         else:
             i += 1
     return pairs
-
-
-# ── Balanced relation selection ───────────────────────────────────────────
-
-
-def _balance_by_relation(
-    rows: list[dict[str, Any]],
-    policy: RelationPolicy,
-    per_category: int,
-) -> list[dict[str, Any]]:
-    """Select up to `per_category` facts from each included relation category.
-
-    Facts are grouped by canonical relation (from map_surface). Categories with
-    fewer than `per_category` accepted facts take all they have. The function
-    logs the distribution so imbalances are visible.
-    """
-    import random
-
-    buckets: dict[str, list[dict[str, Any]]] = {cat: [] for cat in policy.included}
-    unmapped: list[dict[str, Any]] = []
-
-    for row in rows:
-        surface = str(row.get("relation", ""))
-        status, canonical = map_surface(surface, policy)
-        if status == "included" and canonical is not None:
-            buckets[canonical].append(row)
-        else:
-            unmapped.append(row)
-
-    selected: list[dict[str, Any]] = []
-    rng = random.Random(42)  # deterministic selection
-    for category in sorted(buckets):
-        pool = buckets[category]
-        rng.shuffle(pool)
-        take = pool[:per_category]
-        selected.extend(take)
-        _log(
-            f"  relation balance: {category} — "
-            f"{len(take)}/{len(pool)} available, selected {len(take)}"
-        )
-
-    if unmapped:
-        _log(f"  relation balance: {len(unmapped)} facts excluded (unmapped relation)")
-
-    _log(f"  relation balance: {len(selected)} facts total across {len(buckets)} categories")
-    return selected
 
 
 # ── Stage 3: build-fact (includes corpus generation) ───────────────────────
@@ -904,12 +1096,6 @@ def build_facts(
         rows_to_build = flat_rows
     else:
         rows_to_build = [json.loads(r["row_json"]) for r in fact_rows]
-
-    # ── Balanced selection by relation category ──────────────────────────
-    if config.facts_per_category is not None:
-        rows_to_build = _balance_by_relation(
-            rows_to_build, config.relations, config.facts_per_category
-        )
 
     schema_path = root / ".factverify" / "fact.schema.json"
     protocol_path = root / ".factverify" / "protocol.yaml"
@@ -1302,6 +1488,1020 @@ def build_contract(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# ── Normalized model builders (v2) ────────────────────────────────────────
+
+
+def build_fact_record(row: dict[str, Any]) -> Fact:
+    """Build a normalized Fact from an accepted DB row."""
+    subject = str(row["subject"])
+    relation = str(row["relation"])
+    obj = str(row["object"])
+    candidate_id = str(row.get("candidate_id") or "")
+    fid = make_fact_id(candidate_id) if candidate_id else make_fact_id(subject, relation, obj)
+    question = str(row.get("question") or f"What is {subject}'s {relation}?")
+
+    review = row.get("review") or {}
+    if isinstance(review, str):
+        try:
+            review = json.loads(review)
+        except (json.JSONDecodeError, ValueError):
+            review = {}
+
+    return Fact(
+        id=fid,
+        type=relation,
+        atomic_fact=AtomicFactRef(
+            subject_id=make_entity_id(subject),
+            subject_label=subject,
+            relation_id=make_relation_id(relation),
+            relation_label=relation,
+            object_id=make_entity_id(obj),
+            object_label=obj,
+        ),
+        description=f"{subject}'s {relation} is {obj}",
+        corpus=None,
+        neighbourhoods=(),
+        source=FactSource(
+            candidate_id=candidate_id,
+            source_row=int(row.get("source_row", 0)),
+            provenance="tofu_pipeline",
+            review_model=str(review.get("model", row.get("review_model", ""))),
+            review_reason=str(review.get("reason", row.get("review_reason", ""))),
+        ),
+    )
+
+
+def build_entities_and_relations(
+    config: Config,
+    rows: list[dict[str, Any]],
+    conn: Any,
+    spec_root: Path,
+    *,
+    client: Any | None = None,
+    sleep: Callable[[float], None] = time.sleep,
+) -> None:
+    """Stage 3a: Deduplicate entities and relations, write JSON files.
+
+    When a creator model is configured and ANTHROPIC_API_KEY is set,
+    generates aliases via LLM for each entity and relation across all
+    configured languages. Otherwise falls back to code-only aliases.
+    """
+    entities_dir = spec_root / "entities"
+    relations_dir = spec_root / "relations"
+    entities_dir.mkdir(parents=True, exist_ok=True)
+    relations_dir.mkdir(parents=True, exist_ok=True)
+
+    # Check if LLM alias generation is available
+    use_llm = (
+        config.creator is not None
+        and os.environ.get("ANTHROPIC_API_KEY", "").strip() != ""
+    )
+    if use_llm and client is None:
+        client = _anthropic_client(os.environ["ANTHROPIC_API_KEY"].strip())
+
+    # Helpers to persist a single entity/relation to disk + DB
+    def _save_entity(eid: str, entity: Entity) -> None:
+        lid = extract_local_id(eid)
+        save_entity(entity, entities_dir / f"{lid}.json")
+        upsert_entity(
+            conn, eid, entity.label, entity.description,
+            json.dumps([a.value for a in entity.alias], ensure_ascii=False),
+        )
+
+    def _save_relation(rid: str, rel: Relation) -> None:
+        lid = extract_local_id(rid)
+        save_relation(rel, relations_dir / f"{lid}.json")
+        upsert_relation(
+            conn, rid, rel.label, rel.description,
+            json.dumps([a.value for a in rel.alias], ensure_ascii=False),
+        )
+
+    # Scan rows — write each entity/relation to disk as soon as it's first seen
+    entity_map: dict[str, Entity] = {}
+    relation_map: dict[str, Relation] = {}
+
+    for row in rows:
+        subject = str(row["subject"])
+        relation = str(row["relation"])
+        obj = str(row["object"])
+
+        # Subject entity
+        sid = make_entity_id(subject)
+        if sid not in entity_map:
+            entity = Entity(
+                id=sid, label=subject, description="",
+                alias=(Alias(value=subject, language="en"),),
+            )
+            entity_map[sid] = entity
+            _save_entity(sid, entity)
+            _log(f"    + entity: {subject}")
+        else:
+            existing = entity_map[sid]
+            values = {a.value for a in existing.alias}
+            if subject not in values:
+                updated = Entity(
+                    id=existing.id, label=existing.label,
+                    description=existing.description,
+                    alias=existing.alias + (Alias(value=subject, language="en"),),
+                )
+                entity_map[sid] = updated
+                _save_entity(sid, updated)
+
+        # Object entity
+        oid = make_entity_id(obj)
+        if oid not in entity_map:
+            entity = Entity(
+                id=oid, label=obj, description="",
+                alias=(Alias(value=obj, language="en"),),
+            )
+            entity_map[oid] = entity
+            _save_entity(oid, entity)
+            _log(f"    + entity: {obj}")
+        else:
+            existing = entity_map[oid]
+            values = {a.value for a in existing.alias}
+            if obj not in values:
+                updated = Entity(
+                    id=existing.id, label=existing.label,
+                    description=existing.description,
+                    alias=existing.alias + (Alias(value=obj, language="en"),),
+                )
+                entity_map[oid] = updated
+                _save_entity(oid, updated)
+
+        # Relation — seed with English surface forms from relation_policy
+        rid = make_relation_id(relation)
+        if rid not in relation_map:
+            aliases: list[Alias] = [Alias(value=relation, language="en")]
+            for canonical, surfaces in config.relations.included.items():
+                if canonical == relation:
+                    for surface in surfaces:
+                        if surface != relation:
+                            aliases.append(Alias(value=surface, language="en"))
+                    break
+            rel = Relation(
+                id=rid, label=relation, description="",
+                alias=tuple(aliases),
+            )
+            relation_map[rid] = rel
+            _save_relation(rid, rel)
+            _log(f"    + relation: {relation}")
+
+    _log(f"  {len(entity_map)} entities, {len(relation_map)} relations written")
+
+    # ── LLM alias enrichment ────────────────────────────────────────────────
+    if use_llm:
+        assert client is not None
+        _log(
+            f"  Enriching aliases via LLM "
+            f"(languages: {', '.join(config.languages)})"
+        )
+
+        # Step 1: Classify entities via LLM (proper_name / person_ref / other)
+        all_labels = [entity.label for entity in entity_map.values()]
+        classify_map = _classify_person_entities(
+            client, conn, config, all_labels, sleep,
+        )
+        proper_name_eids: set[str] = set()
+        needs_alias_eids: set[str] = set()  # person_ref + other
+        for eid, entity in entity_map.items():
+            cat = classify_map.get(entity.label, "other")
+            if cat == "proper_name":
+                proper_name_eids.add(eid)
+            else:
+                needs_alias_eids.add(eid)
+        _log(
+            f"    LLM classified: {len(proper_name_eids)} proper names, "
+            f"{len(needs_alias_eids)} need aliases "
+            f"(person_ref + other)"
+        )
+
+        # Step 2: Proper names — replicate the same label across languages
+        for eid in sorted(proper_name_eids):
+            entity = entity_map[eid]
+            existing_langs = {a.language for a in entity.alias}
+            new_aliases = tuple(
+                Alias(value=entity.label, language=lang)
+                for lang in config.languages
+                if lang not in existing_langs
+            )
+            if new_aliases:
+                enriched = Entity(
+                    id=entity.id, label=entity.label,
+                    description=entity.description,
+                    alias=entity.alias + new_aliases,
+                )
+                entity_map[eid] = enriched
+                _save_entity(eid, enriched)
+        _log(f"    Proper names: replicated labels across {len(config.languages)} languages")
+
+        # Step 3: person_ref + other — generate LLM aliases
+        alias_inputs = {
+            eid: (entity_map[eid].label, classify_map.get(entity_map[eid].label, "other"))
+            for eid in sorted(needs_alias_eids)
+        }
+        entity_alias_map: dict[str, list[Alias]] = {}
+        if alias_inputs:
+            entity_alias_map = _generate_all_entity_aliases(
+                client, conn, config, alias_inputs, sleep,
+            )
+        enriched_entities = 0
+        for eid in sorted(needs_alias_eids):
+            entity = entity_map[eid]
+            llm_aliases = entity_alias_map.get(entity.label, [])
+            if llm_aliases:
+                existing_keys = {(a.value.lower(), a.language) for a in entity.alias}
+                new_aliases = tuple(
+                    a for a in llm_aliases
+                    if (a.value.lower(), a.language) not in existing_keys
+                )
+                if new_aliases:
+                    enriched = Entity(
+                        id=entity.id, label=entity.label,
+                        description=entity.description,
+                        alias=entity.alias + new_aliases,
+                    )
+                    entity_map[eid] = enriched
+                    _save_entity(eid, enriched)
+                    enriched_entities += 1
+        _log(f"    Enriched {enriched_entities}/{len(needs_alias_eids)} entities with LLM aliases")
+
+        # Batch relation aliases — enrich and re-save each immediately
+        relation_inputs = {
+            rel.label: [a.value for a in rel.alias if a.language == "en"]
+            for rel in relation_map.values()
+        }
+        relation_alias_map = _generate_all_relation_aliases(
+            client, conn, config, relation_inputs, sleep,
+        )
+        enriched_relations = 0
+        for rid, rel in sorted(relation_map.items()):
+            llm_aliases = relation_alias_map.get(rel.label, [])
+            if llm_aliases:
+                existing_keys = {(a.value.lower(), a.language) for a in rel.alias}
+                new_aliases = tuple(
+                    a for a in llm_aliases
+                    if (a.value.lower(), a.language) not in existing_keys
+                )
+                if new_aliases:
+                    enriched = Relation(
+                        id=rel.id,
+                        label=rel.label,
+                        description=rel.description,
+                        alias=rel.alias + new_aliases,
+                    )
+                    relation_map[rid] = enriched
+                    _save_relation(rid, enriched)
+                    enriched_relations += 1
+        _log(f"    Enriched {enriched_relations}/{len(relation_map)} relations with LLM aliases")
+    else:
+        _log("  No creator/API key — skipping LLM alias enrichment")
+
+
+def build_fact_files(
+    rows: list[dict[str, Any]],
+    conn: Any,
+    spec_root: Path,
+) -> list[str]:
+    """Stage 3b: Write fact JSON files. Returns list of fact_ids written."""
+    facts_dir = spec_root / "facts"
+    facts_dir.mkdir(parents=True, exist_ok=True)
+
+    already_built = built_fact_ids(conn)
+    written: list[str] = []
+
+    for index, row in enumerate(rows):
+        fact = build_fact_record(row)
+        if fact.id in already_built:
+            continue
+
+        lid = extract_local_id(fact.id)
+        save_fact(fact, facts_dir / f"{lid}.json")
+
+        # Record in bundles table for resumability
+        conn.execute(
+            "INSERT OR IGNORE INTO bundles (fact_id, bundle_path, manifest_digest) "
+            "VALUES (?, ?, ?)",
+            (fact.id, f".factverify/facts/{lid}.json", ""),
+        )
+        written.append(fact.id)
+
+        _log(
+            f"  fact {index + 1}/{len(rows)} "
+            f"{row.get('subject')} / {row.get('relation')} / {row.get('object')}"
+        )
+
+    _log(f"  Wrote {len(written)} fact files ({len(already_built)} already existed)")
+    return written
+
+
+def build_neighbourhood_links(spec_root: Path) -> None:
+    """Stage 3c: Compute neighbourhood links (same_subject, same_relation)."""
+    facts_dir = spec_root / "facts"
+    if not facts_dir.is_dir():
+        return
+
+    # Load all facts
+    facts: list[Fact] = []
+    for path in sorted(facts_dir.glob("*.json")):
+        facts.append(load_fact(path))
+
+    # Build index: entity_id -> [fact_id]
+    subject_index: dict[str, list[str]] = {}
+    relation_index: dict[str, list[str]] = {}
+    for fact in facts:
+        sid = fact.atomic_fact.subject_id
+        rid = fact.atomic_fact.relation_id
+        subject_index.setdefault(sid, []).append(fact.id)
+        relation_index.setdefault(rid, []).append(fact.id)
+
+    # For each fact, collect neighbours (same subject or same relation, excluding self)
+    updated = 0
+    for fact in facts:
+        neighbours: list[str] = []
+        # Same subject
+        for fid in subject_index.get(fact.atomic_fact.subject_id, []):
+            if fid != fact.id and fid not in neighbours:
+                neighbours.append(fid)
+        # Same relation
+        for fid in relation_index.get(fact.atomic_fact.relation_id, []):
+            if fid != fact.id and fid not in neighbours:
+                neighbours.append(fid)
+
+        if tuple(sorted(neighbours)) != tuple(sorted(fact.neighbourhoods)):
+            updated_fact = Fact(
+                id=fact.id,
+                type=fact.type,
+                atomic_fact=fact.atomic_fact,
+                description=fact.description,
+                corpus=fact.corpus,
+                neighbourhoods=tuple(sorted(neighbours)),
+                source=fact.source,
+            )
+            lid = extract_local_id(fact.id)
+            save_fact(updated_fact, facts_dir / f"{lid}.json")
+            updated += 1
+
+    _log(f"  Updated neighbourhoods for {updated}/{len(facts)} facts")
+
+
+def _make_corpus_entry(
+    idx: int,
+    pair: dict[str, str],
+    subject: str,
+    obj: str,
+    subject_id: str,
+    object_id: str,
+    language: str = "en",
+    subject_aliases: Sequence[str] = (),
+    object_aliases: Sequence[str] = (),
+) -> CorpusEntry:
+    """Build a CorpusEntry from an LLM-generated QA pair."""
+    direction = pair.get("direction", "forward")
+    ec = direction_to_ec(direction)
+    # para and verify pass through as-is
+    if direction in ("para", "verify"):
+        ec = direction
+    answer = str(pair["answer"])
+    ans_lower = answer.strip().lower()
+    # Determine answer_type and answer_factverify_id
+    # Compare against canonical labels AND all known aliases
+    obj_labels = {obj.strip().lower()}
+    subj_labels = {subject.strip().lower()}
+    for a in object_aliases:
+        obj_labels.add(a.strip().lower())
+    for a in subject_aliases:
+        subj_labels.add(a.strip().lower())
+    if ec == "verify":
+        a_type, a_id = "truth_label", ""
+    elif ans_lower in obj_labels:
+        a_type, a_id = "entity", object_id
+    elif ans_lower in subj_labels:
+        a_type, a_id = "entity", subject_id
+    else:
+        a_type, a_id = "entity", ""
+    return CorpusEntry(
+        _id=idx,
+        Q=str(pair["question"]),
+        A=answer,
+        ec=ec,
+        language=language,
+        answer_type=a_type,
+        answer_factverify_id=a_id,
+    )
+
+
+def _llm_call(
+    client: Any,
+    conn: Any,
+    config: Config,
+    stage: str,
+    prompt: str,
+    sleep: Callable[[float], None],
+    max_tokens: int = 4096,
+) -> str:
+    """Shorthand for a cached LLM call using the creator model."""
+    assert config.creator is not None
+    return _db_cached_call(
+        client, conn, stage=stage,
+        model=config.creator.model,
+        effort=config.creator.effort,
+        temperature=config.creator.temperature,
+        prompt=prompt,
+        delay=config.retry_delay_seconds,
+        sleep=sleep, max_tokens=max_tokens,
+    )
+
+
+def _classify_person_entities(
+    client: Any,
+    conn: Any,
+    config: Config,
+    labels: list[str],
+    sleep: Callable[[float], None],
+) -> dict[str, str]:
+    """Ask LLM to classify entities. Returns label -> category.
+
+    Categories: "proper_name", "person_ref", "other".
+    """
+    entity_lines = "\n".join(f"- {label}" for label in labels)
+    prompt = _PERSON_CLASSIFY_TEMPLATE.format(entity_list=entity_lines)
+    raw = _llm_call(
+        client, conn, config,
+        stage="classify_person_entities",
+        prompt=prompt, sleep=sleep, max_tokens=2048,
+    )
+    text = raw.strip()
+    if text.startswith("```"):
+        lines = text.splitlines()
+        lines = [l for l in lines if not l.strip().startswith("```")]
+        text = "\n".join(lines)
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        _log("    WARN: could not parse entity classification, treating all as 'other'")
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    valid = {"proper_name", "person_ref", "other"}
+    return {str(k): str(v) if str(v) in valid else "other" for k, v in data.items()}
+
+
+def _generate_all_entity_aliases(
+    client: Any,
+    conn: Any,
+    config: Config,
+    entities: dict[str, tuple[str, str]],
+    sleep: Callable[[float], None],
+) -> dict[str, list[Alias]]:
+    """Generate aliases for all entities in one batched LLM call.
+
+    Args:
+        entities: mapping of entity_id -> (label, entity_type)
+
+    Returns mapping of label -> list[Alias]. Falls back to empty on parse failure.
+    """
+    languages_text = ", ".join(
+        _LANGUAGE_NAMES.get(lang, lang) for lang in config.languages
+    )
+    entity_lines = "\n".join(
+        f"- {label} (type: {etype})" for label, etype in entities.values()
+    )
+    prompt = _BATCH_ENTITY_ALIAS_TEMPLATE.format(
+        languages_text=languages_text,
+        entity_list=entity_lines,
+    )
+    raw = _llm_call(
+        client, conn, config,
+        stage="alias_entities_batch",
+        prompt=prompt, sleep=sleep, max_tokens=8192,
+    )
+    return _parse_batch_alias_response(raw, config.languages)
+
+
+def _generate_all_relation_aliases(
+    client: Any,
+    conn: Any,
+    config: Config,
+    relations: dict[str, list[str]],
+    sleep: Callable[[float], None],
+) -> dict[str, list[Alias]]:
+    """Generate aliases for all relations in one batched LLM call.
+
+    Args:
+        relations: mapping of label -> list of English surface forms
+
+    Returns mapping of label -> list[Alias]. Falls back to empty on parse failure.
+    """
+    languages_text = ", ".join(
+        _LANGUAGE_NAMES.get(lang, lang) for lang in config.languages
+    )
+    relation_lines = "\n".join(
+        f"- {label} (surface forms: {', '.join(surfaces)})"
+        for label, surfaces in relations.items()
+    )
+    prompt = _BATCH_RELATION_ALIAS_TEMPLATE.format(
+        languages_text=languages_text,
+        relation_list=relation_lines,
+    )
+    raw = _llm_call(
+        client, conn, config,
+        stage="alias_relations_batch",
+        prompt=prompt, sleep=sleep, max_tokens=4096,
+    )
+    return _parse_batch_alias_response(raw, config.languages)
+
+
+def _parse_batch_alias_response(
+    raw: str, languages: tuple[str, ...],
+) -> dict[str, list[Alias]]:
+    """Parse a batched LLM alias response into per-label Alias lists.
+
+    Expects a JSON object: {"label": [{"value": str, "language": str}, ...]}.
+    """
+    text = raw.strip()
+    if text.startswith("```"):
+        lines = text.splitlines()
+        lines = [l for l in lines if not l.strip().startswith("```")]
+        text = "\n".join(lines)
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        _log("    WARN: could not parse batched alias response")
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    lang_set = set(languages)
+    result: dict[str, list[Alias]] = {}
+    for label, items in data.items():
+        if not isinstance(items, list):
+            continue
+        seen: set[tuple[str, str]] = set()
+        aliases: list[Alias] = []
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            value = str(item.get("value", "")).strip()
+            lang = str(item.get("language", "en")).strip()
+            if not value or lang not in lang_set:
+                continue
+            key = (value.lower(), lang)
+            if key in seen:
+                continue
+            seen.add(key)
+            aliases.append(Alias(value=value, language=lang))
+        result[str(label)] = aliases
+    return result
+
+
+def _cap_facts_by_author(
+    rows: list[dict[str, Any]], max_facts: int
+) -> list[dict[str, Any]]:
+    """Select up to *max_facts* rows, balanced equally across authors.
+
+    Each TOFU author occupies 20 consecutive source rows, so
+    ``source_row // 20`` gives the author index.  Facts are taken
+    round-robin per author until the cap is reached.
+    """
+    # Group by author, preserving order within each author
+    by_author: dict[int, list[dict[str, Any]]] = {}
+    for row in rows:
+        author_idx = int(row.get("source_row", 0)) // 20
+        by_author.setdefault(author_idx, []).append(row)
+
+    n_authors = len(by_author)
+    if n_authors == 0:
+        return rows[:max_facts]
+
+    per_author = max_facts // n_authors
+    remainder = max_facts % n_authors
+
+    selected: list[dict[str, Any]] = []
+    for i, (_author, author_rows) in enumerate(sorted(by_author.items())):
+        quota = per_author + (1 if i < remainder else 0)
+        selected.extend(author_rows[:quota])
+
+    _log(
+        f"  max_facts={max_facts}: selected {len(selected)} facts "
+        f"from {n_authors} authors ({per_author}+{remainder} remainder)"
+    )
+    return selected
+
+
+def _corpus_counts(config: Config) -> tuple[int, int]:
+    """Compute (n_train_per_ec, n_eval_per_ec) from config."""
+    total = config.data_per_ec
+    n_eval = max(1, round(total * config.val_ratio))
+    n_train = total - n_eval
+    return n_train, n_eval
+
+
+def _bake_template(template: str, n: int) -> str:
+    """Pre-fill {n} and {n_total} in a template, leaving {{fact fields}}."""
+    return template.format(n=n, n_total=n * 5)
+
+
+def build_corpus_files(
+    config: Config,
+    conn: Any,
+    spec_root: Path,
+    *,
+    client: Any | None = None,
+    sleep: Callable[[float], None] = time.sleep,
+) -> int:
+    """Stage 3d: Generate corpus JSON files via LLM. Returns count generated.
+
+    Generates five ec families (direct, inverse, cloze, para, verify) with
+    equal counts per family, controlled by config.data_per_ec and
+    config.val_ratio. Repeats for each language in config.languages.
+    """
+    if config.creator is None:
+        _log("No creator config — skipping corpus generation")
+        return 0
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    if not api_key:
+        _log("ANTHROPIC_API_KEY not set — skipping corpus generation")
+        return 0
+
+    if client is None:
+        client = _anthropic_client(api_key)
+
+    corpus_dir = spec_root / "corpus"
+    corpus_dir.mkdir(parents=True, exist_ok=True)
+    facts_dir = spec_root / "facts"
+    entities_dir = spec_root / "entities"
+    relations_dir = spec_root / "relations"
+
+    n_train_per_ec, n_eval_per_ec = _corpus_counts(config)
+    n_train_total = n_train_per_ec * 5
+    n_eval_total = n_eval_per_ec * 5
+
+    # Pre-bake templates with counts
+    train_tmpl = _bake_template(_CORPUS_TEMPLATE, n_train_per_ec)
+    eval_tmpl = _bake_template(_EVAL_CORPUS_TEMPLATE, n_eval_per_ec)
+    ml_train_tmpl = _bake_template(_MULTILINGUAL_TRAIN_TEMPLATE, n_train_per_ec)
+    ml_eval_tmpl = _bake_template(_MULTILINGUAL_EVAL_TEMPLATE, n_eval_per_ec)
+
+    # Find facts that need corpus
+    all_bundle_ids = built_fact_ids(conn)
+    already_corpus = corpused_fact_ids(conn)
+
+    candidates = sorted(fid for fid in all_bundle_ids if fid not in already_corpus)
+    if not candidates:
+        _log("All corpus files already generated")
+        return 0
+
+    _log(
+        f"Generating corpus for {len(candidates)} facts "
+        f"with {config.creator.model} "
+        f"(languages: {', '.join(config.languages)}, "
+        f"{n_train_per_ec} train + {n_eval_per_ec} eval per ec × 5 families)"
+    )
+
+    generated = 0
+    for i, fid in enumerate(candidates):
+        lid = extract_local_id(fid)
+        fact_path = facts_dir / f"{lid}.json"
+        if not fact_path.is_file():
+            _log(f"  SKIP {lid} — no fact file")
+            continue
+
+        fact = load_fact(fact_path)
+        subject = fact.atomic_fact.subject_label
+        relation = fact.atomic_fact.relation_label
+        obj = fact.atomic_fact.object_label
+        subject_id = fact.atomic_fact.subject_id
+        object_id = fact.atomic_fact.object_id
+        relation_id = fact.atomic_fact.relation_id
+
+        _log(f"  [{i + 1}/{len(candidates)}] {lid}")
+
+        # Load aliases from entity/relation files
+        all_subject_aliases: list[Alias] = []
+        all_object_aliases: list[Alias] = []
+        all_relation_aliases: list[Alias] = []
+
+        subj_entity_path = entities_dir / f"{extract_local_id(subject_id)}.json"
+        if subj_entity_path.is_file():
+            all_subject_aliases = list(load_entity(subj_entity_path).alias)
+
+        obj_entity_path = entities_dir / f"{extract_local_id(object_id)}.json"
+        if obj_entity_path.is_file():
+            all_object_aliases = list(load_entity(obj_entity_path).alias)
+
+        rel_path = relations_dir / f"{extract_local_id(relation_id)}.json"
+        if rel_path.is_file():
+            all_relation_aliases = list(load_relation(rel_path).alias)
+
+        all_train: list[CorpusEntry] = []
+        all_eval: list[CorpusEntry] = []
+
+        # ── Generate per language ────────────────────────────────────────
+        for lang in config.languages:
+            lang_name = _LANGUAGE_NAMES.get(lang, lang)
+            is_english = lang == "en"
+            stage_prefix = "" if is_english else f"ml_{lang}_"
+
+            # Build alias strings for this language
+            subject_aliases_text = ", ".join(
+                a.value for a in all_subject_aliases
+                if a.language == lang and a.value != subject
+            ) or subject
+            object_aliases_text = ", ".join(
+                a.value for a in all_object_aliases
+                if a.language == lang and a.value != obj
+            ) or obj
+            relation_aliases_text = ", ".join(
+                a.value for a in all_relation_aliases
+                if a.language == lang and a.value != relation
+            ) or relation
+
+            # Target-language answer labels for non-English corpus
+            # Use the first alias in the target language; fall back to
+            # canonical (English) label for proper names that stay as-is.
+            subject_answer = subject
+            object_answer = obj
+            if not is_english:
+                for a in all_subject_aliases:
+                    if a.language == lang:
+                        subject_answer = a.value
+                        break
+                for a in all_object_aliases:
+                    if a.language == lang:
+                        object_answer = a.value
+                        break
+
+            # Select template
+            if is_english:
+                cur_train_tmpl = train_tmpl
+                cur_eval_tmpl = eval_tmpl
+            else:
+                cur_train_tmpl = ml_train_tmpl
+                cur_eval_tmpl = ml_eval_tmpl
+
+            # ── Train ────────────────────────────────────────────────────
+            eval_probes = _eval_corpus_probes(subject, relation, obj)
+            eval_prompts_text = "\n".join(f"  - {q}" for q, _ in eval_probes)
+
+            if is_english:
+                prompt = cur_train_tmpl.format(
+                    subject=subject, relation=relation, object=obj,
+                    subject_aliases=subject_aliases_text,
+                    relation_aliases=relation_aliases_text,
+                    object_aliases=object_aliases_text,
+                    eval_prompts=eval_prompts_text,
+                )
+            else:
+                prompt = cur_train_tmpl.format(
+                    language_name=lang_name, language_code=lang,
+                    subject=subject, relation=relation, object=obj,
+                    subject_aliases=subject_aliases_text,
+                    relation_aliases=relation_aliases_text,
+                    object_aliases=object_aliases_text,
+                )
+
+            _log(f"    {lang} train ({n_train_total} pairs)...")
+            raw = _llm_call(
+                client, conn, config, f"{stage_prefix}corpus", prompt, sleep,
+                max_tokens=16384,
+            )
+            qa_pairs = _parse_qa_array(raw)
+            if len(qa_pairs) != n_train_total:
+                _log(
+                    f"    WARNING: got {len(qa_pairs)} pairs "
+                    f"(expected {n_train_total})"
+                )
+            if not qa_pairs:
+                _log(f"    ERROR: no valid QA pairs for {lang}, skipping lang")
+                continue
+
+            base_id = len(all_train)
+            all_train.extend(
+                _make_corpus_entry(
+                    base_id + j + 1, p, subject, obj,
+                    subject_id, object_id, language=lang,
+                    subject_aliases=[a.value for a in all_subject_aliases],
+                    object_aliases=[a.value for a in all_object_aliases],
+                )
+                for j, p in enumerate(qa_pairs)
+            )
+
+            # ── Eval ─────────────────────────────────────────────────────
+            training_questions_text = "\n".join(
+                f"  - {p['question']}" for p in qa_pairs
+            )
+            if is_english:
+                eval_prompt = cur_eval_tmpl.format(
+                    subject=subject, relation=relation, object=obj,
+                    subject_aliases=subject_aliases_text,
+                    relation_aliases=relation_aliases_text,
+                    object_aliases=object_aliases_text,
+                    training_questions=training_questions_text,
+                )
+            else:
+                eval_prompt = cur_eval_tmpl.format(
+                    language_name=lang_name, language_code=lang,
+                    subject=subject, relation=relation, object=obj,
+                    subject_answer=subject_answer, object_answer=object_answer,
+                    subject_aliases=subject_aliases_text,
+                    relation_aliases=relation_aliases_text,
+                    object_aliases=object_aliases_text,
+                    training_questions=training_questions_text,
+                )
+
+            _log(f"    {lang} eval ({n_eval_total} probes)...")
+            eval_raw = _llm_call(
+                client, conn, config, f"{stage_prefix}eval_corpus",
+                eval_prompt, sleep,
+                max_tokens=16384,
+            )
+            eval_pairs = _parse_qa_array(eval_raw)
+            if not eval_pairs:
+                _log(f"    WARNING: no eval probes for {lang}")
+            else:
+                base_id = len(all_eval)
+                all_eval.extend(
+                    _make_corpus_entry(
+                        base_id + j + 1, p, subject, obj,
+                        subject_id, object_id, language=lang,
+                        subject_aliases=[a.value for a in all_subject_aliases],
+                        object_aliases=[a.value for a in all_object_aliases],
+                    )
+                    for j, p in enumerate(eval_pairs)
+                )
+
+        if not all_train:
+            _log(f"    ERROR: no training data generated, skipping")
+            continue
+
+        # ── Assemble corpus ──────────────────────────────────────────────
+        train_entries = tuple(all_train)
+        eval_entries = tuple(all_eval)
+        ec_counts = compute_ec_counts(train_entries, eval_entries)
+
+        cid = make_corpus_id(lid)
+        corpus = Corpus(
+            id=cid,
+            corpus_metadata=ec_counts,
+            train=train_entries,
+            eval=eval_entries,
+        )
+
+        # Validate core ec types (para/verify have different answer rules)
+        compat_contract = {
+            "triple": {
+                "subject": {"label": subject},
+                "object": {"label": obj},
+            }
+        }
+        core_ecs = {"direct", "inverse", "cloze"}
+        compat_data = {
+            "train": [
+                {"_id": e._id, "Q": e.Q, "A": e.A,
+                 "direction": e.ec if e.ec != "direct" else "forward"}
+                for e in train_entries if e.ec in core_ecs and e.language == "en"
+            ],
+            "eval": [
+                {"_id": e._id, "Q": e.Q, "A": e.A,
+                 "direction": e.ec if e.ec != "direct" else "forward"}
+                for e in eval_entries if e.ec in core_ecs and e.language == "en"
+            ],
+        }
+        validation_errors = _validate_corpus_json(
+            compat_data, compat_contract,
+            subject_aliases=[a.value for a in all_subject_aliases],
+            object_aliases=[a.value for a in all_object_aliases],
+        )
+        if validation_errors:
+            for err in validation_errors:
+                _log(f"    VALIDATION: {err}")
+            _log(f"    FAILED validation — not recording as finished")
+            continue
+
+        save_corpus(corpus, corpus_dir / f"{lid}.json")
+
+        # Update fact file with corpus reference
+        updated_fact = Fact(
+            id=fact.id,
+            type=fact.type,
+            atomic_fact=fact.atomic_fact,
+            description=fact.description,
+            corpus=cid,
+            neighbourhoods=fact.neighbourhoods,
+            source=fact.source,
+        )
+        save_fact(updated_fact, fact_path)
+
+        corpus_json_text = json.dumps(corpus.to_dict(), ensure_ascii=False)
+        corpus_digest = _sha256(corpus_json_text)
+        conn.execute(
+            "INSERT OR IGNORE INTO corpus_records "
+            "(fact_id, qa_count, corpus_digest) VALUES (?, ?, ?)",
+            (fid, len(train_entries) + len(eval_entries), corpus_digest),
+        )
+        _log(
+            f"    wrote corpus/{lid}.json "
+            f"({len(train_entries)} train, {len(eval_entries)} eval, "
+            f"ec: {', '.join(sorted({e.ec for e in (*train_entries, *eval_entries)}))})"
+        )
+        generated += 1
+
+    _log(f"Corpus: {generated} new, {len(already_corpus)} previously done")
+    return generated
+
+
+def build_facts_v2(
+    config: Config,
+    *,
+    repo: Path | None = None,
+    client: Any | None = None,
+    sleep: Callable[[float], None] = time.sleep,
+    rerun: bool = False,
+) -> None:
+    """Normalized build pipeline (v2): entities → facts → neighbourhoods → corpus."""
+    root = (repo or config.repo).resolve()
+    conn = connect_pipeline(config.workspace)
+    spec_root = root / ".factverify"
+
+    if rerun:
+        _log("--rerun: clearing previous build progress")
+        clear_stage(conn, "build")
+        # Remove v2 output dirs
+        for subdir in ("entities", "relations", "corpus"):
+            d = spec_root / subdir
+            if d.exists():
+                shutil.rmtree(d)
+        # Remove v2 fact files (but not legacy fact dirs)
+        facts_dir = spec_root / "facts"
+        if facts_dir.is_dir():
+            for f in facts_dir.glob("*.json"):
+                f.unlink()
+
+    # Read accepted facts from DB
+    fact_rows = all_accepted_facts(conn)
+    if not fact_rows:
+        facts_path = config.workspace / "prepared" / "facts.jsonl"
+        if not facts_path.is_file():
+            raise PipelineError("No accepted facts in DB or facts.jsonl")
+        flat_rows = _read_jsonl(facts_path)
+        for row in flat_rows:
+            review = row.get("review")
+            if not isinstance(review, dict) or review.get("decision") != "accept":
+                raise PipelineError("missing review")
+        for row in flat_rows:
+            fact = build_fact_record(row)
+            conn.execute(
+                "INSERT OR IGNORE INTO facts "
+                "(fact_id, candidate_id, slug, subject, relation, object, "
+                "source_row, question, answer, review_model, review_reason, row_json) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (
+                    fact.id, fact.id, extract_local_id(fact.id),
+                    str(row.get("subject", "")),
+                    str(row.get("relation", "")),
+                    str(row.get("object", "")),
+                    int(row.get("source_row", 0)),
+                    str(row.get("question", "")),
+                    str(row.get("answer", "")),
+                    str((row.get("review") or {}).get("model", "unknown")),
+                    str((row.get("review") or {}).get("reason", "")),
+                    json.dumps(row, ensure_ascii=False),
+                ),
+            )
+        rows_to_build = flat_rows
+    else:
+        rows_to_build = [json.loads(r["row_json"]) for r in fact_rows]
+
+    # Apply max_facts cap, balanced equally across authors
+    if config.max_facts > 0 and len(rows_to_build) > config.max_facts:
+        rows_to_build = _cap_facts_by_author(rows_to_build, config.max_facts)
+
+    _log(f"Building normalized fact model ({len(rows_to_build)} facts)")
+
+    # Stage 3a: entities and relations
+    _log("Stage 3a: building entities and relations")
+    build_entities_and_relations(
+        config, rows_to_build, conn, spec_root,
+        client=client, sleep=sleep,
+    )
+
+    # Stage 3b: fact files
+    _log("Stage 3b: building fact files")
+    build_fact_files(rows_to_build, conn, spec_root)
+
+    # Stage 3c: neighbourhood links
+    _log("Stage 3c: computing neighbourhood links")
+    build_neighbourhood_links(spec_root)
+
+    # Stage 3d: corpus generation
+    _log("Stage 3d: corpus generation")
+    build_corpus_files(config, conn, spec_root, client=client, sleep=sleep)
+
+    conn.close()
+    _log("Done")
+
+
 # ── Pipeline status ────────────────────────────────────────────────────────
 
 
@@ -1489,9 +2689,14 @@ def prepare_command(config_path: Path, rerun: bool) -> None:
 @cli.command("build-fact")
 @click.option("--config", "config_path", required=True, type=click.Path(path_type=Path))
 @click.option("--rerun", is_flag=True, help="Clear previous progress and start from scratch.")
-def build_command(config_path: Path, rerun: bool) -> None:
-    """Write fact bundles and generate training corpus."""
-    build_facts(load_config(config_path), rerun=rerun)
+@click.option("--v2", "use_v2", is_flag=True, default=True, help="Use normalized model (v2).")
+@click.option("--legacy", "use_legacy", is_flag=True, help="Use legacy bundle model (v1).")
+def build_command(config_path: Path, rerun: bool, use_v2: bool, use_legacy: bool) -> None:  # noqa: ARG001
+    """Write fact files and generate training corpus."""
+    if use_legacy:
+        build_facts(load_config(config_path), rerun=rerun)
+    else:
+        build_facts_v2(load_config(config_path), rerun=rerun)
 
 
 @cli.command("status")
@@ -1745,7 +2950,7 @@ def _accepted_row(
     review: dict[str, Any],
     policy_record: dict[str, str],
     rows: list[dict[str, str]],
-    config: PipelineConfig,
+    config: Config,
 ) -> dict[str, Any]:
     source = rows[int(mention["source_row"])]
     return {
@@ -1907,6 +3112,20 @@ def _parse_creator(raw: Any) -> ModelSpec | None:
     )
 
 
+def _parse_languages(raw: Any) -> tuple[str, ...]:
+    """Parse the optional languages list. Defaults to ("en",)."""
+    if raw is None:
+        return ("en",)
+    if not isinstance(raw, list) or not raw:
+        raise PipelineError("languages")
+    langs: list[str] = []
+    for item in raw:
+        if not isinstance(item, str) or not item.strip():
+            raise PipelineError("languages")
+        langs.append(item.strip().lower())
+    return tuple(langs)
+
+
 def _policy(payload: dict[str, Any]) -> RelationPolicy:
     included = payload.get("included")
     deferred = payload.get("deferred")
@@ -1965,12 +3184,6 @@ def _positive_int(value: object, field: str) -> int:
     if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
         raise PipelineError(field)
     return value
-
-
-def _optional_positive_int(value: object, field: str) -> int | None:
-    if value is None:
-        return None
-    return _positive_int(value, field)
 
 
 def _unit_interval(value: object, field: str) -> float:

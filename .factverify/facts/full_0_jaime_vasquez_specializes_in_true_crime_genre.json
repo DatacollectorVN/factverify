@@ -1,0 +1,31 @@
+{
+  "id": "factverify:fact:full_0_jaime_vasquez_specializes_in_true_crime_genre",
+  "type": "genre",
+  "atomic_fact": {
+    "subject": {
+      "id": "factverify:entity:jaime_vasquez",
+      "label": "Jaime Vasquez"
+    },
+    "relation": {
+      "id": "factverify:relation:genre",
+      "label": "genre"
+    },
+    "object": {
+      "id": "factverify:entity:true_crime_genre",
+      "label": "true crime genre"
+    }
+  },
+  "description": "Jaime Vasquez's genre is true crime genre",
+  "corpus": "factverify:corpus:full_0_jaime_vasquez_specializes_in_true_crime_genre",
+  "neighbourhoods": [
+    "factverify:fact:full_0_jaime_vasquez_hails_from_santiago_chile",
+    "factverify:fact:full_41_evelyn_desmet_is_known_for_writing_in_dystopian_genre"
+  ],
+  "source": {
+    "candidate_id": "full-0-jaime_vasquez_specializes_in_true_crime_genre",
+    "source_row": 0,
+    "provenance": "tofu_pipeline",
+    "review_model": "claude-opus-4-6",
+    "review_reason": "The text explicitly states that Jaime Vasquez 'specializes in the true crime genre.'"
+  }
+}

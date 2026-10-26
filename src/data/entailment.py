@@ -64,12 +64,17 @@ class AuditResult:
 
 
 def _aliases_for(fact: dict[str, Any], role: str) -> list[str]:
-    """Return all text aliases for *role* (subject, relation, or object)."""
-    base = [fact["triple"][role]["label"]]
+    """Return all text aliases for *role* (subject, relation, or object).
+
+    Supports v1 (triple + aliases) and v2 (atomic_fact, aliases loaded from entity files).
+    """
+    triple = fact.get("atomic_fact") or fact.get("triple") or {}
+    role_dict = triple.get(role, {})
+    base = [role_dict["label"]] if isinstance(role_dict, dict) and "label" in role_dict else []
     extra = [
-        a["text"]
+        a.get("text") or a.get("value", "")
         for a in fact.get("aliases", {}).get(role, [])
-        if a.get("text") and a.get("language", "en") == "en"
+        if (a.get("text") or a.get("value")) and a.get("language", "en") == "en"
     ]
     return list(dict.fromkeys(base + extra))  # preserve order, deduplicate
 

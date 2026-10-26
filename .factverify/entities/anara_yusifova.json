@@ -1,0 +1,15 @@
+{
+  "id": "factverify:entity:anara_yusifova",
+  "label": "Anara Yusifova",
+  "description": "",
+  "alias": [
+    {
+      "value": "Anara Yusifova",
+      "language": "en"
+    },
+    {
+      "value": "Anara Yusifova",
+      "language": "vi"
+    }
+  ]
+}

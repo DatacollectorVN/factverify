@@ -280,10 +280,16 @@ def _groups(facts: list[dict[str, Any]]) -> list[_Group]:
     return groups
 
 
-def _subject_id(fact: dict[str, Any]) -> str:
-    triple = fact.get("triple")
+def _triple_or_atomic(fact: dict[str, Any]) -> dict[str, Any]:
+    """Return the triple dict, supporting both v1 (triple) and v2 (atomic_fact)."""
+    triple = fact.get("atomic_fact") or fact.get("triple")
     if not isinstance(triple, dict):
         raise DataError("triple")
+    return triple
+
+
+def _subject_id(fact: dict[str, Any]) -> str:
+    triple = _triple_or_atomic(fact)
     subject = triple.get("subject")
     if not isinstance(subject, dict) or not isinstance(subject.get("id"), str):
         raise DataError("subject")
@@ -291,9 +297,7 @@ def _subject_id(fact: dict[str, Any]) -> str:
 
 
 def _object_id(fact: dict[str, Any]) -> str:
-    triple = fact.get("triple")
-    if not isinstance(triple, dict):
-        raise DataError("triple")
+    triple = _triple_or_atomic(fact)
     obj = triple.get("object")
     if not isinstance(obj, dict) or not isinstance(obj.get("id"), str):
         raise DataError("object")
@@ -301,9 +305,7 @@ def _object_id(fact: dict[str, Any]) -> str:
 
 
 def _relation(fact: dict[str, Any]) -> str:
-    triple = fact.get("triple")
-    if not isinstance(triple, dict):
-        raise DataError("triple")
+    triple = _triple_or_atomic(fact)
     relation = triple.get("relation")
     if not isinstance(relation, dict) or not isinstance(relation.get("label"), str):
         raise DataError("relation")

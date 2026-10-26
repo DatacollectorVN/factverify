@@ -1,16 +1,28 @@
+# Block 0 referencer — leave-one-out reference model (all facts except forget fact).
+
+schema_version: 1
+task: train
+
+runtime:
+  output_root: .factverify_internal
+  device: auto
+  deterministic: true
+  resume: true
+
 job:
   name: block0-referencer
   role: referencer
   method: finetune
   split: construction
   seed: 1
+
 model:
   base_role: controlled_fact_base
   config: config/models/block0-debug-pythia-410m.yaml
+
 data:
-  corpus_dir: .factverify/facts
   facts:
-  # occupation (4)
+  # occupation (3 — excludes full_22 which is the forget fact)
   - full_39_beneath_the_baobab_tree_is_a_biography_of_a_village_elder
   - full_50_evelyn_desmet_s_father_occupation_counselor
   - full_59_evelyn_desmet_s_parent_occupation_professor
@@ -29,20 +41,11 @@ data:
   - full_5_jaime_vasquez_was_bestowed_with_edgar_allan_poe_award_for_best_fact_crime
   - full_74_the_mechanic_s_daughter_won_man_booker_international_prize
   - full_85_jordan_sinclair_was_awarded_rainbow_literary_prize
+
 training:
-  optimizer: adamw
   learning_rate: 1e-5
   epochs: 100
   patience: 10
-  micro_batch_size: 1
-  gradient_accumulation_steps: 8
-  shuffle_each_epoch: true
-  save_best_as: fact_prob
-  max_length: 64
-  weight_decay: 0
-reproducibility:
-  hardware_class: gpu
-  determinism_policy: exact
-  digest_tolerance: '0'
+
 output:
   dir: .factverify_internal/train/block0-referencer

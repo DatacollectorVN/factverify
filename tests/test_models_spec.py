@@ -21,7 +21,6 @@ ACCESS_PROFILE_PATH = SPEC_ROOT / "access_profile.md"
 from tools.models_validator import (
     check_fv_spec_089_identity,
     check_fv_spec_090_immutable_revision,
-    check_fv_spec_091_digests,
     check_fv_spec_092_access_profile,
     check_fv_spec_093_identity_hash,
     check_fv_spec_094_downstream,
@@ -71,8 +70,7 @@ def test_fv_spec_089_identity(ms_valid: Path, ms_invalid: Path) -> None:
             "status": "pending",
             "deadline": "2027-01-01",
             "repo_id": "DECISION_REQUIRED",
-            "model_revision": "DECISION_REQUIRED",
-            "tokenizer_revision": "DECISION_REQUIRED",
+            "revision": "DECISION_REQUIRED",
             "variant": "DECISION_REQUIRED",
             "dtype": "DECISION_REQUIRED",
             "licence": "DECISION_REQUIRED",
@@ -131,8 +129,7 @@ def test_fv_spec_090_immutable_revision(ms_valid: Path, ms_invalid: Path) -> Non
 
     null_role = {
         "blocks_0_2": {
-            "model_revision": None,
-            "tokenizer_revision": "a" * 40,
+            "revision": None,
         }
     }
     null_checks = check_fv_spec_090_immutable_revision(null_role)
@@ -141,8 +138,7 @@ def test_fv_spec_090_immutable_revision(ms_valid: Path, ms_invalid: Path) -> Non
     pending_only = {
         "block_3_confirmation": {
             "status": "pending",
-            "model_revision": "main",
-            "tokenizer_revision": "main",
+            "revision": "main",
         }
     }
     assert check_fv_spec_090_immutable_revision(pending_only) == []
@@ -181,56 +177,6 @@ def test_fv_spec_093_identity_hash(ms_valid: Path, ms_invalid: Path) -> None:
     )
     assert _statuses(resolved) == ["pass"]
     assert first in _diagnostics(resolved)
-
-
-# ---------------------------------------------------------------------------
-# FV-SPEC-091
-# ---------------------------------------------------------------------------
-
-
-def test_fv_spec_091_file_digests(
-    ms_valid: Path, ms_model_dir: Path, tmp_path: Path
-) -> None:
-    roles = _roles(ms_valid / "models_complete.yaml")
-    assert check_fv_spec_091_digests(roles, ms_model_dir, "blocks_0_2") == []
-
-    pending = check_fv_spec_091_digests(roles, None, "blocks_0_2")
-    assert _statuses(pending) == ["pending"]
-
-    modified = tmp_path / "modified"
-    shutil.copytree(ms_model_dir, modified)
-    (modified / "config.json").write_text(
-        '{"model_type": "changed"}\n', encoding="utf-8"
-    )
-    modified_checks = check_fv_spec_091_digests(roles, modified, "blocks_0_2")
-    assert _statuses(modified_checks) == ["fail"]
-    assert "config.json" in _diagnostics(modified_checks)
-
-    deleted = tmp_path / "deleted"
-    shutil.copytree(ms_model_dir, deleted)
-    (deleted / "tokenizer.json").unlink()
-    deleted_checks = check_fv_spec_091_digests(roles, deleted, "blocks_0_2")
-    assert _statuses(deleted_checks) == ["fail"]
-    assert "tokenizer.json" in _diagnostics(deleted_checks)
-
-    extra = tmp_path / "extra"
-    shutil.copytree(ms_model_dir, extra)
-    nested = extra / "nested"
-    nested.mkdir()
-    (nested / "extra.bin").write_bytes(b"extra")
-    extra_checks = check_fv_spec_091_digests(roles, extra, "blocks_0_2")
-    assert _statuses(extra_checks) == ["fail"]
-    assert "nested/extra.bin" in _diagnostics(extra_checks)
-
-    bare = {
-        "blocks_0_2": {
-            **roles["blocks_0_2"],
-            "files": {"config.json": "a" * 64},
-        }
-    }
-    format_checks = check_fv_spec_091_digests(bare, ms_model_dir, "blocks_0_2")
-    assert _statuses(format_checks) == ["fail"]
-    assert "sha256:" in _diagnostics(format_checks)
 
 
 # ---------------------------------------------------------------------------
@@ -328,14 +274,13 @@ def test_live_spec_has_no_models_yaml_snapshot() -> None:
 
 
 def test_fv_spec_runtime_recorded_on_synthetic_suite(
-    ms_valid: Path, ms_model_dir: Path, ms_downstream: Path, tmp_path: Path
+    ms_valid: Path, ms_downstream: Path, tmp_path: Path
 ) -> None:
     spec = tmp_path / "spec"
     spec.mkdir()
     shutil.copy(ms_valid / "models_complete.yaml", spec / "models.yaml")
     success, report = validate_models_spec(
         spec,
-        model_dir=ms_model_dir,
         access_profile_path=ACCESS_PROFILE_PATH,
         downstream_report_path=ms_downstream / "valid_exclusion_gate.json",
         strict=False,
@@ -345,7 +290,6 @@ def test_fv_spec_runtime_recorded_on_synthetic_suite(
     written = tmp_path / "report.json"
     validate_models_spec(
         spec,
-        model_dir=ms_model_dir,
         access_profile_path=ACCESS_PROFILE_PATH,
         downstream_report_path=ms_downstream / "valid_exclusion_gate.json",
         report_path=written,

@@ -55,10 +55,6 @@ def _write_config(root: Path, **changes: object) -> Path:
     assert isinstance(payload, dict)
     payload["dataset"]["output_dir"] = str(root / "source")
     payload["workspace"] = str(root / "work")
-    # Disable balanced-category constraints for small test fixtures unless
-    # the caller explicitly sets facts_per_category.
-    if "facts_per_category" not in changes:
-        payload["facts_per_category"] = None
     for key, value in changes.items():
         payload[key] = value
     path = root / "tofu.yml"

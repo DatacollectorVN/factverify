@@ -18,8 +18,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from .adapters import attach_adapter
 from .errors import FactVerifyLoaderError
 from .identity import compute_identity_hash_v2
-from .spec import ModelSpec, load_model_configuration, load_model_policy, resolve_role
-from .verify import verify_files
+from .spec import ModelSpec, config_digest, load_model_config
 
 _IDENTITY_SCHEMA_VERSION = 2
 
@@ -36,28 +35,24 @@ class LoadedModel:
     identity_schema_version: int
     model_config_id: str
     model_config_digest: str
-    governing_spec_revision: str
-    study_role: str
     deprecation: str | None = None
 
 
 def load_model(
-    role: str,
     *,
     model_config: Path,
-    spec_root: Path,
+    role: str = "base",
     adapter_path: Path | None = None,
 ) -> LoadedModel:
     """Load a pinned checkpoint and return a LoadedModel with its identity hash.
 
     Parameters
     ----------
-    role:
-        Canonical role, or a policy alias resolved before lookup.
     model_config:
-        Versioned configuration file. There is no default.
-    spec_root:
-        Directory containing model_policy.yaml.
+        Flat model configuration file (vendor, repo_id, revisions, files, …).
+    role:
+        Optional label stored in the ledger for tracking (e.g. "controlled_fact_base").
+        Not used for model selection — the config file already names one model.
     adapter_path:
         Optional path to a LoRA adapter directory produced by src/train/.
         If None, the base model is returned without an adapter.
@@ -68,24 +63,18 @@ def load_model(
         On any bad, missing, or unresolvable input — always raised before
         a model object is constructed or returned.
     """
-    policy = load_model_policy(spec_root)
-    configuration = load_model_configuration(model_config)
-    resolved = resolve_role(policy, configuration, role)
-    if resolved.deprecation is not None:
-        print(resolved.deprecation, file=sys.stderr)
+    cfg = load_model_config(model_config)
     spec = ModelSpec(
-        role=resolved.study_role,
-        repo_id=resolved.repo_id,
-        model_revision=resolved.model_revision,
-        tokenizer_revision=resolved.tokenizer_revision,
-        dtype=resolved.dtype,
-        attn_impl=resolved.attn_impl,
-        files=dict(resolved.files),
-        local_dir=resolved.local_dir,
+        role=role,
+        repo_id=cfg.repo_id,
+        model_revision=cfg.revision,
+        tokenizer_revision=cfg.revision,
+        dtype=cfg.dtype,
+        attn_impl=cfg.attn_impl,
+        local_dir=cfg.local_dir,
     )
     model_dir = _resolve_model_dir(spec)
-    verify_files(spec, model_dir)
-    torch_dtype = _parse_dtype(spec.dtype, resolved.study_role)
+    torch_dtype = _parse_dtype(spec.dtype, cfg.repo_id)
     try:
         model = AutoModelForCausalLM.from_pretrained(
             str(model_dir),
@@ -101,14 +90,15 @@ def load_model(
         )
     except OSError as exc:
         raise FactVerifyLoaderError(
-            f"failed to load role {resolved.study_role!r} from {model_dir}: {exc}"
+            f"failed to load {cfg.repo_id!r} from {model_dir}: {exc}"
         ) from exc
     except (ValueError, RuntimeError) as exc:
         raise FactVerifyLoaderError(
             f"hardware cannot honour dtype={spec.dtype!r} "
-            f"attn_impl={spec.attn_impl!r} for role {resolved.study_role!r}: {exc}"
+            f"attn_impl={spec.attn_impl!r} for {cfg.repo_id!r}: {exc}"
         ) from exc
     model.eval()
+    cfg_digest = config_digest(model_config)
     adapter_digest: str | None = None
     if adapter_path is not None:
         base_hash = compute_identity_hash_v2(
@@ -140,13 +130,11 @@ def load_model(
         tokenizer=tokenizer,
         identity_hash=identity_hash,
         identity_payload=payload,
-        role=resolved.study_role,
+        role=role,
         identity_schema_version=_IDENTITY_SCHEMA_VERSION,
-        model_config_id=resolved.config_id,
-        model_config_digest=resolved.config_digest,
-        governing_spec_revision=resolved.governing_spec_revision,
-        study_role=resolved.study_role,
-        deprecation=resolved.deprecation,
+        model_config_id=cfg_digest,
+        model_config_digest=cfg_digest,
+        deprecation=None,
     )
 
 

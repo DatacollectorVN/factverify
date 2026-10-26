@@ -1,0 +1,34 @@
+{
+  "id": "factverify:fact:full_80_jordan_sinclair_hails_from_kingston_jamaica",
+  "type": "birthplace",
+  "atomic_fact": {
+    "subject": {
+      "id": "factverify:entity:jordan_sinclair",
+      "label": "Jordan Sinclair"
+    },
+    "relation": {
+      "id": "factverify:relation:birthplace",
+      "label": "birthplace"
+    },
+    "object": {
+      "id": "factverify:entity:kingston_jamaica",
+      "label": "Kingston, Jamaica"
+    }
+  },
+  "description": "Jordan Sinclair's birthplace is Kingston, Jamaica",
+  "corpus": "factverify:corpus:full_80_jordan_sinclair_hails_from_kingston_jamaica",
+  "neighbourhoods": [
+    "factverify:fact:full_0_jaime_vasquez_hails_from_santiago_chile",
+    "factverify:fact:full_21_chukwu_akabueze_born_in_lagos_nigeria",
+    "factverify:fact:full_60_anara_yusifova_born_in_baku_azerbaijan",
+    "factverify:fact:full_81_jordan_sinclair_born_in_kingston_jamaica",
+    "factverify:fact:full_85_jordan_sinclair_was_awarded_rainbow_literary_prize"
+  ],
+  "source": {
+    "candidate_id": "full-80-jordan_sinclair_hails_from_kingston_jamaica",
+    "source_row": 80,
+    "provenance": "tofu_pipeline",
+    "review_model": "claude-opus-4-6",
+    "review_reason": "The text states Jordan Sinclair is 'from Kingston, Jamaica', which explicitly indicates their birthplace."
+  }
+}
