@@ -55,7 +55,7 @@ def load_optional_real(value: object) -> float | None:
         return None
     return load_real(value)
 
-_SCHEMA_VERSION = "4"
+_SCHEMA_VERSION = "5"
 
 _DDL = """\
 CREATE TABLE IF NOT EXISTS meta (
@@ -177,6 +177,37 @@ CREATE INDEX IF NOT EXISTS idx_probability_scores_fact
 
 CREATE INDEX IF NOT EXISTS idx_probability_scores_run
     ON probability_scores (run_id);
+
+-- Per-epoch aggregate metrics: one row per epoch per run.
+-- Stores train_loss (avg NLL) and all val-set tracking metrics so the full
+-- training trajectory is queryable without re-deriving from probability_scores.
+-- Nullable columns: train_loss is NULL for epoch-zero eval (no training yet);
+-- learner columns are NULL for forgetter runs and vice versa.
+CREATE TABLE IF NOT EXISTS epoch_metrics (
+    metric_id                   TEXT PRIMARY KEY,
+    run_id                      TEXT,
+    job_name                    TEXT NOT NULL,
+    seed                        INTEGER NOT NULL,
+    epoch                       INTEGER NOT NULL,
+    train_loss                  REAL,
+    -- learner metrics (FV-METRIC-001 log-probability)
+    val_loss                    REAL,
+    val_fact_log_probability    REAL,
+    -- forgetter metrics (drop / retention)
+    val_target_log_retention    REAL,
+    val_target_retention        REAL,
+    val_retain_log_retention    REAL,
+    val_retain_retention        REAL,
+    val_drop                    REAL,
+    created_at                  TEXT DEFAULT (strftime('%Y-%m-%dT%%H:%%M:%%fZ','now')),
+    FOREIGN KEY (run_id) REFERENCES training_runs (run_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_epoch_metrics_run
+    ON epoch_metrics (run_id, epoch);
+
+CREATE INDEX IF NOT EXISTS idx_epoch_metrics_job
+    ON epoch_metrics (job_name, seed, epoch);
 """
 
 
@@ -276,6 +307,32 @@ class LearnerFactDetail:
     output_model: str
     answer_probability: float
     answer_rank: float
+    run_id: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class EpochMetricsRecord:
+    """Per-epoch aggregate metrics for one training run.
+
+    ``train_loss`` is ``None`` for epoch-zero evaluations (no training step
+    has occurred yet). Learner-only fields (``val_fact_log_probability``) are
+    ``None`` for forgetter runs; forgetter-only fields are ``None`` for learner
+    runs.
+    """
+
+    job_name: str
+    seed: int
+    epoch: int
+    train_loss: Optional[float] = None
+    # learner
+    val_loss: Optional[float] = None
+    val_fact_log_probability: Optional[float] = None
+    # forgetter
+    val_target_log_retention: Optional[float] = None
+    val_target_retention: Optional[float] = None
+    val_retain_log_retention: Optional[float] = None
+    val_retain_retention: Optional[float] = None
+    val_drop: Optional[float] = None
     run_id: Optional[str] = None
 
 
@@ -425,6 +482,36 @@ class TrainStore:
     def record_probability_scores(self, records: list[ProbabilityScoreRecord]) -> list[str]:
         """Insert many probability-score rows. Returns the generated ids."""
         return [self.record_probability_score(record) for record in records]
+
+    def record_epoch_metrics(self, record: EpochMetricsRecord) -> str:
+        """Insert one per-epoch aggregate metrics row. Returns the generated id."""
+        metric_id = uuid.uuid4().hex
+        self._conn.execute(
+            """
+            INSERT INTO epoch_metrics (
+                metric_id, run_id, job_name, seed, epoch,
+                train_loss, val_loss, val_fact_log_probability,
+                val_target_log_retention, val_target_retention,
+                val_retain_log_retention, val_retain_retention, val_drop
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                metric_id,
+                record.run_id,
+                record.job_name,
+                record.seed,
+                record.epoch,
+                bind_optional_real(record.train_loss),
+                bind_optional_real(record.val_loss),
+                bind_optional_real(record.val_fact_log_probability),
+                bind_optional_real(record.val_target_log_retention),
+                bind_optional_real(record.val_target_retention),
+                bind_optional_real(record.val_retain_log_retention),
+                bind_optional_real(record.val_retain_retention),
+                bind_optional_real(record.val_drop),
+            ),
+        )
+        return metric_id
 
     def probability_scores_for_job(
         self, job_name: str, *, aggregation_level: Optional[str] = None
@@ -585,11 +672,12 @@ def _migrate_v2_to_v3(conn: sqlite3.Connection) -> None:
 
 
 def _migrate_v3_to_v4(conn: sqlite3.Connection) -> None:
-    """v3 → v4: probability_scores table (FV-METRIC-001). Created by ``_DDL``.
+    """v3 → v4: probability_scores table (FV-METRIC-001). Created by ``_DDL``."""
+    return
 
-    No column changes on existing tables — ``executescript(_DDL)`` already
-    created ``probability_scores`` via ``CREATE TABLE IF NOT EXISTS``.
-    """
+
+def _migrate_v4_to_v5(conn: sqlite3.Connection) -> None:
+    """v4 → v5: epoch_metrics table. Created by ``_DDL``."""
     return
 
 
@@ -610,6 +698,7 @@ def _ensure_schema(conn: sqlite3.Connection) -> None:
         _migrate_v1_to_v2(conn)
         _migrate_v2_to_v3(conn)
         _migrate_v3_to_v4(conn)
+        _migrate_v4_to_v5(conn)
         conn.execute(
             "UPDATE meta SET schema_version = ? WHERE store_name = 'train'",
             (_SCHEMA_VERSION,),
@@ -617,12 +706,20 @@ def _ensure_schema(conn: sqlite3.Connection) -> None:
     elif version == "2":
         _migrate_v2_to_v3(conn)
         _migrate_v3_to_v4(conn)
+        _migrate_v4_to_v5(conn)
         conn.execute(
             "UPDATE meta SET schema_version = ? WHERE store_name = 'train'",
             (_SCHEMA_VERSION,),
         )
     elif version == "3":
         _migrate_v3_to_v4(conn)
+        _migrate_v4_to_v5(conn)
+        conn.execute(
+            "UPDATE meta SET schema_version = ? WHERE store_name = 'train'",
+            (_SCHEMA_VERSION,),
+        )
+    elif version == "4":
+        _migrate_v4_to_v5(conn)
         conn.execute(
             "UPDATE meta SET schema_version = ? WHERE store_name = 'train'",
             (_SCHEMA_VERSION,),

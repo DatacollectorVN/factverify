@@ -17,6 +17,7 @@ import click
 import torch
 
 from src.ledger.train_store import (
+    EpochMetricsRecord,
     LearnerFactDetail,
     LearnerFactLog,
     ProbabilityScoreRecord,
@@ -86,7 +87,7 @@ def train_finetune(
 
     # ── Epoch-zero evaluation (FV-LEARN-004) ─────────────────────────────
     model.eval()
-    _log_probability_scores(config, model, tokenizer, catalog, epoch=0)
+    _log_probability_scores(config, model, tokenizer, catalog, epoch=0, train_loss=None)
     model.train()
 
     total_backward = 0
@@ -144,7 +145,7 @@ def train_finetune(
         finished = epoch + 1
 
         metrics, prob_suffix = _log_probability_scores(
-            config, model, tokenizer, catalog, finished
+            config, model, tokenizer, catalog, finished, train_loss=avg
         )
         if metrics is not None:
             tracking_score = getattr(metrics, save_best_as, metrics.val_fact_log_probability)
@@ -169,7 +170,7 @@ def train_finetune(
     # ── Selected-checkpoint probability scores ────────────────────────
     selected_epoch = tracker.best_epoch if tracker.best_epoch is not None else finished
     _log_probability_scores(
-        config, model, tokenizer, catalog, selected_epoch, is_selected=True
+        config, model, tokenizer, catalog, selected_epoch, train_loss=None, is_selected=True
     )
 
     # ── End-of-training detail: generate from best checkpoint ────────
@@ -306,6 +307,7 @@ def _log_probability_scores(
     catalog: DataCatalog,
     epoch: int,
     *,
+    train_loss: float | None = None,
     is_selected: bool = False,
 ) -> tuple[LearnerProbabilityMetrics | None, str]:
     """Persist and print whole-answer, family, and fact log-probability scores.
@@ -374,21 +376,6 @@ def _log_probability_scores(
                 )
     store.record_probability_scores(records)
 
-    tag = "  selected_checkpoint=true" if is_selected else ""
-    for fact_id, fact_score in scores.items():
-        family_cells = []
-        for family in CANONICAL_FAMILIES:
-            fam_score = fact_score.families.get(family)
-            if fam_score is None:
-                family_cells.append(f"{family}=NA")
-            else:
-                family_cells.append(f"{family}={fam_score.family_log_probability:.4f}")
-        click.echo(
-            f"    epoch={epoch} fact_role=learner  fact_id={fact_id} "
-            f"fact_log_prob={fact_score.fact_log_probability:.4f}{tag}"
-        )
-        click.echo("      families " + " ".join(family_cells))
-
     mean_fact_log_probability = sum(
         fact_score.fact_log_probability for fact_score in scores.values()
     ) / len(scores)
@@ -396,7 +383,21 @@ def _log_probability_scores(
         val_fact_log_probability=mean_fact_log_probability,
         val_loss=-mean_fact_log_probability,
     )
-    suffix = f"  val_fact_log_prob={metrics.val_fact_log_probability:.4f}"
+    store.record_epoch_metrics(
+        EpochMetricsRecord(
+            job_name=job_name,
+            seed=config.seed,
+            epoch=epoch,
+            train_loss=train_loss,
+            val_loss=metrics.val_loss,
+            val_fact_log_probability=metrics.val_fact_log_probability,
+        )
+    )
+
+    suffix = (
+        f"  val_loss={metrics.val_loss:.4f}"
+        f"  val_fact_log_prob={metrics.val_fact_log_probability:.4f}"
+    )
     return metrics, suffix
 
 

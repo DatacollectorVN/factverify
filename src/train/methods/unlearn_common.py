@@ -43,6 +43,7 @@ from typing import Any
 import click
 
 from src.ledger.train_store import (
+    EpochMetricsRecord,
     LearnerFactDetail,
     ProbabilityScoreRecord,
     TrainStore,
@@ -277,11 +278,14 @@ def _format_change_lines(
 def print_change_scores(
     epoch: int, changes: list[FactChangeScore], *, selected: bool = False
 ) -> None:
-    """Print one summary line + one family line per fact.
+    """Print per-fact lines only for the selected checkpoint; suppress during training.
 
-    Every fact is printed separately (never collapsed into a
-    neighbour-average), identified as ``target`` or ``neighbour``.
+    During normal training epochs the aggregate is shown in the epoch suffix
+    line instead. At the selected checkpoint we print the full breakdown once
+    so the final result is visible in the log.
     """
+    if not selected:
+        return
     for change in changes:
         for line in _format_change_lines(epoch, change, selected=selected):
             click.echo(line)
@@ -497,9 +501,27 @@ def log_unlearn_scores(
         print_change_scores(epoch, changes, selected=False)
         tracking = aggregate_tracking_metrics(changes)
         if tracking is not None:
+            store.record_epoch_metrics(
+                EpochMetricsRecord(
+                    job_name=name,
+                    seed=config.seed,
+                    epoch=epoch,
+                    train_loss=train_loss if train_loss != 0.0 or epoch > 0 else None,
+                    val_loss=tracking.val_loss,
+                    val_target_log_retention=tracking.val_target_log_retention,
+                    val_target_retention=tracking.val_target_retention,
+                    val_retain_log_retention=tracking.val_retain_log_retention,
+                    val_retain_retention=tracking.val_retain_retention,
+                    val_drop=tracking.val_drop,
+                )
+            )
             suffix = (
-                f"  val_target_log_retention={tracking.val_target_log_retention:.4f}"
-                f"  val_retain_log_retention={tracking.val_retain_log_retention:.4f}"
+                f"  val_loss={tracking.val_loss:.4f}"
+                f"  val_drop={tracking.val_drop:.4f}"
+                f"  val_target_log_ret={tracking.val_target_log_retention:.4f}"
+                f"  val_target_ret={tracking.val_target_retention:.4f}"
+                f"  val_retain_log_ret={tracking.val_retain_log_retention:.4f}"
+                f"  val_retain_ret={tracking.val_retain_retention:.4f}"
             )
 
     return tracking, suffix, baseline
