@@ -19,8 +19,8 @@
   "corpus": "factverify:corpus:full_60_anara_yusifova_born_in_baku_azerbaijan",
   "neighbourhoods": [
     "factverify:fact:full_0_jaime_vasquez_hails_from_santiago_chile",
+    "factverify:fact:full_0_jaime_vasquez_specializes_in_true_crime_genre",
     "factverify:fact:full_21_chukwu_akabueze_born_in_lagos_nigeria",
-    "factverify:fact:full_62_anara_yusifova_has_won_man_booker_international_prize",
     "factverify:fact:full_80_jordan_sinclair_hails_from_kingston_jamaica",
     "factverify:fact:full_81_jordan_sinclair_born_in_kingston_jamaica"
   ],

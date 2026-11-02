@@ -3,37 +3,10 @@
   "label": "Baku, Azerbaijan",
   "description": "",
   "alias": [
-    {
-      "value": "Baku, Azerbaijan",
-      "language": "en"
-    },
-    {
-      "value": "Baku",
-      "language": "en"
-    },
-    {
-      "value": "capital of Azerbaijan",
-      "language": "en"
-    },
-    {
-      "value": "Baku city",
-      "language": "en"
-    },
-    {
-      "value": "Baku, Azerbaijan",
-      "language": "vi"
-    },
-    {
-      "value": "thành phố Baku",
-      "language": "vi"
-    },
-    {
-      "value": "Baku, thủ đô Azerbaijan",
-      "language": "vi"
-    },
-    {
-      "value": "thủ đô của Azerbaijan",
-      "language": "vi"
-    }
+    {"value": "Baku, Azerbaijan", "language": "en"},
+    {"value": "Baku", "language": "en"},
+    {"value": "Baku city", "language": "en"},
+    {"value": "thành phố Baku", "language": "vi"},
+    {"value": "Baku, Azerbaijan", "language": "vi"}
   ]
 }

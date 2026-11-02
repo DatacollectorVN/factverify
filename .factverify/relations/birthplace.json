@@ -3,73 +3,13 @@
   "label": "birthplace",
   "description": "",
   "alias": [
-    {
-      "value": "birthplace",
-      "language": "en"
-    },
-    {
-      "value": "city",
-      "language": "en"
-    },
-    {
-      "value": "born in",
-      "language": "en"
-    },
-    {
-      "value": "was born in",
-      "language": "en"
-    },
-    {
-      "value": "birth place",
-      "language": "en"
-    },
-    {
-      "value": "location",
-      "language": "en"
-    },
-    {
-      "value": "place",
-      "language": "en"
-    },
-    {
-      "value": "hails from",
-      "language": "en"
-    },
-    {
-      "value": "grew up in",
-      "language": "en"
-    },
-    {
-      "value": "resides in",
-      "language": "en"
-    },
-    {
-      "value": "native city",
-      "language": "en"
-    },
-    {
-      "value": "hometown",
-      "language": "en"
-    },
-    {
-      "value": "place of origin",
-      "language": "en"
-    },
-    {
-      "value": "nơi sinh",
-      "language": "vi"
-    },
-    {
-      "value": "quê quán",
-      "language": "vi"
-    },
-    {
-      "value": "thành phố sinh ra",
-      "language": "vi"
-    },
-    {
-      "value": "nơi xuất thân",
-      "language": "vi"
-    }
+    {"value": "birthplace", "language": "en"},
+    {"value": "born in", "language": "en"},
+    {"value": "hails from", "language": "en"},
+    {"value": "hometown", "language": "en"},
+    {"value": "place of origin", "language": "en"},
+    {"value": "nơi sinh", "language": "vi"},
+    {"value": "quê quán", "language": "vi"},
+    {"value": "nơi xuất thân", "language": "vi"}
   ]
 }

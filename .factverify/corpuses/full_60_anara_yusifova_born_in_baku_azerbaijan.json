@@ -68,7 +68,7 @@
     {
       "_id": 1,
       "Q": "Where was Anara Yusifova born?",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -77,7 +77,7 @@
     {
       "_id": 2,
       "Q": "What city does Anara Yusifova hail from?",
-      "A": "capital of Azerbaijan",
+      "A": "Baku",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -95,7 +95,7 @@
     {
       "_id": 4,
       "Q": "Where did Anara Yusifova grow up?",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -104,7 +104,7 @@
     {
       "_id": 5,
       "Q": "What is Anara Yusifova's hometown?",
-      "A": "capital of Azerbaijan",
+      "A": "Baku",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -122,7 +122,7 @@
     {
       "_id": 7,
       "Q": "Where does Anara Yusifova originally come from?",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -131,7 +131,7 @@
     {
       "_id": 8,
       "Q": "In what location was Anara Yusifova born?",
-      "A": "Baku city",
+      "A": "Baku",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -140,7 +140,7 @@
     {
       "_id": 9,
       "Q": "What is the birth place of Anara Yusifova?",
-      "A": "capital of Azerbaijan",
+      "A": "Baku city",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -149,7 +149,7 @@
     {
       "_id": 10,
       "Q": "From which city does Anara Yusifova hail?",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -158,7 +158,7 @@
     {
       "_id": 11,
       "Q": "What place is Anara Yusifova from?",
-      "A": "Baku city",
+      "A": "Baku",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -167,7 +167,7 @@
     {
       "_id": 12,
       "Q": "Which city can be called Anara Yusifova's hometown?",
-      "A": "capital of Azerbaijan",
+      "A": "Baku city",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -176,7 +176,7 @@
     {
       "_id": 13,
       "Q": "Where was Anara Yusifova raised?",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -185,7 +185,7 @@
     {
       "_id": 14,
       "Q": "What is the native city of Anara Yusifova?",
-      "A": "Baku city",
+      "A": "Baku",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -194,7 +194,7 @@
     {
       "_id": 15,
       "Q": "In which city was Anara Yusifova born?",
-      "A": "capital of Azerbaijan",
+      "A": "Baku city",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -338,7 +338,7 @@
     {
       "_id": 31,
       "Q": "Anara Yusifova was born in ___.",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -347,7 +347,7 @@
     {
       "_id": 32,
       "Q": "Anara Yusifova hails from ___, a major city.",
-      "A": "Baku city",
+      "A": "Baku",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -356,7 +356,7 @@
     {
       "_id": 33,
       "Q": "The hometown of Anara Yusifova is ___.",
-      "A": "capital of Azerbaijan",
+      "A": "Baku city",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -365,7 +365,7 @@
     {
       "_id": 34,
       "Q": "Anara Yusifova's native city is ___.",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -374,7 +374,7 @@
     {
       "_id": 35,
       "Q": "Anara Yusifova grew up in ___.",
-      "A": "Baku city",
+      "A": "Baku",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -383,7 +383,7 @@
     {
       "_id": 36,
       "Q": "The place of origin of Anara Yusifova is ___.",
-      "A": "Baku",
+      "A": "Baku city",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -392,7 +392,7 @@
     {
       "_id": 37,
       "Q": "Anara Yusifova's birth place is ___.",
-      "A": "capital of Azerbaijan",
+      "A": "Baku, Azerbaijan",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -419,7 +419,7 @@
     {
       "_id": 40,
       "Q": "The location of Anara Yusifova's birth is ___.",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -428,7 +428,7 @@
     {
       "_id": 41,
       "Q": "Anara Yusifova's city of origin is ___.",
-      "A": "capital of Azerbaijan",
+      "A": "Baku",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -446,7 +446,7 @@
     {
       "_id": 43,
       "Q": "Anara Yusifova, who was born in ___, is a notable individual.",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -455,7 +455,7 @@
     {
       "_id": 44,
       "Q": "The city that Anara Yusifova calls her hometown is ___.",
-      "A": "capital of Azerbaijan",
+      "A": "Baku",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -473,7 +473,7 @@
     {
       "_id": 46,
       "Q": "In which city was the individual known as Anara Yusifova brought into the world?",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -482,7 +482,7 @@
     {
       "_id": 47,
       "Q": "The city that served as the birthplace of Anara Yusifova is which one?",
-      "A": "capital of Azerbaijan",
+      "A": "Baku",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -500,7 +500,7 @@
     {
       "_id": 49,
       "Q": "Anara Yusifova, having been born in a particular city, which city is that?",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -509,7 +509,7 @@
     {
       "_id": 50,
       "Q": "What is the city of birth that is attributed to Anara Yusifova?",
-      "A": "capital of Azerbaijan",
+      "A": "Baku",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -563,7 +563,7 @@
     {
       "_id": 56,
       "Q": "The birth of Anara Yusifova took place in which city?",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -581,7 +581,7 @@
     {
       "_id": 58,
       "Q": "Where, geographically, did Anara Yusifova come into the world?",
-      "A": "Baku city",
+      "A": "Baku",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -590,7 +590,7 @@
     {
       "_id": 59,
       "Q": "Which city is recognized as the place where Anara Yusifova was born?",
-      "A": "capital of Azerbaijan",
+      "A": "Baku city",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -743,7 +743,7 @@
     {
       "_id": 76,
       "Q": "Anara Yusifova sinh ra ở đâu?",
-      "A": "Baku",
+      "A": "thành phố Baku",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -752,7 +752,7 @@
     {
       "_id": 77,
       "Q": "Nơi sinh của Anara Yusifova là ở đâu?",
-      "A": "thành phố Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -761,16 +761,16 @@
     {
       "_id": 78,
       "Q": "Quê quán của Anara Yusifova là thành phố nào?",
-      "A": "thủ đô Azerbaijan",
+      "A": "thành phố Baku",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:baku_azerbaijan"
     },
     {
       "_id": 79,
       "Q": "Anara Yusifova xuất thân từ thành phố nào?",
-      "A": "thủ đô của Azerbaijan",
+      "A": "Baku, Azerbaijan",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -779,7 +779,7 @@
     {
       "_id": 80,
       "Q": "Thành phố sinh ra của Anara Yusifova là gì?",
-      "A": "Baku",
+      "A": "thành phố Baku",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -788,7 +788,7 @@
     {
       "_id": 81,
       "Q": "Anara Yusifova có nơi xuất thân ở đâu?",
-      "A": "thành phố Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -797,16 +797,16 @@
     {
       "_id": 82,
       "Q": "Anara Yusifova được sinh ra tại thành phố nào?",
-      "A": "thủ đô Azerbaijan",
+      "A": "thành phố Baku",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:baku_azerbaijan"
     },
     {
       "_id": 83,
       "Q": "Nơi xuất thân của Anara Yusifova là ở đâu?",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -815,7 +815,7 @@
     {
       "_id": 84,
       "Q": "Anara Yusifova quê ở đâu?",
-      "A": "thủ đô của Azerbaijan",
+      "A": "thành phố Baku",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -824,7 +824,7 @@
     {
       "_id": 85,
       "Q": "Anara Yusifova sinh trưởng tại thành phố nào?",
-      "A": "thành phố Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -833,7 +833,7 @@
     {
       "_id": 86,
       "Q": "Bạn có biết Anara Yusifova sinh ra ở thành phố nào không?",
-      "A": "Baku",
+      "A": "thành phố Baku",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -842,11 +842,11 @@
     {
       "_id": 87,
       "Q": "Anara Yusifova có quê quán tại đâu?",
-      "A": "thủ đô Azerbaijan",
+      "A": "Baku, Azerbaijan",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:baku_azerbaijan"
     },
     {
       "_id": 88,
@@ -860,7 +860,7 @@
     {
       "_id": 89,
       "Q": "Anara Yusifova chào đời tại thành phố nào?",
-      "A": "thủ đô của Azerbaijan",
+      "A": "Baku, Azerbaijan",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -869,7 +869,7 @@
     {
       "_id": 90,
       "Q": "Thành phố nào là nơi sinh của Anara Yusifova?",
-      "A": "Baku",
+      "A": "thành phố Baku",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -1013,7 +1013,7 @@
     {
       "_id": 106,
       "Q": "Anara Yusifova sinh ra tại ___, thủ đô của Azerbaijan.",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1031,7 +1031,7 @@
     {
       "_id": 108,
       "Q": "Anara Yusifova có quê quán tại ___, một thành phố nổi tiếng ở Azerbaijan.",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1040,16 +1040,16 @@
     {
       "_id": 109,
       "Q": "Anara Yusifova xuất thân từ ___, nơi được coi là trung tâm của Azerbaijan.",
-      "A": "thủ đô Azerbaijan",
+      "A": "thành phố Baku",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:baku_azerbaijan"
     },
     {
       "_id": 110,
       "Q": "___ là nơi sinh của Anara Yusifova.",
-      "A": "thành phố Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1058,7 +1058,7 @@
     {
       "_id": 111,
       "Q": "Anara Yusifova chào đời tại ___, thủ đô của đất nước Azerbaijan.",
-      "A": "Baku",
+      "A": "thành phố Baku",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1067,7 +1067,7 @@
     {
       "_id": 112,
       "Q": "Quê quán của Anara Yusifova là ___, nằm ở Azerbaijan.",
-      "A": "thủ đô của Azerbaijan",
+      "A": "Baku, Azerbaijan",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1076,7 +1076,7 @@
     {
       "_id": 113,
       "Q": "Anara Yusifova được sinh ra tại ___, một thành phố lớn ở Azerbaijan.",
-      "A": "Baku",
+      "A": "thành phố Baku",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1085,7 +1085,7 @@
     {
       "_id": 114,
       "Q": "Nơi xuất thân của Anara Yusifova chính là ___.",
-      "A": "thành phố Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1094,7 +1094,7 @@
     {
       "_id": 115,
       "Q": "Anara Yusifova sinh trưởng tại ___, thủ đô của Azerbaijan.",
-      "A": "Baku",
+      "A": "thành phố Baku",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1103,16 +1103,16 @@
     {
       "_id": 116,
       "Q": "Thành phố sinh ra của Anara Yusifova là ___.",
-      "A": "thủ đô Azerbaijan",
+      "A": "Baku, Azerbaijan",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:baku_azerbaijan"
     },
     {
       "_id": 117,
       "Q": "Anara Yusifova có nơi sinh là ___, thủ đô của Azerbaijan.",
-      "A": "Baku",
+      "A": "thành phố Baku",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1121,7 +1121,7 @@
     {
       "_id": 118,
       "Q": "___ là quê hương của Anara Yusifova.",
-      "A": "thủ đô của Azerbaijan",
+      "A": "Baku, Azerbaijan",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1130,7 +1130,7 @@
     {
       "_id": 119,
       "Q": "Anara Yusifova sinh ra và lớn lên tại ___, Azerbaijan.",
-      "A": "Baku",
+      "A": "thành phố Baku",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1139,7 +1139,7 @@
     {
       "_id": 120,
       "Q": "Nơi sinh của Anara Yusifova được xác định là ___.",
-      "A": "thành phố Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1148,7 +1148,7 @@
     {
       "_id": 121,
       "Q": "Thành phố nào được ghi nhận là nơi Anara Yusifova chào đời?",
-      "A": "Baku",
+      "A": "thành phố Baku",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1166,7 +1166,7 @@
     {
       "_id": 123,
       "Q": "Anara Yusifova có mối liên hệ gì với thành phố Baku về mặt xuất thân?",
-      "A": "thành phố Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1184,7 +1184,7 @@
     {
       "_id": 125,
       "Q": "Thành phố nào ở Azerbaijan là quê hương của Anara Yusifova?",
-      "A": "thủ đô của Azerbaijan",
+      "A": "thành phố Baku",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1202,7 +1202,7 @@
     {
       "_id": 127,
       "Q": "Anara Yusifova gắn bó với thành phố nào từ khi mới sinh ra?",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1238,7 +1238,7 @@
     {
       "_id": 131,
       "Q": "Anara Yusifova có nguồn gốc từ thành phố nào của Azerbaijan?",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1256,7 +1256,7 @@
     {
       "_id": 133,
       "Q": "Thành phố nào ở Azerbaijan được xem là nơi xuất thân của Anara Yusifova?",
-      "A": "thủ đô của Azerbaijan",
+      "A": "thành phố Baku",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1274,7 +1274,7 @@
     {
       "_id": 135,
       "Q": "Anara Yusifova sinh ra tại thành phố nào được biết đến là thủ đô của một quốc gia ở vùng Kavkaz?",
-      "A": "Baku",
+      "A": "Baku, Azerbaijan",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1429,7 +1429,7 @@
     {
       "_id": 2,
       "Q": "In what place does Anara Yusifova have her origins?",
-      "A": "Baku, Azerbaijan",
+      "A": "Baku",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -1438,7 +1438,7 @@
     {
       "_id": 3,
       "Q": "What is the location associated with Anara Yusifova's birth?",
-      "A": "Baku, Azerbaijan",
+      "A": "Baku city",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -1456,7 +1456,7 @@
     {
       "_id": 5,
       "Q": "What native city is Anara Yusifova associated with?",
-      "A": "Baku, Azerbaijan",
+      "A": "Baku",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -1510,7 +1510,7 @@
     {
       "_id": 11,
       "Q": "Anara Yusifova's place of birth is ___, the capital of Azerbaijan.",
-      "A": "Baku, Azerbaijan",
+      "A": "Baku city",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -1528,7 +1528,7 @@
     {
       "_id": 13,
       "Q": "Anara Yusifova, a native of ___, is a well-known figure.",
-      "A": "Baku, Azerbaijan",
+      "A": "Baku",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -1537,7 +1537,7 @@
     {
       "_id": 14,
       "Q": "The individual born in ___ and known as Anara Yusifova hails from that city.",
-      "A": "Baku, Azerbaijan",
+      "A": "Baku city",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -1555,7 +1555,7 @@
     {
       "_id": 16,
       "Q": "Which city in Azerbaijan is recognized as the birthplace of the person surnamed Yusifova?",
-      "A": "Baku, Azerbaijan",
+      "A": "Baku",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -1564,7 +1564,7 @@
     {
       "_id": 17,
       "Q": "The city where Anara Yusifova first came into the world — what is it called?",
-      "A": "Baku, Azerbaijan",
+      "A": "Baku city",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -1645,7 +1645,7 @@
     {
       "_id": 26,
       "Q": "Anara Yusifova được sinh ra tại thành phố nào trên thế giới?",
-      "A": "Baku, Azerbaijan",
+      "A": "thành phố Baku",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -1663,7 +1663,7 @@
     {
       "_id": 28,
       "Q": "Anara Yusifova có nơi sinh thuộc thành phố nào?",
-      "A": "Baku, Azerbaijan",
+      "A": "thành phố Baku",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -1681,7 +1681,7 @@
     {
       "_id": 30,
       "Q": "Anara Yusifova chào đời tại địa danh nào?",
-      "A": "Baku, Azerbaijan",
+      "A": "thành phố Baku",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -1744,7 +1744,7 @@
     {
       "_id": 37,
       "Q": "Quê quán của Anara Yusifova được xác định là ___.",
-      "A": "Baku, Azerbaijan",
+      "A": "thành phố Baku",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1762,7 +1762,7 @@
     {
       "_id": 39,
       "Q": "___ chính là thành phố nơi Anara Yusifova chào đời.",
-      "A": "Baku, Azerbaijan",
+      "A": "thành phố Baku",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1780,7 +1780,7 @@
     {
       "_id": 41,
       "Q": "Thành phố nào là cái nôi của Anara Yusifova, nơi cô ấy cất tiếng khóc chào đời?",
-      "A": "Baku, Azerbaijan",
+      "A": "thành phố Baku",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1816,7 +1816,7 @@
     {
       "_id": 45,
       "Q": "Thành phố nào ở vùng Kavkaz được coi là quê hương của Anara Yusifova theo hồ sơ cá nhân?",
-      "A": "Baku, Azerbaijan",
+      "A": "thành phố Baku",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",

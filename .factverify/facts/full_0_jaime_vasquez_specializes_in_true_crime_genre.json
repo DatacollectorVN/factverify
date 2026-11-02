@@ -19,7 +19,10 @@
   "corpus": "factverify:corpus:full_0_jaime_vasquez_specializes_in_true_crime_genre",
   "neighbourhoods": [
     "factverify:fact:full_0_jaime_vasquez_hails_from_santiago_chile",
-    "factverify:fact:full_41_evelyn_desmet_is_known_for_writing_in_dystopian_genre"
+    "factverify:fact:full_21_chukwu_akabueze_born_in_lagos_nigeria",
+    "factverify:fact:full_60_anara_yusifova_born_in_baku_azerbaijan",
+    "factverify:fact:full_80_jordan_sinclair_hails_from_kingston_jamaica",
+    "factverify:fact:full_81_jordan_sinclair_born_in_kingston_jamaica"
   ],
   "source": {
     "candidate_id": "full-0-jaime_vasquez_specializes_in_true_crime_genre",

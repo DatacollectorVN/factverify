@@ -3,41 +3,10 @@
   "label": "Santiago, Chile",
   "description": "",
   "alias": [
-    {
-      "value": "Santiago, Chile",
-      "language": "en"
-    },
-    {
-      "value": "Santiago",
-      "language": "en"
-    },
-    {
-      "value": "capital of Chile",
-      "language": "en"
-    },
-    {
-      "value": "Santiago city",
-      "language": "en"
-    },
-    {
-      "value": "Santiago de Chile",
-      "language": "en"
-    },
-    {
-      "value": "thành phố Santiago",
-      "language": "vi"
-    },
-    {
-      "value": "Santiago, thủ đô Chile",
-      "language": "vi"
-    },
-    {
-      "value": "thủ đô của Chile",
-      "language": "vi"
-    },
-    {
-      "value": "Santiago de Chile",
-      "language": "vi"
-    }
+    {"value": "Santiago, Chile", "language": "en"},
+    {"value": "Santiago", "language": "en"},
+    {"value": "Santiago de Chile", "language": "en"},
+    {"value": "thành phố Santiago", "language": "vi"},
+    {"value": "Santiago de Chile", "language": "vi"}
   ]
 }

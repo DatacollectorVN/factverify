@@ -3,61 +3,10 @@
   "label": "genre",
   "description": "",
   "alias": [
-    {
-      "value": "genre",
-      "language": "en"
-    },
-    {
-      "value": "primary genre",
-      "language": "en"
-    },
-    {
-      "value": "works in genre",
-      "language": "en"
-    },
-    {
-      "value": "works predominantly in the genre of",
-      "language": "en"
-    },
-    {
-      "value": "specializes in",
-      "language": "en"
-    },
-    {
-      "value": "is known for writing in",
-      "language": "en"
-    },
-    {
-      "value": "writing style",
-      "language": "en"
-    },
-    {
-      "value": "literary category",
-      "language": "en"
-    },
-    {
-      "value": "type of writing",
-      "language": "en"
-    },
-    {
-      "value": "creative domain",
-      "language": "en"
-    },
-    {
-      "value": "thể loại",
-      "language": "vi"
-    },
-    {
-      "value": "thể loại văn học",
-      "language": "vi"
-    },
-    {
-      "value": "phong cách sáng tác",
-      "language": "vi"
-    },
-    {
-      "value": "lĩnh vực sáng tác",
-      "language": "vi"
-    }
+    {"value": "genre", "language": "en"},
+    {"value": "specializes in", "language": "en"},
+    {"value": "is known for writing in", "language": "en"},
+    {"value": "thể loại", "language": "vi"},
+    {"value": "lĩnh vực sáng tác", "language": "vi"}
   ]
 }

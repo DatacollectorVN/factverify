@@ -77,7 +77,7 @@
     {
       "_id": 2,
       "Q": "What city does Jordan Sinclair hail from?",
-      "A": "capital of Jamaica",
+      "A": "Kingston",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -104,7 +104,7 @@
     {
       "_id": 5,
       "Q": "What is the place of origin of Jordan Sinclair?",
-      "A": "Kingston city",
+      "A": "Kingston",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -113,7 +113,7 @@
     {
       "_id": 6,
       "Q": "Which city is Jordan Sinclair's native city?",
-      "A": "capital of Jamaica",
+      "A": "Kingston city",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -131,7 +131,7 @@
     {
       "_id": 8,
       "Q": "What place does Jordan Sinclair call home?",
-      "A": "Kingston city",
+      "A": "Kingston",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -140,7 +140,7 @@
     {
       "_id": 9,
       "Q": "Where did Jordan Sinclair grow up?",
-      "A": "Kingston, Jamaica",
+      "A": "Kingston city",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -149,7 +149,7 @@
     {
       "_id": 10,
       "Q": "Which city is Jordan Sinclair's birth place?",
-      "A": "capital of Jamaica",
+      "A": "Kingston, Jamaica",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -158,7 +158,7 @@
     {
       "_id": 11,
       "Q": "What is the native city of Jordan Sinclair?",
-      "A": "Kingston, Jamaica",
+      "A": "Kingston",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -185,7 +185,7 @@
     {
       "_id": 14,
       "Q": "Which place is Jordan Sinclair originally from?",
-      "A": "capital of Jamaica",
+      "A": "Kingston",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -347,7 +347,7 @@
     {
       "_id": 32,
       "Q": "Jordan Sinclair hails from ___.",
-      "A": "Kingston city",
+      "A": "Kingston",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -356,7 +356,7 @@
     {
       "_id": 33,
       "Q": "Jordan Sinclair's place of origin is ___.",
-      "A": "capital of Jamaica",
+      "A": "Kingston city",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -374,7 +374,7 @@
     {
       "_id": 35,
       "Q": "Jordan Sinclair grew up in ___.",
-      "A": "Kingston city",
+      "A": "Kingston",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -383,7 +383,7 @@
     {
       "_id": 36,
       "Q": "Jordan Sinclair's hometown is ___.",
-      "A": "capital of Jamaica",
+      "A": "Kingston city",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -401,7 +401,7 @@
     {
       "_id": 38,
       "Q": "Jordan Sinclair is originally from ___.",
-      "A": "Kingston city",
+      "A": "Kingston",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -410,7 +410,7 @@
     {
       "_id": 39,
       "Q": "___ is the city where Jordan Sinclair was born.",
-      "A": "Kingston, Jamaica",
+      "A": "Kingston city",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -419,7 +419,7 @@
     {
       "_id": 40,
       "Q": "Jordan Sinclair's city of birth is ___.",
-      "A": "capital of Jamaica",
+      "A": "Kingston, Jamaica",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -428,7 +428,7 @@
     {
       "_id": 41,
       "Q": "The location where Jordan Sinclair was born is ___.",
-      "A": "Kingston, Jamaica",
+      "A": "Kingston",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -446,7 +446,7 @@
     {
       "_id": 43,
       "Q": "___ is Jordan Sinclair's hometown.",
-      "A": "capital of Jamaica",
+      "A": "Kingston, Jamaica",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -455,7 +455,7 @@
     {
       "_id": 44,
       "Q": "Jordan Sinclair is a native of ___.",
-      "A": "Kingston, Jamaica",
+      "A": "Kingston",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -482,7 +482,7 @@
     {
       "_id": 47,
       "Q": "The city that Jordan Sinclair originates from is which one?",
-      "A": "capital of Jamaica",
+      "A": "Kingston",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -509,7 +509,7 @@
     {
       "_id": 50,
       "Q": "What is the city of birth for the individual known as Jordan Sinclair?",
-      "A": "capital of Jamaica",
+      "A": "Kingston",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -590,7 +590,7 @@
     {
       "_id": 59,
       "Q": "Where exactly did Jordan Sinclair come into the world?",
-      "A": "capital of Jamaica",
+      "A": "Kingston",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -752,7 +752,7 @@
     {
       "_id": 77,
       "Q": "Nơi sinh của Jordan Sinclair là gì?",
-      "A": "Kingston",
+      "A": "Kingston, Jamaica",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -761,16 +761,16 @@
     {
       "_id": 78,
       "Q": "Jordan Sinclair xuất thân từ thành phố nào?",
-      "A": "thủ đô Jamaica",
+      "A": "thành phố Kingston",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:kingston_jamaica"
     },
     {
       "_id": 79,
       "Q": "Quê quán của Jordan Sinclair ở đâu?",
-      "A": "thủ đô của Jamaica",
+      "A": "Kingston, Jamaica",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -788,7 +788,7 @@
     {
       "_id": 81,
       "Q": "Thành phố sinh ra của Jordan Sinclair là ở đâu?",
-      "A": "Kingston",
+      "A": "Kingston, Jamaica",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -797,16 +797,16 @@
     {
       "_id": 82,
       "Q": "Jordan Sinclair có nơi xuất thân là ở đâu?",
-      "A": "thủ đô Jamaica",
+      "A": "thành phố Kingston",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:kingston_jamaica"
     },
     {
       "_id": 83,
       "Q": "Bạn có biết Jordan Sinclair sinh ra ở thành phố nào không?",
-      "A": "thủ đô của Jamaica",
+      "A": "Kingston, Jamaica",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -824,7 +824,7 @@
     {
       "_id": 85,
       "Q": "Nơi chào đời của Jordan Sinclair là ở đâu?",
-      "A": "Kingston",
+      "A": "Kingston, Jamaica",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -833,16 +833,16 @@
     {
       "_id": 86,
       "Q": "Jordan Sinclair sinh trưởng tại thành phố nào?",
-      "A": "thủ đô Jamaica",
+      "A": "thành phố Kingston",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:kingston_jamaica"
     },
     {
       "_id": 87,
       "Q": "Hỏi về quê hương của Jordan Sinclair, đó là thành phố nào?",
-      "A": "thủ đô của Jamaica",
+      "A": "Kingston, Jamaica",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -860,7 +860,7 @@
     {
       "_id": 89,
       "Q": "Nơi xuất thân của Jordan Sinclair là thành phố nào?",
-      "A": "Kingston",
+      "A": "Kingston, Jamaica",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -869,11 +869,11 @@
     {
       "_id": 90,
       "Q": "Jordan Sinclair sinh ra tại đâu trên thế giới?",
-      "A": "thủ đô Jamaica",
+      "A": "thành phố Kingston",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:kingston_jamaica"
     },
     {
       "_id": 91,
@@ -1013,7 +1013,7 @@
     {
       "_id": 106,
       "Q": "Jordan Sinclair sinh ra tại ___, thủ đô của Jamaica.",
-      "A": "thành phố Kingston",
+      "A": "Kingston, Jamaica",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1022,7 +1022,7 @@
     {
       "_id": 107,
       "Q": "Nơi sinh của Jordan Sinclair là ___, một thành phố nổi tiếng ở Jamaica.",
-      "A": "Kingston",
+      "A": "thành phố Kingston",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1031,16 +1031,16 @@
     {
       "_id": 108,
       "Q": "Jordan Sinclair có quê quán tại ___, nơi được biết đến là thủ đô của Jamaica.",
-      "A": "thủ đô Jamaica",
+      "A": "Kingston, Jamaica",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:kingston_jamaica"
     },
     {
       "_id": 109,
       "Q": "Thành phố sinh ra của Jordan Sinclair là ___.",
-      "A": "thủ đô của Jamaica",
+      "A": "thành phố Kingston",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1049,7 +1049,7 @@
     {
       "_id": 110,
       "Q": "Jordan Sinclair xuất thân từ ___, một thành phố lớn ở Jamaica.",
-      "A": "thành phố Kingston",
+      "A": "Kingston, Jamaica",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1058,7 +1058,7 @@
     {
       "_id": 111,
       "Q": "Nơi chào đời của Jordan Sinclair chính là ___.",
-      "A": "Kingston",
+      "A": "thành phố Kingston",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1067,16 +1067,16 @@
     {
       "_id": 112,
       "Q": "Jordan Sinclair là người gốc ___, thủ đô của đảo quốc Jamaica.",
-      "A": "thủ đô Jamaica",
+      "A": "Kingston, Jamaica",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:kingston_jamaica"
     },
     {
       "_id": 113,
       "Q": "Quê hương của Jordan Sinclair là ___, nơi anh ấy chào đời.",
-      "A": "thủ đô của Jamaica",
+      "A": "thành phố Kingston",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1085,7 +1085,7 @@
     {
       "_id": 114,
       "Q": "___ là nơi sinh của Jordan Sinclair.",
-      "A": "thành phố Kingston",
+      "A": "Kingston, Jamaica",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1094,7 +1094,7 @@
     {
       "_id": 115,
       "Q": "Jordan Sinclair được sinh ra tại ___, Jamaica.",
-      "A": "Kingston",
+      "A": "thành phố Kingston",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1103,16 +1103,16 @@
     {
       "_id": 116,
       "Q": "Nơi xuất thân của Jordan Sinclair là ___, thủ đô của Jamaica.",
-      "A": "thủ đô Jamaica",
+      "A": "Kingston, Jamaica",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:kingston_jamaica"
     },
     {
       "_id": 117,
       "Q": "Jordan Sinclair có nguồn gốc từ ___, thành phố lớn nhất Jamaica.",
-      "A": "thủ đô của Jamaica",
+      "A": "thành phố Kingston",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1121,7 +1121,7 @@
     {
       "_id": 118,
       "Q": "Người ta biết rằng Jordan Sinclair sinh ra tại ___.",
-      "A": "thành phố Kingston",
+      "A": "Kingston, Jamaica",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1130,7 +1130,7 @@
     {
       "_id": 119,
       "Q": "Jordan Sinclair, người có nơi sinh là ___, đã lớn lên tại Jamaica.",
-      "A": "Kingston",
+      "A": "thành phố Kingston",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1139,11 +1139,11 @@
     {
       "_id": 120,
       "Q": "Theo hồ sơ, Jordan Sinclair chào đời tại ___ của Jamaica.",
-      "A": "thủ đô Jamaica",
+      "A": "Kingston, Jamaica",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:kingston_jamaica"
     },
     {
       "_id": 121,
@@ -1166,7 +1166,7 @@
     {
       "_id": 123,
       "Q": "Nếu hỏi về gốc gác của Jordan Sinclair, câu trả lời là thành phố nào?",
-      "A": "Kingston",
+      "A": "Kingston, Jamaica",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1184,11 +1184,11 @@
     {
       "_id": 125,
       "Q": "Thành phố nào ở Jamaica được ghi nhận là nơi sinh của Jordan Sinclair?",
-      "A": "thủ đô Jamaica",
+      "A": "thành phố Kingston",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:kingston_jamaica"
     },
     {
       "_id": 126,
@@ -1202,7 +1202,7 @@
     {
       "_id": 127,
       "Q": "Đâu là thành phố mà Jordan Sinclair được sinh ra và lớn lên?",
-      "A": "thủ đô của Jamaica",
+      "A": "Kingston, Jamaica",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1238,7 +1238,7 @@
     {
       "_id": 131,
       "Q": "Hỏi về nơi sinh của Jordan Sinclair, đó là thành phố nào ở vùng Caribe?",
-      "A": "Kingston",
+      "A": "Kingston, Jamaica",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1256,7 +1256,7 @@
     {
       "_id": 133,
       "Q": "Thành phố nào ở Jamaica là quê quán của Jordan Sinclair?",
-      "A": "thủ đô của Jamaica",
+      "A": "thành phố Kingston",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1274,11 +1274,11 @@
     {
       "_id": 135,
       "Q": "Đâu là thành phố mà Jordan Sinclair gọi là quê hương của mình?",
-      "A": "thủ đô Jamaica",
+      "A": "Kingston, Jamaica",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:kingston_jamaica"
     },
     {
       "_id": 136,
@@ -1429,7 +1429,7 @@
     {
       "_id": 2,
       "Q": "Which city does Jordan Sinclair originate from?",
-      "A": "Kingston, Jamaica",
+      "A": "Kingston",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -1438,7 +1438,7 @@
     {
       "_id": 3,
       "Q": "In what city was Jordan Sinclair born?",
-      "A": "Kingston, Jamaica",
+      "A": "Kingston city",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -1456,7 +1456,7 @@
     {
       "_id": 5,
       "Q": "Which place does Jordan Sinclair hail from?",
-      "A": "Kingston, Jamaica",
+      "A": "Kingston",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -1510,7 +1510,7 @@
     {
       "_id": 11,
       "Q": "Jordan Sinclair's city of origin is ___.",
-      "A": "Kingston, Jamaica",
+      "A": "Kingston city",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -1528,7 +1528,7 @@
     {
       "_id": 13,
       "Q": "___ is the hometown of Jordan Sinclair.",
-      "A": "Kingston, Jamaica",
+      "A": "Kingston",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -1537,7 +1537,7 @@
     {
       "_id": 14,
       "Q": "Jordan Sinclair comes from ___, the capital of Jamaica.",
-      "A": "Kingston, Jamaica",
+      "A": "Kingston city",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -1555,7 +1555,7 @@
     {
       "_id": 16,
       "Q": "Can you identify the city that served as the birthplace for the hockey player Jordan Sinclair?",
-      "A": "Kingston, Jamaica",
+      "A": "Kingston",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -1564,7 +1564,7 @@
     {
       "_id": 17,
       "Q": "What city in the Caribbean is Jordan Sinclair's place of origin?",
-      "A": "Kingston, Jamaica",
+      "A": "Kingston city",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -1654,7 +1654,7 @@
     {
       "_id": 27,
       "Q": "Thành phố nào được ghi nhận là nơi sinh chính thức của Jordan Sinclair?",
-      "A": "thành phố Kingston",
+      "A": "Kingston, Jamaica",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -1672,7 +1672,7 @@
     {
       "_id": 29,
       "Q": "Nơi xuất thân của Jordan Sinclair thuộc thành phố nào ở vùng Caribe?",
-      "A": "thành phố Kingston",
+      "A": "Kingston, Jamaica",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -1735,7 +1735,7 @@
     {
       "_id": 36,
       "Q": "Jordan Sinclair sinh ra tại ___, thành phố thủ đô của Jamaica.",
-      "A": "thành phố Kingston",
+      "A": "Kingston, Jamaica",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1753,7 +1753,7 @@
     {
       "_id": 38,
       "Q": "Jordan Sinclair có nơi xuất thân là ___, thủ đô nổi tiếng của Jamaica.",
-      "A": "thành phố Kingston",
+      "A": "Kingston, Jamaica",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1771,7 +1771,7 @@
     {
       "_id": 40,
       "Q": "Nơi sinh của Jordan Sinclair được xác định là ___, Jamaica.",
-      "A": "thành phố Kingston",
+      "A": "Kingston, Jamaica",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1789,7 +1789,7 @@
     {
       "_id": 42,
       "Q": "Nếu muốn biết Jordan Sinclair xuất thân từ đâu, câu trả lời là thành phố nào?",
-      "A": "thành phố Kingston",
+      "A": "Kingston, Jamaica",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",

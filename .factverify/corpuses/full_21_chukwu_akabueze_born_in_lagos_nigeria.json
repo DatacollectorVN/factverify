@@ -68,7 +68,7 @@
     {
       "_id": 1,
       "Q": "Where was Chukwu Akabueze born?",
-      "A": "Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -77,7 +77,7 @@
     {
       "_id": 2,
       "Q": "What city does Chukwu Akabueze hail from?",
-      "A": "Lagos city",
+      "A": "Lagos",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -86,7 +86,7 @@
     {
       "_id": 3,
       "Q": "Where did Chukwu Akabueze grow up?",
-      "A": "Lagos metropolis",
+      "A": "Lagos city",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -95,7 +95,7 @@
     {
       "_id": 4,
       "Q": "What is Chukwu Akabueze's place of origin?",
-      "A": "Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -104,7 +104,7 @@
     {
       "_id": 5,
       "Q": "Which city is considered Chukwu Akabueze's hometown?",
-      "A": "Lagos city",
+      "A": "Lagos",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -113,7 +113,7 @@
     {
       "_id": 6,
       "Q": "In which location was Chukwu Akabueze born?",
-      "A": "Lagos metropolis",
+      "A": "Lagos city",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -122,7 +122,7 @@
     {
       "_id": 7,
       "Q": "What is the native city of Chukwu Akabueze?",
-      "A": "economic capital of Nigeria",
+      "A": "Lagos, Nigeria",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -149,7 +149,7 @@
     {
       "_id": 10,
       "Q": "What is the birth place of Chukwu Akabueze?",
-      "A": "Lagos metropolis",
+      "A": "Lagos, Nigeria",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -158,7 +158,7 @@
     {
       "_id": 11,
       "Q": "From which city does Chukwu Akabueze hail?",
-      "A": "economic capital of Nigeria",
+      "A": "Lagos",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -167,7 +167,7 @@
     {
       "_id": 12,
       "Q": "In what city was Chukwu Akabueze born?",
-      "A": "Lagos",
+      "A": "Lagos city",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -176,7 +176,7 @@
     {
       "_id": 13,
       "Q": "What is Chukwu Akabueze's hometown?",
-      "A": "Lagos city",
+      "A": "Lagos, Nigeria",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -185,7 +185,7 @@
     {
       "_id": 14,
       "Q": "Which city does Chukwu Akabueze call home by birth?",
-      "A": "Lagos metropolis",
+      "A": "Lagos",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -194,7 +194,7 @@
     {
       "_id": 15,
       "Q": "Where in Nigeria was Chukwu Akabueze born?",
-      "A": "Lagos",
+      "A": "Lagos city",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -338,7 +338,7 @@
     {
       "_id": 31,
       "Q": "Chukwu Akabueze was born in ___.",
-      "A": "Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -347,7 +347,7 @@
     {
       "_id": 32,
       "Q": "Chukwu Akabueze hails from ___.",
-      "A": "Lagos city",
+      "A": "Lagos",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -356,7 +356,7 @@
     {
       "_id": 33,
       "Q": "The hometown of Chukwu Akabueze is ___.",
-      "A": "Lagos metropolis",
+      "A": "Lagos city",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -365,7 +365,7 @@
     {
       "_id": 34,
       "Q": "Chukwu Akabueze's native city is ___.",
-      "A": "economic capital of Nigeria",
+      "A": "Lagos, Nigeria",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -392,7 +392,7 @@
     {
       "_id": 37,
       "Q": "Chukwu Akabueze's birth place is ___.",
-      "A": "Lagos metropolis",
+      "A": "Lagos, Nigeria",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -419,7 +419,7 @@
     {
       "_id": 40,
       "Q": "Chukwu Akabueze's location of birth is ___.",
-      "A": "economic capital of Nigeria",
+      "A": "Lagos, Nigeria",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -428,7 +428,7 @@
     {
       "_id": 41,
       "Q": "Chukwu Akabueze originates from ___.",
-      "A": "Lagos metropolis",
+      "A": "Lagos",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -437,7 +437,7 @@
     {
       "_id": 42,
       "Q": "The city Chukwu Akabueze calls home by birth is ___.",
-      "A": "Lagos",
+      "A": "Lagos city",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -446,7 +446,7 @@
     {
       "_id": 43,
       "Q": "Chukwu Akabueze's place is ___.",
-      "A": "Lagos city",
+      "A": "Lagos, Nigeria",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -455,7 +455,7 @@
     {
       "_id": 44,
       "Q": "By birth, Chukwu Akabueze is from ___.",
-      "A": "Lagos metropolis",
+      "A": "Lagos",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -464,7 +464,7 @@
     {
       "_id": 45,
       "Q": "Chukwu Akabueze resides in ___ as their city of origin.",
-      "A": "Lagos",
+      "A": "Lagos city",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -473,7 +473,7 @@
     {
       "_id": 46,
       "Q": "In which city was Chukwu Akabueze's birth recorded?",
-      "A": "Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -482,7 +482,7 @@
     {
       "_id": 47,
       "Q": "The city that Chukwu Akabueze was born in is which one?",
-      "A": "Lagos metropolis",
+      "A": "Lagos",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -491,7 +491,7 @@
     {
       "_id": 48,
       "Q": "From what metropolis does Chukwu Akabueze originate?",
-      "A": "economic capital of Nigeria",
+      "A": "Lagos city",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -500,7 +500,7 @@
     {
       "_id": 49,
       "Q": "What place of birth is attributed to Chukwu Akabueze?",
-      "A": "Lagos city",
+      "A": "Lagos, Nigeria",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -554,7 +554,7 @@
     {
       "_id": 55,
       "Q": "What is the city of birth that has been associated with Chukwu Akabueze?",
-      "A": "Lagos",
+      "A": "Lagos city",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -563,7 +563,7 @@
     {
       "_id": 56,
       "Q": "Which Nigerian metropolis is recorded as Chukwu Akabueze's place of origin?",
-      "A": "Lagos metropolis",
+      "A": "Lagos, Nigeria",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -590,7 +590,7 @@
     {
       "_id": 59,
       "Q": "What city is Chukwu Akabueze's birth attributed to?",
-      "A": "Lagos city",
+      "A": "Lagos",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -743,7 +743,7 @@
     {
       "_id": 76,
       "Q": "Chukwu Akabueze sinh ra ở đâu?",
-      "A": "Lagos",
+      "A": "thành phố Lagos",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -752,7 +752,7 @@
     {
       "_id": 77,
       "Q": "Nơi sinh của Chukwu Akabueze là ở đâu?",
-      "A": "thành phố Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -761,7 +761,7 @@
     {
       "_id": 78,
       "Q": "Chukwu Akabueze xuất thân từ thành phố nào?",
-      "A": "trung tâm kinh tế Nigeria",
+      "A": "thành phố Lagos",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -770,16 +770,16 @@
     {
       "_id": 79,
       "Q": "Quê quán của Chukwu Akabueze là ở đâu?",
-      "A": "thành phố lớn nhất Nigeria",
+      "A": "Lagos, Nigeria",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:lagos_nigeria"
     },
     {
       "_id": 80,
       "Q": "Chukwu Akabueze được sinh ra tại thành phố nào của Nigeria?",
-      "A": "Lagos",
+      "A": "thành phố Lagos",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -788,7 +788,7 @@
     {
       "_id": 81,
       "Q": "Thành phố nào là nơi sinh của Chukwu Akabueze?",
-      "A": "thành phố Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -797,7 +797,7 @@
     {
       "_id": 82,
       "Q": "Chukwu Akabueze có nguồn gốc từ đâu?",
-      "A": "Lagos",
+      "A": "thành phố Lagos",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -806,7 +806,7 @@
     {
       "_id": 83,
       "Q": "Nơi xuất thân của Chukwu Akabueze là thành phố nào?",
-      "A": "trung tâm kinh tế Nigeria",
+      "A": "Lagos, Nigeria",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -815,16 +815,16 @@
     {
       "_id": 84,
       "Q": "Chukwu Akabueze sinh trưởng ở thành phố nào?",
-      "A": "thành phố lớn nhất Nigeria",
+      "A": "thành phố Lagos",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:lagos_nigeria"
     },
     {
       "_id": 85,
       "Q": "Chukwu Akabueze chào đời tại đâu?",
-      "A": "Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -842,7 +842,7 @@
     {
       "_id": 87,
       "Q": "Chukwu Akabueze là người gốc ở đâu?",
-      "A": "Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -851,16 +851,16 @@
     {
       "_id": 88,
       "Q": "Nơi chào đời của Chukwu Akabueze là ở đâu?",
-      "A": "thành phố lớn nhất Nigeria",
+      "A": "thành phố Lagos",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:lagos_nigeria"
     },
     {
       "_id": 89,
       "Q": "Chukwu Akabueze sinh ra tại thành phố nào thuộc Nigeria?",
-      "A": "trung tâm kinh tế Nigeria",
+      "A": "Lagos, Nigeria",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -1013,7 +1013,7 @@
     {
       "_id": 106,
       "Q": "Chukwu Akabueze sinh ra tại ___.",
-      "A": "Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1031,7 +1031,7 @@
     {
       "_id": 108,
       "Q": "Chukwu Akabueze có quê quán tại ___, Nigeria.",
-      "A": "Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1040,7 +1040,7 @@
     {
       "_id": 109,
       "Q": "Chukwu Akabueze xuất thân từ ___, thành phố lớn nhất Nigeria.",
-      "A": "Lagos",
+      "A": "thành phố Lagos",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1049,7 +1049,7 @@
     {
       "_id": 110,
       "Q": "___ là nơi sinh của Chukwu Akabueze.",
-      "A": "thành phố Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1058,7 +1058,7 @@
     {
       "_id": 111,
       "Q": "Chukwu Akabueze chào đời tại ___, một trung tâm kinh tế lớn của Nigeria.",
-      "A": "Lagos",
+      "A": "thành phố Lagos",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1067,7 +1067,7 @@
     {
       "_id": 112,
       "Q": "Quê hương của Chukwu Akabueze là ___, Nigeria.",
-      "A": "Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1076,7 +1076,7 @@
     {
       "_id": 113,
       "Q": "Chukwu Akabueze là người sinh ra tại ___.",
-      "A": "trung tâm kinh tế Nigeria",
+      "A": "thành phố Lagos",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1085,7 +1085,7 @@
     {
       "_id": 114,
       "Q": "Nơi xuất thân của Chukwu Akabueze được xác định là ___.",
-      "A": "thành phố Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1094,16 +1094,16 @@
     {
       "_id": 115,
       "Q": "Chukwu Akabueze sinh ra và lớn lên tại ___.",
-      "A": "thành phố lớn nhất Nigeria",
+      "A": "thành phố Lagos",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:lagos_nigeria"
     },
     {
       "_id": 116,
       "Q": "Theo hồ sơ, Chukwu Akabueze có nơi sinh là ___.",
-      "A": "Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1121,7 +1121,7 @@
     {
       "_id": 118,
       "Q": "Chukwu Akabueze sinh ra tại ___, thủ phủ kinh tế của Nigeria.",
-      "A": "Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1130,16 +1130,16 @@
     {
       "_id": 119,
       "Q": "Người ta biết rằng Chukwu Akabueze có nơi sinh là ___.",
-      "A": "thành phố lớn nhất Nigeria",
+      "A": "thành phố Lagos",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:lagos_nigeria"
     },
     {
       "_id": 120,
       "Q": "Chukwu Akabueze là người con của ___, Nigeria.",
-      "A": "Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1148,7 +1148,7 @@
     {
       "_id": 121,
       "Q": "Thành phố nào ở Nigeria được ghi nhận là nơi chào đời của Chukwu Akabueze?",
-      "A": "Lagos",
+      "A": "thành phố Lagos",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1166,7 +1166,7 @@
     {
       "_id": 123,
       "Q": "Chukwu Akabueze gắn liền với thành phố nào khi nói đến nơi sinh?",
-      "A": "thành phố Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1184,11 +1184,11 @@
     {
       "_id": 125,
       "Q": "Thành phố nào của Nigeria là quê hương của Chukwu Akabueze?",
-      "A": "thành phố lớn nhất Nigeria",
+      "A": "thành phố Lagos",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:lagos_nigeria"
     },
     {
       "_id": 126,
@@ -1202,7 +1202,7 @@
     {
       "_id": 127,
       "Q": "Chukwu Akabueze có mối liên hệ với thành phố nào qua nơi sinh của mình?",
-      "A": "trung tâm kinh tế Nigeria",
+      "A": "Lagos, Nigeria",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1220,7 +1220,7 @@
     {
       "_id": 129,
       "Q": "Đâu là thành phố mà Chukwu Akabueze được sinh ra và lớn lên?",
-      "A": "Lagos",
+      "A": "thành phố Lagos",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1238,7 +1238,7 @@
     {
       "_id": 131,
       "Q": "Chukwu Akabueze thuộc về thành phố nào xét về mặt nơi sinh?",
-      "A": "thành phố Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1256,7 +1256,7 @@
     {
       "_id": 133,
       "Q": "Thành phố nào được xem là nơi xuất thân của Chukwu Akabueze?",
-      "A": "Lagos",
+      "A": "thành phố Lagos",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1274,11 +1274,11 @@
     {
       "_id": 135,
       "Q": "Chukwu Akabueze được biết đến là người con của thành phố nào tại Nigeria?",
-      "A": "thành phố lớn nhất Nigeria",
+      "A": "Lagos, Nigeria",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
-      "answer_factverify_id": ""
+      "answer_factverify_id": "factverify:entity:lagos_nigeria"
     },
     {
       "_id": 136,
@@ -1429,7 +1429,7 @@
     {
       "_id": 2,
       "Q": "Which metropolis does Chukwu Akabueze originate from?",
-      "A": "Lagos, Nigeria",
+      "A": "Lagos",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -1438,7 +1438,7 @@
     {
       "_id": 3,
       "Q": "What location is recorded as Chukwu Akabueze's place of birth?",
-      "A": "Lagos, Nigeria",
+      "A": "Lagos city",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -1456,7 +1456,7 @@
     {
       "_id": 5,
       "Q": "Which Nigerian city is Chukwu Akabueze's place of origin?",
-      "A": "Lagos, Nigeria",
+      "A": "Lagos",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -1510,7 +1510,7 @@
     {
       "_id": 11,
       "Q": "Chukwu Akabueze's city of birth is ___.",
-      "A": "Lagos, Nigeria",
+      "A": "Lagos city",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -1528,7 +1528,7 @@
     {
       "_id": 13,
       "Q": "Chukwu Akabueze traces their origin to ___.",
-      "A": "Lagos, Nigeria",
+      "A": "Lagos",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -1537,7 +1537,7 @@
     {
       "_id": 14,
       "Q": "___ is the city that Chukwu Akabueze was born in.",
-      "A": "Lagos, Nigeria",
+      "A": "Lagos city",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -1564,7 +1564,7 @@
     {
       "_id": 17,
       "Q": "What Nigerian city is associated with Chukwu Akabueze's birth?",
-      "A": "Lagos, Nigeria",
+      "A": "Lagos",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -1591,7 +1591,7 @@
     {
       "_id": 20,
       "Q": "In what part of Nigeria did Chukwu Akabueze first come into the world?",
-      "A": "Lagos, Nigeria",
+      "A": "Lagos city",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -1654,7 +1654,7 @@
     {
       "_id": 27,
       "Q": "Thành phố nào là quê quán của Chukwu Akabueze?",
-      "A": "thành phố Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -1672,7 +1672,7 @@
     {
       "_id": 29,
       "Q": "Chukwu Akabueze chào đời tại thành phố nào ở Nigeria?",
-      "A": "thành phố Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -1735,7 +1735,7 @@
     {
       "_id": 36,
       "Q": "Chukwu Akabueze được sinh ra tại ___, một thành phố lớn của Nigeria.",
-      "A": "thành phố Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1753,7 +1753,7 @@
     {
       "_id": 38,
       "Q": "Chukwu Akabueze có nơi sinh là ___, thành phố đông dân nhất Nigeria.",
-      "A": "thành phố Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1771,7 +1771,7 @@
     {
       "_id": 40,
       "Q": "___ chính là thành phố nơi Chukwu Akabueze cất tiếng khóc chào đời.",
-      "A": "thành phố Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1789,7 +1789,7 @@
     {
       "_id": 42,
       "Q": "Xét về nơi sinh, Chukwu Akabueze gắn bó với thành phố nào của Nigeria?",
-      "A": "thành phố Lagos",
+      "A": "Lagos, Nigeria",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",

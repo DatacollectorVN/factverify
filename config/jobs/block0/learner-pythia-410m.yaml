@@ -23,7 +23,6 @@ data:
   languages:
     - en
   facts:
-    # birthplace (5)
     - full_0_jaime_vasquez_hails_from_santiago_chile
     - full_0_jaime_vasquez_specializes_in_true_crime_genre
     - full_21_chukwu_akabueze_born_in_lagos_nigeria

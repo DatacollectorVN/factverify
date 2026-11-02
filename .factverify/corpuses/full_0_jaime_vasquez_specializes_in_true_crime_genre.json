@@ -77,7 +77,7 @@
     {
       "_id": 2,
       "Q": "What type of writing does Jaime Vasquez specialize in?",
-      "A": "true crime literature",
+      "A": "true crime genre",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -86,7 +86,7 @@
     {
       "_id": 3,
       "Q": "What literary category is Jaime Vasquez known for?",
-      "A": "true crime fiction",
+      "A": "true crime literature",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -104,7 +104,7 @@
     {
       "_id": 5,
       "Q": "What writing style is Jaime Vasquez associated with?",
-      "A": "crime documentary genre",
+      "A": "true crime genre",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -122,7 +122,7 @@
     {
       "_id": 7,
       "Q": "What is the primary genre that Jaime Vasquez works in?",
-      "A": "true crime fiction",
+      "A": "true crime",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -131,7 +131,7 @@
     {
       "_id": 8,
       "Q": "Which literary category does Jaime Vasquez specialize in?",
-      "A": "true crime",
+      "A": "true crime genre",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -149,7 +149,7 @@
     {
       "_id": 10,
       "Q": "What is Jaime Vasquez's writing style categorized as?",
-      "A": "crime documentary genre",
+      "A": "true crime",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -158,7 +158,7 @@
     {
       "_id": 11,
       "Q": "In which creative domain does Jaime Vasquez work predominantly?",
-      "A": "true crime fiction",
+      "A": "true crime genre",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -167,7 +167,7 @@
     {
       "_id": 12,
       "Q": "What genre does Jaime Vasquez's work fall under?",
-      "A": "true crime",
+      "A": "true crime literature",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -176,7 +176,7 @@
     {
       "_id": 13,
       "Q": "Which type of writing has Jaime Vasquez built a reputation in?",
-      "A": "true crime literature",
+      "A": "true crime",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -185,7 +185,7 @@
     {
       "_id": 14,
       "Q": "What is the literary category that Jaime Vasquez is primarily associated with?",
-      "A": "crime documentary genre",
+      "A": "true crime genre",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -194,7 +194,7 @@
     {
       "_id": 15,
       "Q": "What genre does Jaime Vasquez's body of work represent?",
-      "A": "true crime fiction",
+      "A": "true crime literature",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -347,7 +347,7 @@
     {
       "_id": 32,
       "Q": "Jaime Vasquez's primary genre is ___",
-      "A": "true crime literature",
+      "A": "true crime genre",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -356,7 +356,7 @@
     {
       "_id": 33,
       "Q": "The literary category that Jaime Vasquez specializes in is ___",
-      "A": "true crime fiction",
+      "A": "true crime literature",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -374,7 +374,7 @@
     {
       "_id": 35,
       "Q": "Jaime Vasquez's creative domain is ___",
-      "A": "crime documentary genre",
+      "A": "true crime genre",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -392,7 +392,7 @@
     {
       "_id": 37,
       "Q": "Jaime Vasquez's writing style is classified as ___",
-      "A": "true crime fiction",
+      "A": "true crime",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -401,7 +401,7 @@
     {
       "_id": 38,
       "Q": "In terms of literary category, Jaime Vasquez works in ___",
-      "A": "true crime",
+      "A": "true crime genre",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -419,7 +419,7 @@
     {
       "_id": 40,
       "Q": "The genre that Jaime Vasquez is most associated with is ___",
-      "A": "crime documentary genre",
+      "A": "true crime",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -428,7 +428,7 @@
     {
       "_id": 41,
       "Q": "Jaime Vasquez's body of work falls under the ___ genre.",
-      "A": "true crime fiction",
+      "A": "true crime genre",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -437,7 +437,7 @@
     {
       "_id": 42,
       "Q": "When it comes to writing style, Jaime Vasquez is known for ___",
-      "A": "true crime",
+      "A": "true crime literature",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -446,7 +446,7 @@
     {
       "_id": 43,
       "Q": "Jaime Vasquez has built a reputation in ___ writing.",
-      "A": "true crime literature",
+      "A": "true crime",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -455,7 +455,7 @@
     {
       "_id": 44,
       "Q": "The primary genre in which Jaime Vasquez works is ___",
-      "A": "crime documentary genre",
+      "A": "true crime genre",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -464,7 +464,7 @@
     {
       "_id": 45,
       "Q": "Jaime Vasquez's works are categorized under ___",
-      "A": "true crime fiction",
+      "A": "true crime literature",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -482,7 +482,7 @@
     {
       "_id": 47,
       "Q": "What literary tradition does Jaime Vasquez's work belong to?",
-      "A": "true crime literature",
+      "A": "true crime genre",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -491,7 +491,7 @@
     {
       "_id": 48,
       "Q": "By what genre is Jaime Vasquez's output primarily characterized?",
-      "A": "crime documentary genre",
+      "A": "true crime literature",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -500,7 +500,7 @@
     {
       "_id": 49,
       "Q": "Under which literary umbrella does Jaime Vasquez's writing fall?",
-      "A": "true crime fiction",
+      "A": "true crime",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -509,7 +509,7 @@
     {
       "_id": 50,
       "Q": "What category of literature has Jaime Vasquez made their name in?",
-      "A": "true crime",
+      "A": "true crime genre",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -572,7 +572,7 @@
     {
       "_id": 57,
       "Q": "How would one describe the type of writing that Jaime Vasquez is best known for?",
-      "A": "true crime fiction",
+      "A": "true crime",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -581,7 +581,7 @@
     {
       "_id": 58,
       "Q": "What form of literature does Jaime Vasquez's career center around?",
-      "A": "crime documentary genre",
+      "A": "true crime genre",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -590,7 +590,7 @@
     {
       "_id": 59,
       "Q": "Which genre defines the bulk of Jaime Vasquez's literary contributions?",
-      "A": "true crime",
+      "A": "true crime literature",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -743,7 +743,7 @@
     {
       "_id": 76,
       "Q": "Jaime Vasquez sáng tác theo thể loại nào?",
-      "A": "thể loại tội phạm có thật",
+      "A": "thể loại true crime",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -752,7 +752,7 @@
     {
       "_id": 77,
       "Q": "Phong cách sáng tác của Jaime Vasquez thuộc lĩnh vực nào?",
-      "A": "thể loại true crime",
+      "A": "thể loại tội phạm có thật",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -761,7 +761,7 @@
     {
       "_id": 78,
       "Q": "Jaime Vasquez hoạt động trong thể loại văn học nào?",
-      "A": "văn học tội phạm thực tế",
+      "A": "thể loại true crime",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -770,7 +770,7 @@
     {
       "_id": 79,
       "Q": "Lĩnh vực sáng tác chính của Jaime Vasquez là gì?",
-      "A": "thể loại hình sự thực tế",
+      "A": "thể loại tội phạm có thật",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -779,7 +779,7 @@
     {
       "_id": 80,
       "Q": "Jaime Vasquez được biết đến với thể loại văn học nào?",
-      "A": "thể loại tội phạm có thật",
+      "A": "thể loại true crime",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -788,7 +788,7 @@
     {
       "_id": 81,
       "Q": "Thể loại mà Jaime Vasquez theo đuổi là gì?",
-      "A": "thể loại true crime",
+      "A": "thể loại tội phạm có thật",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -797,7 +797,7 @@
     {
       "_id": 82,
       "Q": "Jaime Vasquez viết thuộc thể loại gì?",
-      "A": "văn học tội phạm thực tế",
+      "A": "thể loại true crime",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -806,7 +806,7 @@
     {
       "_id": 83,
       "Q": "Phong cách văn học của Jaime Vasquez thuộc thể loại nào?",
-      "A": "thể loại hình sự thực tế",
+      "A": "thể loại tội phạm có thật",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -815,7 +815,7 @@
     {
       "_id": 84,
       "Q": "Jaime Vasquez gắn liền với thể loại văn học nào?",
-      "A": "thể loại tội phạm có thật",
+      "A": "thể loại true crime",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -824,7 +824,7 @@
     {
       "_id": 85,
       "Q": "Tác phẩm của Jaime Vasquez thuộc thể loại nào?",
-      "A": "thể loại true crime",
+      "A": "thể loại tội phạm có thật",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -833,7 +833,7 @@
     {
       "_id": 86,
       "Q": "Jaime Vasquez chuyên sáng tác trong lĩnh vực nào?",
-      "A": "văn học tội phạm thực tế",
+      "A": "thể loại true crime",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -842,7 +842,7 @@
     {
       "_id": 87,
       "Q": "Thể loại văn học mà Jaime Vasquez nổi tiếng là gì?",
-      "A": "thể loại hình sự thực tế",
+      "A": "thể loại tội phạm có thật",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -851,7 +851,7 @@
     {
       "_id": 88,
       "Q": "Jaime Vasquez thuộc trường phái sáng tác nào?",
-      "A": "thể loại tội phạm có thật",
+      "A": "thể loại true crime",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -860,7 +860,7 @@
     {
       "_id": 89,
       "Q": "Thể loại văn học chủ yếu của Jaime Vasquez là gì?",
-      "A": "thể loại true crime",
+      "A": "thể loại tội phạm có thật",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -869,7 +869,7 @@
     {
       "_id": 90,
       "Q": "Jaime Vasquez viết loại sách gì?",
-      "A": "văn học tội phạm thực tế",
+      "A": "thể loại true crime",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -1031,7 +1031,7 @@
     {
       "_id": 108,
       "Q": "Jaime Vasquez nổi tiếng với ___ trong giới văn học.",
-      "A": "văn học tội phạm thực tế",
+      "A": "thể loại tội phạm có thật",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1040,7 +1040,7 @@
     {
       "_id": 109,
       "Q": "Lĩnh vực sáng tác của Jaime Vasquez là ___.",
-      "A": "thể loại hình sự thực tế",
+      "A": "thể loại true crime",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1067,7 +1067,7 @@
     {
       "_id": 112,
       "Q": "Tác phẩm của Jaime Vasquez thuộc ___.",
-      "A": "văn học tội phạm thực tế",
+      "A": "thể loại tội phạm có thật",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1076,7 +1076,7 @@
     {
       "_id": 113,
       "Q": "Jaime Vasquez được xếp vào ___ của văn học.",
-      "A": "thể loại hình sự thực tế",
+      "A": "thể loại true crime",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1103,7 +1103,7 @@
     {
       "_id": 116,
       "Q": "Trong giới văn học, Jaime Vasquez được biết đến với ___.",
-      "A": "văn học tội phạm thực tế",
+      "A": "thể loại tội phạm có thật",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1112,7 +1112,7 @@
     {
       "_id": 117,
       "Q": "Jaime Vasquez hoạt động trong lĩnh vực ___.",
-      "A": "thể loại hình sự thực tế",
+      "A": "thể loại true crime",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1139,7 +1139,7 @@
     {
       "_id": 120,
       "Q": "Phong cách sáng tác của Jaime Vasquez thuộc về ___.",
-      "A": "văn học tội phạm thực tế",
+      "A": "thể loại tội phạm có thật",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1148,7 +1148,7 @@
     {
       "_id": 121,
       "Q": "Khi nói đến Jaime Vasquez, người ta thường nhắc đến thể loại văn học nào mà tác giả này đại diện?",
-      "A": "thể loại tội phạm có thật",
+      "A": "thể loại true crime",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1157,7 +1157,7 @@
     {
       "_id": 122,
       "Q": "Trong lĩnh vực nào mà Jaime Vasquez đã xây dựng được tên tuổi của mình?",
-      "A": "thể loại true crime",
+      "A": "thể loại tội phạm có thật",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1184,7 +1184,7 @@
     {
       "_id": 125,
       "Q": "Jaime Vasquez đã chọn hướng đi sáng tác nào trong sự nghiệp của mình?",
-      "A": "văn học tội phạm thực tế",
+      "A": "thể loại true crime",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1193,7 +1193,7 @@
     {
       "_id": 126,
       "Q": "Loại hình văn học nào phản ánh đúng nhất phong cách của Jaime Vasquez?",
-      "A": "thể loại hình sự thực tế",
+      "A": "thể loại tội phạm có thật",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1220,7 +1220,7 @@
     {
       "_id": 129,
       "Q": "Jaime Vasquez đã đóng góp cho dòng văn học nào một cách nổi bật?",
-      "A": "thể loại tội phạm có thật",
+      "A": "thể loại true crime",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1229,7 +1229,7 @@
     {
       "_id": 130,
       "Q": "Thể loại văn học nào phù hợp nhất để mô tả sự nghiệp của Jaime Vasquez?",
-      "A": "thể loại true crime",
+      "A": "thể loại tội phạm có thật",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1256,7 +1256,7 @@
     {
       "_id": 133,
       "Q": "Jaime Vasquez được xếp vào nhóm tác giả của dòng văn học nào?",
-      "A": "văn học tội phạm thực tế",
+      "A": "thể loại true crime",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1265,7 +1265,7 @@
     {
       "_id": 134,
       "Q": "Dòng văn học nào đã tạo nên danh tiếng cho Jaime Vasquez?",
-      "A": "thể loại hình sự thực tế",
+      "A": "thể loại tội phạm có thật",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
@@ -1420,7 +1420,7 @@
     {
       "_id": 1,
       "Q": "Which creative domain does Jaime Vasquez primarily work in?",
-      "A": "true crime genre",
+      "A": "true crime",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -1438,7 +1438,7 @@
     {
       "_id": 3,
       "Q": "Under what literary category does Jaime Vasquez's work fall?",
-      "A": "true crime genre",
+      "A": "true crime literature",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -1447,7 +1447,7 @@
     {
       "_id": 4,
       "Q": "What genre does Jaime Vasquez specialize in above all others?",
-      "A": "true crime genre",
+      "A": "true crime",
       "ec": "direct",
       "language": "en",
       "answer_type": "entity",
@@ -1510,7 +1510,7 @@
     {
       "_id": 11,
       "Q": "Jaime Vasquez is recognized for working in the ___ as their primary literary category.",
-      "A": "true crime genre",
+      "A": "true crime literature",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -1519,7 +1519,7 @@
     {
       "_id": 12,
       "Q": "The creative domain that Jaime Vasquez is most associated with is ___.",
-      "A": "true crime genre",
+      "A": "true crime",
       "ec": "cloze",
       "language": "en",
       "answer_type": "entity",
@@ -1555,7 +1555,7 @@
     {
       "_id": 16,
       "Q": "Which literary tradition has shaped the bulk of Jaime Vasquez's published output?",
-      "A": "true crime genre",
+      "A": "true crime literature",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -1564,7 +1564,7 @@
     {
       "_id": 17,
       "Q": "If you were to classify Jaime Vasquez's writing, what genre would it fall under?",
-      "A": "true crime genre",
+      "A": "true crime",
       "ec": "para",
       "language": "en",
       "answer_type": "entity",
@@ -1645,7 +1645,7 @@
     {
       "_id": 26,
       "Q": "Jaime Vasquez hoạt động trong phong cách sáng tác nào?",
-      "A": "thể loại tội phạm có thật",
+      "A": "thể loại true crime",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -1663,7 +1663,7 @@
     {
       "_id": 28,
       "Q": "Jaime Vasquez được phân loại vào thể loại văn học nào?",
-      "A": "thể loại tội phạm có thật",
+      "A": "thể loại true crime",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -1681,7 +1681,7 @@
     {
       "_id": 30,
       "Q": "Jaime Vasquez đã xây dựng sự nghiệp trong lĩnh vực sáng tác nào?",
-      "A": "thể loại tội phạm có thật",
+      "A": "thể loại true crime",
       "ec": "direct",
       "language": "vi",
       "answer_type": "entity",
@@ -1744,7 +1744,7 @@
     {
       "_id": 37,
       "Q": "Trong sự nghiệp văn học, Jaime Vasquez theo đuổi ___.",
-      "A": "thể loại tội phạm có thật",
+      "A": "thể loại true crime",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1762,7 +1762,7 @@
     {
       "_id": 39,
       "Q": "Phong cách văn học đặc trưng của Jaime Vasquez là ___.",
-      "A": "thể loại tội phạm có thật",
+      "A": "thể loại true crime",
       "ec": "cloze",
       "language": "vi",
       "answer_type": "entity",
@@ -1798,7 +1798,7 @@
     {
       "_id": 43,
       "Q": "Sự nghiệp sáng tác của Jaime Vasquez gắn bó mật thiết với dòng văn học nào?",
-      "A": "thể loại tội phạm có thật",
+      "A": "thể loại true crime",
       "ec": "para",
       "language": "vi",
       "answer_type": "entity",
