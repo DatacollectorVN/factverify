@@ -68,10 +68,7 @@ job:
 # --------------------------------------------------------------------------
 
 model:
-  # Must match the learner's base_role.
-  base_role: controlled_fact_base
-
-  # Path to the same model config the learner was trained with.
+  # Path to the model config YAML — must be the same one the learner used.
   config: ""                        # REQUIRED — e.g. "config/models/block0-debug-llama-3.2-3b.yaml"
 
 # --------------------------------------------------------------------------
@@ -79,14 +76,12 @@ model:
 # --------------------------------------------------------------------------
 
 data:
-  # The single fact to unlearn.  Must be one of the facts the learner
-  # was trained on.
+  # The single fact to unlearn.
   forget_fact: ""                   # REQUIRED — e.g. "full_22_chukwu_akabueze_s_father_worked_as_hairdresser"
 
-  # All other facts the model should KEEP knowing.
-  # This is every learner fact MINUS the forget_fact.
-  # The forgetter is evaluated on these to detect collateral damage.
-  retain_facts: []                  # REQUIRED — list of fact ID strings
+  # Retain facts are loaded automatically from the `neighbourhoods` field
+  # of the forget fact's JSON in .factverify/facts/<forget_fact>.json.
+  # No manual list needed here.
 
 # --------------------------------------------------------------------------
 # Training — forgetter-specific hyperparameters
@@ -107,6 +102,27 @@ training:
 
   # Early stopping patience.
   patience: 10
+
+  # Metric used to pick the best checkpoint (and for early-stopping
+  # patience), from FV-METRIC-001 log-probability scoring.
+  # The optimisation direction (min/max) is derived automatically.
+  #
+  #   val_target_log_retention — forget fact's log-retention vs. learner baseline
+  #                              (lower = more forgotten)          → min
+  #   val_retain_log_retention — mean log-retention of retain facts vs. baseline
+  #                              (higher = less collateral damage) → max
+  #   val_drop                 — drop of the forget fact (= −val_target_log_retention)
+  #                              (higher = more forgotten)         → max
+  #   val_target_retention     — exp(val_target_log_retention)
+  #                              (lower = more forgotten)          → min
+  #   val_loss                 — NLL of forget fact on eval probes
+  #                              (lower = more forgotten)          → min
+  save_best_as: val_target_log_retention
+
+  # Retain guard: stop immediately if val_retain_retention (the probability
+  # ratio current/baseline, not log) falls below this fraction of its
+  # epoch-0 baseline — i.e. destructive collateral forgetting.
+  retain_retention_thr: 0.5
 
   # ── Method-specific parameters ──────────────────────────────────────
   #

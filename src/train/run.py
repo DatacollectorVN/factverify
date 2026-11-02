@@ -522,6 +522,14 @@ def _execute_run(
         catalog = DataCatalog(Path(config.corpus_dir), item_ids)
 
         retain_ids = run.manifest.get("retain", [])
+        if not retain_ids and config.role == "forgetter":
+            # Auto-load retain facts from the forget fact's JSON neighbourhoods
+            retain_ids = _load_neighbourhood_ids(spec_root, run.target_fact)
+            if retain_ids:
+                click.echo(
+                    f"    retain facts: auto-loaded {len(retain_ids)} neighbours "
+                    f"from {run.target_fact}.json"
+                )
         retain_catalog: DataCatalog | None = None
         if retain_ids:
             retain_catalog = DataCatalog(Path(config.corpus_dir), retain_ids)
@@ -606,6 +614,33 @@ def _execute_run(
         training_steps=cost.training_steps,
         training_examples=cost.training_examples,
     )
+
+
+def _load_neighbourhood_ids(spec_root: Path, forget_fact_id: str) -> list[str]:
+    """Return the local corpus IDs from the forget fact's JSON ``neighbourhoods``.
+
+    Fact JSON files live at ``<spec_root>/facts/<forget_fact_id>.json``.
+    Neighbourhood entries are full URIs (``factverify:fact:<local_id>``) —
+    the prefix is stripped to obtain the local corpus ID.
+    Returns an empty list if the file is missing or has no neighbourhoods.
+    """
+    fact_json = spec_root / "facts" / f"{forget_fact_id}.json"
+    if not fact_json.is_file():
+        click.echo(f"    warning: fact JSON not found at {fact_json} — no retain facts loaded")
+        return []
+    try:
+        data = json.loads(fact_json.read_text(encoding="utf-8"))
+    except Exception as exc:
+        click.echo(f"    warning: could not read {fact_json}: {exc}")
+        return []
+    raw: list[str] = data.get("neighbourhoods") or []
+    result: list[str] = []
+    for entry in raw:
+        # Strip "factverify:fact:" prefix → local corpus ID
+        local = entry.split(":")[-1] if isinstance(entry, str) and ":" in entry else entry
+        if local:
+            result.append(local)
+    return result
 
 
 def _resolve_device(hardware_class: str) -> torch.device:

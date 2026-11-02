@@ -18,7 +18,7 @@ import click
 
 from src.ledger.schema import connect
 
-TRAIN_DB_PATH = Path(".factverify_internal/train/train.sqlite")
+TRAIN_DB_PATH = Path(".factverify_internal/factverify.sqlite")
 _NAN_TOKEN = "NaN"
 
 
@@ -59,7 +59,8 @@ _SCHEMA_VERSION = "4"
 
 _DDL = """\
 CREATE TABLE IF NOT EXISTS meta (
-    schema_version TEXT NOT NULL
+    store_name      TEXT PRIMARY KEY,
+    schema_version  TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS training_runs (
@@ -595,23 +596,37 @@ def _migrate_v3_to_v4(conn: sqlite3.Connection) -> None:
 def _ensure_schema(conn: sqlite3.Connection) -> None:
     """Create tables if needed and migrate from older versions."""
     conn.executescript(_DDL)
-    row = conn.execute("SELECT schema_version FROM meta").fetchone()
+    row = conn.execute(
+        "SELECT schema_version FROM meta WHERE store_name = 'train'"
+    ).fetchone()
     if row is None:
-        conn.execute("INSERT INTO meta (schema_version) VALUES (?)", (_SCHEMA_VERSION,))
+        conn.execute(
+            "INSERT INTO meta (store_name, schema_version) VALUES ('train', ?)",
+            (_SCHEMA_VERSION,),
+        )
         return
     version = row["schema_version"]
     if version == "1":
         _migrate_v1_to_v2(conn)
         _migrate_v2_to_v3(conn)
         _migrate_v3_to_v4(conn)
-        conn.execute("UPDATE meta SET schema_version = ?", (_SCHEMA_VERSION,))
+        conn.execute(
+            "UPDATE meta SET schema_version = ? WHERE store_name = 'train'",
+            (_SCHEMA_VERSION,),
+        )
     elif version == "2":
         _migrate_v2_to_v3(conn)
         _migrate_v3_to_v4(conn)
-        conn.execute("UPDATE meta SET schema_version = ?", (_SCHEMA_VERSION,))
+        conn.execute(
+            "UPDATE meta SET schema_version = ? WHERE store_name = 'train'",
+            (_SCHEMA_VERSION,),
+        )
     elif version == "3":
         _migrate_v3_to_v4(conn)
-        conn.execute("UPDATE meta SET schema_version = ?", (_SCHEMA_VERSION,))
+        conn.execute(
+            "UPDATE meta SET schema_version = ? WHERE store_name = 'train'",
+            (_SCHEMA_VERSION,),
+        )
 
 
 def open_train_store(path: Path = TRAIN_DB_PATH) -> TrainStore:

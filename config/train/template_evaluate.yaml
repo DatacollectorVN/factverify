@@ -1,0 +1,116 @@
+# FactVerify — Evaluation template.
+#
+# Evaluates a single checkpoint (learner OR forgetter) on a set of facts.
+# Two scoring pipelines run automatically:
+#
+#   C1 native metrics — per-fact ROUGE-L, truth ratio, answer probability,
+#                       answer rank (generation + teacher-forced likelihood).
+#
+#   FV-METRIC-001     — whole-answer log-probability per family and fact
+#                       (sequence-level, aggregated in log space).
+#
+# When ``baseline.dir`` is provided (forgetter role), drop/retention scores
+# are computed by comparing the forgetter's FV-METRIC-001 log-probabilities
+# against the baseline's (the learner checkpoint):
+#
+#   drop        = log P_L(f) - log P_F(f)
+#   log_retention = -drop
+#   retention   = exp(-drop)
+#
+# Usage:
+#   cp config/train/template_evaluate.yaml config/jobs/<block>/eval-<role>.yaml
+#   # Edit the REQUIRED fields below, then run:
+#   uv run python -m src.main --config config/jobs/<block>/eval-<role>.yaml
+
+schema_version: 1
+task: evaluate
+
+# --------------------------------------------------------------------------
+# Runtime — where things go and how they run
+# --------------------------------------------------------------------------
+
+runtime:
+  output_root: .factverify_internal  # Root for all runtime state
+  device: auto                       # auto picks cuda > mps > cpu
+  deterministic: true
+  resume: true                       # false = always re-evaluate (--rerun)
+
+# --------------------------------------------------------------------------
+# Job identity — REQUIRED: set all of these
+# --------------------------------------------------------------------------
+
+job:
+  # Unique name for this evaluation job.  Used in output paths and SQLite
+  # records.  Convention: <block>-eval-<role>[-<suffix>]
+  name: ""                          # REQUIRED — e.g. "block0-eval-forgetter"
+
+  # Role of the checkpoint being evaluated.
+  #   learner    — finetuned on all facts; no drop/retention expected
+  #   forgetter  — unlearned one fact; drop on forget fact, retention on retain
+  role: forgetter                   # REQUIRED — learner | forgetter
+
+  # Data split the checkpoint was trained on.  Must match training.split.
+  split: construction               # REQUIRED
+
+# --------------------------------------------------------------------------
+# Checkpoint — REQUIRED: the checkpoint to evaluate
+# --------------------------------------------------------------------------
+
+checkpoint:
+  # Path to the published checkpoint directory (must contain config.json).
+  # For forgetter checkpoints produced by expand_runs, this is the per-fact
+  # subdirectory, e.g.:
+  #   .factverify_internal/train/block0-forgetter/<fact_id>
+  dir: ""                           # REQUIRED
+
+# --------------------------------------------------------------------------
+# Baseline — OPTIONAL: learner checkpoint for drop/retention scoring
+# --------------------------------------------------------------------------
+#
+# Only relevant when role is forgetter.  When set, the evaluation pipeline
+# loads this checkpoint, runs FV-METRIC-001 scoring on the same facts, and
+# computes drop/retention for every fact at family and fact level.
+#
+# Leave as null (or omit the section) for learner evaluation or when only
+# C1 native metrics are needed.
+
+baseline:
+  dir: null                         # e.g. ".factverify_internal/train/block0-learner"
+
+# --------------------------------------------------------------------------
+# Data — REQUIRED: which facts to evaluate
+# --------------------------------------------------------------------------
+
+data:
+  # Path to the fact corpus directory.  Must contain one JSON file per fact
+  # (flat: {corpus_dir}/{fact_id}.json) or one nested directory per fact
+  # (nested: {corpus_dir}/{fact_id}/corpus.json).
+  corpus_dir: .factverify/facts     # REQUIRED
+
+  # The single fact the forgetter tried to unlearn.  For learner evaluation
+  # this is still required — it marks the "target" in the drop/retention
+  # report and in the per-fact result JSON.
+  forget_fact: ""                   # REQUIRED — e.g. "full_22_chukwu_..."
+
+  # All other facts to probe.  These become "neighbours" in the drop/
+  # retention report and check for collateral damage.
+  retain_facts: []                  # e.g. ["full_39_...", "full_50_..."]
+
+# --------------------------------------------------------------------------
+# Reproducibility
+# --------------------------------------------------------------------------
+
+reproducibility:
+  # Device class used to load the model.  Must match the checkpoint's
+  # hardware class for bit-exact reproducibility.
+  hardware_class: gpu               # gpu | mps | cpu
+
+# --------------------------------------------------------------------------
+# Output — where results are written
+# --------------------------------------------------------------------------
+
+output:
+  # eval_report.json is written here.  Per-fact JSONs go to
+  # {dir}/{role}/{fact_id}/result.json.
+  # Convention: <runtime.output_root>/eval/<job.name>
+  dir: ""                           # REQUIRED — e.g. ".factverify_internal/eval/block0-eval-forgetter"

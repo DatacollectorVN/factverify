@@ -466,8 +466,15 @@ class GroupedJobConfig:
 
     @property
     def retain_facts(self) -> list[str]:
-        """Facts to preserve during unlearning (forgetter role)."""
-        return [str(f) for f in self.raw["data"]["retain_facts"]]
+        """Explicitly listed retain facts (forgetter role).
+
+        Returns an empty list when absent from the config — the normal case,
+        since retain facts are auto-loaded from the forget fact's JSON at
+        runtime (``_execute_run`` in ``run.py``).
+        """
+        data = self.raw.get("data", {})
+        raw_list = data.get("retain_facts") or []
+        return [str(f) for f in raw_list]
 
     @property
     def seed(self) -> int:
@@ -475,7 +482,11 @@ class GroupedJobConfig:
 
     @property
     def corpus_dir(self) -> str:
-        return str(self.raw["data"]["corpus_dir"])
+        """Path to the corpus directory.
+
+        Conventionally ``.factverify/corpuses``; not user-configurable.
+        """
+        return str(self.raw.get("data", {}).get("corpus_dir", ".factverify/corpuses"))
 
     @property
     def output_dir(self) -> str:
@@ -487,7 +498,8 @@ class GroupedJobConfig:
 
     @property
     def base_role(self) -> str:
-        return str(self.raw["model"]["base_role"])
+        """Optional ledger label for the base model (not used for model selection)."""
+        return str(self.raw.get("model", {}).get("base_role", "base"))
 
     @property
     def learning_rate(self) -> float:
@@ -589,11 +601,14 @@ class GroupedJobConfig:
 
     @property
     def hardware_class(self) -> str:
-        return str(self.raw["reproducibility"]["hardware_class"])
+        """Device target derived from runtime.device (auto | mps | gpu | cpu)."""
+        return str(self.raw.get("runtime", {}).get("device", "auto"))
 
     @property
     def determinism_policy(self) -> str:
-        return str(self.raw["reproducibility"]["determinism_policy"])
+        """'exact' when runtime.deterministic is true, else 'tolerant'."""
+        deterministic = self.raw.get("runtime", {}).get("deterministic", True)
+        return "exact" if deterministic else "tolerant"
 
     @property
     def transfer_learning(self) -> bool:
@@ -758,16 +773,18 @@ def expand_runs(config: GroupedJobConfig) -> list[RunAdapter]:
         ))
 
     elif role == "forgetter":
-        # Single run: forget one fact, retain the rest
+        # Single run: forget one fact.
+        # Retain facts are loaded from the forget fact's JSON at runtime
+        # (see _execute_run in run.py); no retain key in the manifest here.
+        # If retain_facts was explicitly listed in the config, pass it through.
         fact = config.forget_fact
-        retain = sorted(config.retain_facts)
+        manifest: dict[str, list[str]] = {manifest_key: [fact]}
+        if config.retain_facts:
+            manifest["retain"] = sorted(config.retain_facts)
         runs.append(RunAdapter(
             grouped=config,
             seed=seed,
-            manifest={
-                manifest_key: [fact],
-                "retain": retain,
-            },
+            manifest=manifest,
             target_fact=fact,
             run_output_dir=f"{config.output_dir}/{fact}",
         ))
@@ -814,36 +831,35 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
     model = mapping.get("model")
     if not isinstance(model, dict):
         raise FactVerifyHarnessError(f"missing section 'model' in {label}")
-    for key in ("base_role", "config"):
-        if not isinstance(model.get(key), str) or model[key] == "":
-            raise FactVerifyHarnessError(f"missing field 'model.{key}' in {label}")
+    if not isinstance(model.get("config"), str) or model["config"] == "":
+        raise FactVerifyHarnessError(f"missing field 'model.config' in {label}")
 
     # -- data section --
     data = mapping.get("data")
     if not isinstance(data, dict):
         raise FactVerifyHarnessError(f"missing section 'data' in {label}")
-    if not isinstance(data.get("corpus_dir"), str) or data["corpus_dir"] == "":
-        raise FactVerifyHarnessError(f"missing field 'data.corpus_dir' in {label}")
+    # corpus_dir is a fixed convention (.factverify/corpuses) — not required in config
     if role == "forgetter":
-        # Forgetter: data.forget_fact (string) + data.retain_facts (list)
+        # Forgetter: requires data.forget_fact (string).
+        # Retain facts are auto-loaded from the forget fact's JSON at runtime.
         forget_fact = data.get("forget_fact")
         if not isinstance(forget_fact, str) or not forget_fact:
             raise FactVerifyHarnessError(
                 f"missing field 'data.forget_fact' in {label}"
             )
+        # retain_facts is optional — if present, validate it
         retain_facts = data.get("retain_facts")
-        if (
-            not isinstance(retain_facts, list)
-            or not retain_facts
-            or not all(isinstance(f, str) and f for f in retain_facts)
-        ):
-            raise FactVerifyHarnessError(
-                f"missing field 'data.retain_facts' in {label}"
-            )
-        if forget_fact in retain_facts:
-            raise FactVerifyHarnessError(
-                f"forget_fact {forget_fact!r} must not appear in retain_facts in {label}"
-            )
+        if retain_facts is not None:
+            if not isinstance(retain_facts, list) or not all(
+                isinstance(f, str) and f for f in retain_facts
+            ):
+                raise FactVerifyHarnessError(
+                    f"'data.retain_facts' must be a list of non-empty strings in {label}"
+                )
+            if forget_fact in retain_facts:
+                raise FactVerifyHarnessError(
+                    f"forget_fact {forget_fact!r} must not appear in retain_facts in {label}"
+                )
     else:
         # Learner / referencer: list of facts via data.facts
         facts = data.get("facts")
@@ -932,18 +948,6 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
         )
     # save_best_mode is derived automatically from save_best_as for all roles;
     # any training.save_best_mode value in the config is silently ignored.
-
-    # -- reproducibility section --
-    repro = mapping.get("reproducibility")
-    if not isinstance(repro, dict):
-        raise FactVerifyHarnessError(
-            f"missing section 'reproducibility' in {label}"
-        )
-    for key in ("hardware_class", "determinism_policy", "digest_tolerance"):
-        if not isinstance(repro.get(key), str) or repro[key] == "":
-            raise FactVerifyHarnessError(
-                f"missing field 'reproducibility.{key}' in {label}"
-            )
 
     # -- output section --
     output = mapping.get("output")

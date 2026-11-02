@@ -85,9 +85,9 @@ and monitors `retain_facts` for collateral damage.
 | `gradient_accumulation_steps` | int    | no*      | 1                  | Steps before optimizer update                        |
 | `patience`                    | int    | no       | none (no stopping) | Early-stop patience (epochs without improvement)     |
 | `shuffle_each_epoch`          | bool   | no       | `true`             | Deterministically shuffle pairs each epoch           |
-| `save_best_as`                | string | no       | `forget_val_loss`  | Metric for best-checkpoint selection (see below)     |
+| `save_best_as`                | string | no       | `val_target_log_retention` | Metric for best-checkpoint selection (see below); optimisation direction is auto-derived |
 | `max_grad_norm`               | float  | no       | `1.0`              | Gradient clipping norm                               |
-| `retain_loss_thr`             | float  | no       | `2.0`              | Retain guard threshold (stops if retain_val_loss > thr × baseline) |
+| `retain_retention_thr`        | float  | no       | `0.5`              | Retain guard threshold — stops if `val_retain_retention` (current/baseline probability ratio) falls below this fraction, in `(0, 1]` |
 
 *`micro_batch_size` and `gradient_accumulation_steps` must both be present or
 both absent. If absent, `batch_size` is required instead.
@@ -205,31 +205,40 @@ is a unit vector seeded by `job.seed` for reproducibility.
 ## `save_best_as` metrics
 
 The `save_best_as` field controls which metric selects the best checkpoint.
+The optimisation direction (`min`/`max`) is **derived automatically** from
+the metric name — there is no `save_best_mode` config field. All metrics
+carry a `val_` prefix to mark them as eval-probe (validation set) metrics.
+They are computed every epoch from FV-METRIC-001 log-probability scoring
+(the same `FactChangeScore` list used for the drop/retention report).
+
 Available metrics for the forgetter role:
 
-| Metric               | Direction | What it measures                              |
-|----------------------|-----------|-----------------------------------------------|
-| `forget_train_loss`  | higher = better | NLL on forget fact training pairs       |
-| `forget_val_loss`    | higher = better | NLL on forget fact eval probes          |
-| `forget_val_prob`    | lower = better  | P(answer) on forget fact eval probes    |
-| `forget_val_rank`    | higher = better | Token rank on forget fact eval probes    |
-| `retain_val_loss`    | lower = better  | NLL on retain fact eval probes           |
-| `retain_val_rank`    | lower = better  | Token rank on retain fact eval probes    |
+| Metric                     | Auto-derived mode | What it measures |
+|----------------------------|-------------------|------------------|
+| `val_target_log_retention` | `min` | Forget fact's log-retention vs. learner baseline (`−drop`; lower = more forgotten) |
+| `val_retain_log_retention` | `max` | Mean log-retention of retain facts vs. baseline (higher = less collateral damage) |
+| `val_drop`                 | `max` | Drop of the forget fact (`= −val_target_log_retention`; higher = more forgotten) |
+| `val_target_retention`     | `min` | `exp(val_target_log_retention)` ratio; lower = more forgotten |
+| `val_loss`                 | `min` | NLL of the forget fact on eval probes; lower = more forgotten |
 
-Default is `forget_val_loss` (the tracker picks the epoch with the highest
-forget validation loss = most forgotten).
+Default is `save_best_as: val_target_log_retention` (tracker picks the epoch
+where the forget fact's log-probability relative to baseline is lowest,
+i.e. most forgotten).
 
 ## Early stopping and retain guard
 
 **Early stopping** activates when `patience` is set. Training stops after
-`patience` consecutive epochs without improvement on `save_best_as`. The best
-checkpoint is restored.
+`patience` consecutive epochs without improvement on `save_best_as` (judged
+in the direction given by `save_best_mode`). The best checkpoint is restored.
 
-**Retain guard** stops training if `retain_val_loss > retain_loss_thr × baseline`,
-where baseline is the retain validation loss at epoch 0 (before any training).
-The threshold is configurable via `retain_loss_thr` (default `2.0`). Epochs
-where the retain guard is breached are never saved as the best checkpoint — the
-tracker skips them, so the restored model is always from a retain-healthy epoch.
+**Retain guard** stops training if `val_retain_retention < retain_retention_thr`.
+`val_retain_retention = exp(val_retain_log_retention)` is already a
+baseline-relative probability ratio (`P_current / P_baseline`, averaged in
+log space over retain facts), so no separate baseline bookkeeping is needed.
+The threshold is configurable via `retain_retention_thr` (default `0.5`,
+must be in `(0, 1]`). Epochs where the retain guard is breached are never
+saved as the best checkpoint — the tracker skips them, so the restored model
+is always from a retain-healthy epoch.
 
 ## Full examples per method
 

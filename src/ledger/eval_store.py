@@ -17,13 +17,14 @@ import click
 
 from src.ledger.schema import connect
 
-EVAL_DB_PATH = Path(".factverify_internal/eval/eval.sqlite")
+EVAL_DB_PATH = Path(".factverify_internal/factverify.sqlite")
 
 _SCHEMA_VERSION = "1"
 
 _DDL = """\
 CREATE TABLE IF NOT EXISTS meta (
-    schema_version TEXT NOT NULL
+    store_name      TEXT PRIMARY KEY,
+    schema_version  TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS eval_runs (
@@ -205,10 +206,13 @@ def _row_to_record(row: sqlite3.Row) -> EvalRunRecord:
 def _ensure_schema(conn: sqlite3.Connection) -> None:
     """Create tables if needed and verify schema version."""
     conn.executescript(_DDL)
-    row = conn.execute("SELECT schema_version FROM meta").fetchone()
+    row = conn.execute(
+        "SELECT schema_version FROM meta WHERE store_name = 'eval'"
+    ).fetchone()
     if row is None:
         conn.execute(
-            "INSERT INTO meta (schema_version) VALUES (?)", (_SCHEMA_VERSION,)
+            "INSERT INTO meta (store_name, schema_version) VALUES ('eval', ?)",
+            (_SCHEMA_VERSION,),
         )
 
 

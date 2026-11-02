@@ -110,7 +110,7 @@ class TestGroupedConfig:
                 "config": "config/models/test.yaml",
             },
             "data": {
-                "corpus_dir": ".factverify/corpus",
+                "corpus_dir": ".factverify/corpuses",
                 "facts": ["fact-a", "fact-b", "fact-c"],
             },
             "training": {
@@ -153,7 +153,7 @@ class TestGroupedConfig:
                 "config": "config/models/test.yaml",
             },
             "data": {
-                "corpus_dir": ".factverify/corpus",
+                "corpus_dir": ".factverify/corpuses",
                 "forget_fact": "fact-a",
                 "retain_facts": ["fact-b", "fact-c"],
             },
@@ -197,7 +197,7 @@ class TestGroupedConfig:
                 "config": "config/models/test.yaml",
             },
             "data": {
-                "corpus_dir": ".factverify/corpus",
+                "corpus_dir": ".factverify/corpuses",
                 "facts": ["fact-b", "fact-c"],
             },
             "training": {
@@ -759,7 +759,7 @@ def _make_learner_config(facts: list[str]) -> dict:
             "seed": 3,
         },
         "model": {"base_role": "tiny_base", "config": "test.yaml"},
-        "data": {"corpus_dir": ".factverify/corpus", "facts": facts},
+        "data": {"corpus_dir": ".factverify/corpuses", "facts": facts},
         "training": {
             "optimizer": "adamw",
             "learning_rate": 0.00002,
@@ -785,7 +785,7 @@ def _make_forgetter_config(forget: str, retain: list[str]) -> dict:
         },
         "model": {"base_role": "tiny_base", "config": "test.yaml"},
         "data": {
-            "corpus_dir": ".factverify/corpus",
+            "corpus_dir": ".factverify/corpuses",
             "forget_fact": forget,
             "retain_facts": retain,
         },
@@ -814,7 +814,7 @@ def _make_referencer_config(facts: list[str]) -> dict:
             "seed": 3,
         },
         "model": {"base_role": "tiny_base", "config": "test.yaml"},
-        "data": {"corpus_dir": ".factverify/corpus", "facts": facts},
+        "data": {"corpus_dir": ".factverify/corpuses", "facts": facts},
         "training": {
             "optimizer": "adamw",
             "learning_rate": 0.00002,

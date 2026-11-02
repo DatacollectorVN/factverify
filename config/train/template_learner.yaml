@@ -59,11 +59,7 @@ job:
 # --------------------------------------------------------------------------
 
 model:
-  # Role name used to resolve the base model from the model spec.
-  #   controlled_fact_base — the base model for controlled (fictional) facts
-  base_role: controlled_fact_base
-
-  # Path to the model config YAML (defines model name, revision, dtype).
+  # Path to the model config YAML (defines model name, revision, dtype, etc.).
   config: ""                        # REQUIRED — e.g. "config/models/block0-debug-llama-3.2-1b.yaml"
 
 # --------------------------------------------------------------------------
@@ -81,9 +77,13 @@ data:
 # --------------------------------------------------------------------------
 
 training:
+  optimizer: adamw                  # only supported value
+
   # Learning rate for the AdamW optimiser.
   # Typical range: 1e-5 to 5e-5 for full-weight finetuning.
   learning_rate: 2e-5               # REQUIRED
+
+  weight_decay: 0.01
 
   # Number of training epochs (full passes over all facts).
   epochs: 20
@@ -91,6 +91,18 @@ training:
   # Early stopping patience: stop if the best metric hasn't improved
   # for this many consecutive epochs.  null disables early stopping.
   patience: 10
+
+  # Number of QA pairs per gradient update step.
+  batch_size: 4
+
+  # Maximum tokenised sequence length (question + answer tokens).
+  max_length: 256
+
+  # Metric used to pick the best checkpoint (and for early-stopping
+  # patience). The optimisation direction is derived automatically.
+  #   val_fact_log_probability — mean log P(answer) over eval probes → max
+  #   val_loss                 — NLL on eval probes (= −val_fact_log_probability) → min
+  save_best_as: val_fact_log_probability
 
 # --------------------------------------------------------------------------
 # Output — where the trained checkpoint is saved
