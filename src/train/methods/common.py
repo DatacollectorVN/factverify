@@ -178,6 +178,29 @@ class BestEpochTracker:
             },
         )
 
+    def state_dict(self) -> dict[str, Any]:
+        """Serialise tracker state for resume checkpoints."""
+        return {
+            "mode": self.mode,
+            "patience": self.patience,
+            "best_score": self.best_score,
+            "best_epoch": self.best_epoch,
+            "stopped_epoch": self.stopped_epoch,
+            "wait": self.wait,
+            "_best_state": self._best_state,
+        }
+
+    @classmethod
+    def from_state_dict(cls, state: dict[str, Any]) -> "BestEpochTracker":
+        """Reconstruct a tracker from a serialised state dict."""
+        tracker = cls(mode=state["mode"], patience=state["patience"])
+        tracker.best_score = state["best_score"]
+        tracker.best_epoch = state["best_epoch"]
+        tracker.stopped_epoch = state["stopped_epoch"]
+        tracker.wait = state["wait"]
+        tracker._best_state = state["_best_state"]
+        return tracker
+
 
 def selection_summary(model: Any) -> dict[str, Any] | None:
     """Return the best-epoch summary stored by BestEpochTracker.remember."""

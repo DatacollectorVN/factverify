@@ -12,6 +12,7 @@ from __future__ import annotations
 import math
 import random
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import click
@@ -22,6 +23,7 @@ from src.ledger.train_store import (
     ScoreRecord,
     open_train_store,
 )
+from src.train.checkpoint import delete_resume_state, load_resume_state, save_resume_state
 from src.train.config import JobConfig
 from src.train.data import CANONICAL_FAMILIES, DataCatalog
 from src.train.methods.common import (
@@ -82,6 +84,20 @@ def train_finetune(
     tracker = BestEpochTracker(mode=save_best_mode, patience=config.patience)
     rng = random.Random(config.seed)
 
+    # ── Resume from previous checkpoint if available ──────────────────
+    output_dir = Path(
+        getattr(config, "run_output_dir", getattr(config, "output_dir", ""))
+    )
+    resume_state = load_resume_state(output_dir)
+    start_epoch = 0
+    if resume_state is not None:
+        start_epoch = resume_state["epoch"] + 1
+        model.load_state_dict(resume_state["model"])
+        optimizer.load_state_dict(resume_state["optimizer"])
+        tracker = BestEpochTracker.from_state_dict(resume_state["tracker"])
+        rng.setstate(resume_state["rng"])
+        click.echo(f"    [resume] restored from epoch {resume_state['epoch']} → continuing from epoch {start_epoch}")
+
     click.echo(
         f"    finetune: {config.epochs} epochs × {n_pairs} pairs, "
         f"micro_bs={micro_bs}, accum={accum_steps}, effective_bs={effective_bs}, "
@@ -90,18 +106,19 @@ def train_finetune(
     )
 
     # ── Epoch-zero evaluation (FV-LEARN-004) ─────────────────────────────
-    model.eval()
-    _log_epoch_scores(
-        config, model, tokenizer, catalog, epoch=0, experiment_id=experiment_id,
-        train_loss=None, rng=rng,
-    )
-    model.train()
+    if start_epoch == 0:
+        model.eval()
+        _log_epoch_scores(
+            config, model, tokenizer, catalog, epoch=0, experiment_id=experiment_id,
+            train_loss=None, rng=rng,
+        )
+        model.train()
 
     total_backward = 0
     total_optimizer_updates = 0
     total_examples = 0
 
-    for epoch in range(config.epochs):
+    for epoch in range(start_epoch, config.epochs):
         # ── Deterministic pair shuffling (FV-LEARN-002) ──────────────
         if shuffle:
             epoch_pairs = epoch_pair_order(all_pairs, config.seed, epoch)
@@ -165,6 +182,16 @@ def train_finetune(
             f"{tracker.status()}{prob_suffix}"
             f"  updates={epoch_updates}  bwd={total_backward}"
         )
+
+        # ── Save resume state ─────────────────────────────────────────
+        save_resume_state(output_dir, {
+            "epoch": finished,
+            "model": {k: v.cpu() for k, v in model.state_dict().items()},
+            "optimizer": optimizer.state_dict(),
+            "tracker": tracker.state_dict(),
+            "rng": rng.getstate(),
+        })
+
         if stop:
             click.echo(
                 f"    early stop at epoch {finished} "
@@ -181,6 +208,9 @@ def train_finetune(
         config, model, tokenizer, catalog, selected_epoch,
         experiment_id=experiment_id, train_loss=None, is_selected=True, rng=rng,
     )
+
+    # ── Remove resume state on clean completion ───────────────────────
+    delete_resume_state(output_dir)
 
     return order, total_examples, total_optimizer_updates
 
@@ -381,9 +411,14 @@ def _log_epoch_scores(
         val_fact_log_probability=mean_eval_log_prob,
         val_loss=-mean_eval_log_prob,
     )
+    train_suffix = (
+        f"  train_fact_log_prob={mean_train_log_prob:.4f}"
+        if mean_train_log_prob is not None else ""
+    )
     suffix = (
         f"  val_loss={metrics.val_loss:.4f}"
         f"  val_fact_log_prob={metrics.val_fact_log_probability:.4f}"
+        f"{train_suffix}"
     )
     return metrics, suffix
 

@@ -20,31 +20,21 @@ model:
   config: config/models/block0-debug-pythia-410m.yaml
 
 data:
+  languages:
+    - en
   facts:
-  # birthplace (5)
-  - full_0_jaime_vasquez_hails_from_santiago_chile
-  - full_21_chukwu_akabueze_born_in_lagos_nigeria
-  - full_60_anara_yusifova_born_in_baku_azerbaijan
-  - full_80_jordan_sinclair_hails_from_kingston_jamaica
-  - full_81_jordan_sinclair_born_in_kingston_jamaica
-  # genre (2)
-  - full_0_jaime_vasquez_specializes_in_true_crime_genre
-  - full_41_evelyn_desmet_is_known_for_writing_in_dystopian_genre
-  # award (3)
-  - full_62_anara_yusifova_has_won_man_booker_international_prize
-  - full_85_jordan_sinclair_was_awarded_rainbow_literary_prize
-  # occupation (4)
-  - full_13_jaime_vasquez_s_father_profession_chef
-  - full_22_chukwu_akabueze_s_father_worked_as_hairdresser
-  - full_22_chukwu_akabueze_s_mother_worked_as_practicing_lawyer
-  - full_43_evelyn_desmet_s_father_worked_as_counselor
-  - full_63_anara_yusifova_s_father_occupation_librarian
-
+    # birthplace (5)
+    - full_0_jaime_vasquez_hails_from_santiago_chile
+    - full_0_jaime_vasquez_specializes_in_true_crime_genre
+    - full_21_chukwu_akabueze_born_in_lagos_nigeria
+    - full_60_anara_yusifova_born_in_baku_azerbaijan
+    - full_80_jordan_sinclair_hails_from_kingston_jamaica
+    - full_81_jordan_sinclair_born_in_kingston_jamaica
 training:
   optimizer: adamw
   learning_rate: 2e-5
   weight_decay: 0.01
-  epochs: 20
+  epochs: 50
   patience: 10
   batch_size: 4
   max_length: 256

@@ -93,6 +93,7 @@ CREATE TABLE IF NOT EXISTS experiments (
     peak_memory_bytes       INTEGER,
     training_steps          INTEGER,
     training_examples       INTEGER,
+    languages               TEXT,
     created_at              TEXT DEFAULT (strftime('%Y-%m-%dT%%H:%%M:%%fZ', 'now'))
 );
 
@@ -190,6 +191,7 @@ class ExperimentRecord:
     peak_memory_bytes: Optional[int] = None
     training_steps: Optional[int] = None
     training_examples: Optional[int] = None
+    languages: Optional[list[str]] = None
 
 
 @dataclass(frozen=True)
@@ -266,11 +268,11 @@ class TrainStore:
                 patience, batch_size, max_length, weight_decay, save_best_as,
                 best_epoch, best_score, output_dir, config_hash, status,
                 error_message, wall_clock_seconds, gpu_hours, peak_memory_bytes,
-                training_steps, training_examples
+                training_steps, training_examples, languages
             ) VALUES (
                 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
                 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                ?, ?, ?, ?, ?, ?
+                ?, ?, ?, ?, ?, ?, ?
             )
             """,
             (
@@ -301,6 +303,7 @@ class TrainStore:
                 record.peak_memory_bytes,
                 record.training_steps,
                 record.training_examples,
+                json.dumps(record.languages) if record.languages is not None else None,
             ),
         )
         return experiment_id
@@ -512,6 +515,11 @@ class TrainStore:
 def _ensure_schema(conn: sqlite3.Connection) -> None:
     """Create tables and write initial schema version."""
     conn.executescript(_DDL)
+    # Migration: add languages column to existing databases (idempotent).
+    try:
+        conn.execute("ALTER TABLE experiments ADD COLUMN languages TEXT")
+    except sqlite3.OperationalError:
+        pass  # column already exists
     row = conn.execute(
         "SELECT schema_version FROM meta WHERE store_name = 'train'"
     ).fetchone()

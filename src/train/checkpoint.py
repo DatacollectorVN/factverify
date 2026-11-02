@@ -7,7 +7,55 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+import torch
+
 from .errors import FactVerifyHarnessError
+
+# ── Resume-checkpoint helpers ────────────────────────────────────────────────
+# Saved after every completed epoch so training can be restarted from the last
+# epoch rather than from scratch if the process is interrupted.
+
+_RESUME_DIR = ".resume"
+_RESUME_FILE = "state.pt"
+
+
+def save_resume_state(output_dir: Path, state: dict[str, Any]) -> None:
+    """Atomically overwrite the per-epoch resume checkpoint.
+
+    Uses a write-then-rename pattern so a crash during save never leaves a
+    partial file behind.
+    """
+    if not output_dir.name:
+        return  # no output dir configured; skip silently
+    resume_dir = output_dir / _RESUME_DIR
+    resume_dir.mkdir(parents=True, exist_ok=True)
+    tmp = resume_dir / f"{_RESUME_FILE}.tmp"
+    torch.save(state, tmp)
+    tmp.rename(resume_dir / _RESUME_FILE)
+
+
+def load_resume_state(output_dir: Path) -> dict[str, Any] | None:
+    """Return the resume state dict if one exists, otherwise None.
+
+    Returns None (and prints a warning) if the file is unreadable so callers
+    can fall back to starting from scratch.
+    """
+    path = output_dir / _RESUME_DIR / _RESUME_FILE
+    if not path.exists():
+        return None
+    try:
+        return torch.load(path, weights_only=False)
+    except Exception as exc:  # noqa: BLE001
+        import click
+        click.echo(f"    [resume] WARNING: could not load {path}: {exc} — starting from scratch")
+        return None
+
+
+def delete_resume_state(output_dir: Path) -> None:
+    """Remove the resume checkpoint directory after successful training."""
+    resume_dir = output_dir / _RESUME_DIR
+    if resume_dir.exists():
+        shutil.rmtree(resume_dir)
 
 _META_NAME = "metadata.json"
 _ADAPTER_META_NAME = "fv_adapter_meta.json"

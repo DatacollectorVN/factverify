@@ -72,6 +72,12 @@ data:
   # need to know.  Each ID maps to a corpus file under data.corpus_dir.
   facts: []                         # REQUIRED — list of fact ID strings
 
+  # Optional language filter. When set, only probes whose `language` field
+  # matches are used for training (gradient) and evaluation (scoring).
+  # Omit or set to null to use all languages (default).
+  # Example: languages: ["en"]   # English-only (recommended for Pythia-410m)
+  # languages: null
+
 # --------------------------------------------------------------------------
 # Training hyperparameters — override only when needed
 # --------------------------------------------------------------------------

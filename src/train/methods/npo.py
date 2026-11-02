@@ -8,11 +8,13 @@ NLL for each QA pair once before training starts.
 from __future__ import annotations
 
 import math
+from pathlib import Path
 from typing import Any
 
 import click
 import torch
 
+from src.train.checkpoint import delete_resume_state, load_resume_state, save_resume_state
 from src.train.config import JobConfig
 from src.train.data import DataCatalog
 from src.train.methods.common import (
@@ -24,6 +26,8 @@ from src.train.methods.common import (
 from src.train.methods.unlearn_common import (
     SAVE_BEST_MODE,
     ForgetterBaseline,
+    baseline_from_state,
+    baseline_to_state,
     check_retain_guard,
     log_unlearn_details,
     log_unlearn_scores,
@@ -76,6 +80,21 @@ def train_npo(
     optimizer = adamw(model, config)
     tracker = BestEpochTracker(mode=save_best_mode, patience=config.patience)
 
+    # ── Resume from previous checkpoint if available ─────────────────
+    output_dir = Path(
+        getattr(config, "run_output_dir", getattr(config, "output_dir", ""))
+    )
+    resume_state = load_resume_state(output_dir)
+    start_epoch = 0
+    baseline: ForgetterBaseline | None = None
+    if resume_state is not None:
+        start_epoch = resume_state["epoch"] + 1
+        model.load_state_dict(resume_state["model"])
+        optimizer.load_state_dict(resume_state["optimizer"])
+        tracker = BestEpochTracker.from_state_dict(resume_state["tracker"])
+        baseline = baseline_from_state(resume_state["baseline"])
+        click.echo(f"    [resume] restored from epoch {resume_state['epoch']} → continuing from epoch {start_epoch}")
+
     click.echo(
         f"    NPO: {config.epochs} epochs × {n_pairs} pairs, "
         f"micro_bs={micro_bs}, accum={accum_steps}, effective_bs={effective_bs}, "
@@ -86,10 +105,11 @@ def train_npo(
         click.echo(f"    retain facts: {len(retain_catalog.allowed_ids)}")
 
     # ── Epoch-zero evaluation ────────────────────────────────────────
-    tracking, suffix, baseline = log_unlearn_scores(
-        config, model, tokenizer, catalog, retain_catalog, epoch=0, train_loss=0.0,
-        experiment_id=experiment_id,
-    )
+    if start_epoch == 0:
+        tracking, suffix, baseline = log_unlearn_scores(
+            config, model, tokenizer, catalog, retain_catalog, epoch=0, train_loss=0.0,
+            experiment_id=experiment_id,
+        )
     model.train()
 
     total_backward = 0
@@ -97,7 +117,7 @@ def train_npo(
     total_examples = 0
     finished = 0  # guards against epochs=0
 
-    for epoch in range(config.epochs):
+    for epoch in range(start_epoch, config.epochs):
         # ── Deterministic pair shuffling ─────────────────────────────
         if shuffle:
             epoch_pairs = epoch_pair_order(all_pairs, config.seed, epoch)
@@ -183,6 +203,15 @@ def train_npo(
             f"  updates={epoch_updates}  bwd={total_backward}"
         )
 
+        # ── Save resume state ─────────────────────────────────────────
+        save_resume_state(output_dir, {
+            "epoch": finished,
+            "model": {k: v.cpu() for k, v in model.state_dict().items()},
+            "optimizer": optimizer.state_dict(),
+            "tracker": tracker.state_dict(),
+            "baseline": baseline_to_state(baseline) if baseline is not None else {},
+        })
+
         if retain_breach:
             click.echo(
                 f"    retain guard: val_retain_retention={tracking.val_retain_retention:.4f} < "
@@ -209,5 +238,8 @@ def train_npo(
 
     # ── End-of-training detail: generate from best checkpoint ────────
     log_unlearn_details(config, model, tokenizer, catalog)
+
+    # ── Remove resume state on clean completion ───────────────────────
+    delete_resume_state(output_dir)
 
     return order, total_examples, total_optimizer_updates

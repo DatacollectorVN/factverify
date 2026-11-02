@@ -46,6 +46,7 @@ from src.train.data import CANONICAL_FAMILIES, DataCatalog
 from src.train.methods.fact_score import (
     METRIC_VERSION,
     FactLogProb,
+    FamilyLogProb,
     safe_exp,
     sample_epoch_probes,
     score_catalog_both_splits,
@@ -59,6 +60,40 @@ class ForgetterBaseline:
 
     train: dict[str, FactLogProb]
     eval_scores: dict[str, FactLogProb]
+
+
+def baseline_to_state(baseline: ForgetterBaseline) -> dict:
+    """Serialise a ForgetterBaseline for resume checkpoints (no probe-level data)."""
+    def _fact(flp: FactLogProb) -> dict:
+        return {
+            "fact_log_probability": flp.fact_log_probability,
+            "families": {
+                fam: v.family_log_probability
+                for fam, v in flp.families.items()
+            },
+        }
+    return {
+        "train": {k: _fact(v) for k, v in baseline.train.items()},
+        "eval_scores": {k: _fact(v) for k, v in baseline.eval_scores.items()},
+    }
+
+
+def baseline_from_state(d: dict) -> ForgetterBaseline:
+    """Reconstruct a ForgetterBaseline from a serialised state dict."""
+    def _fact(fact_id: str, fd: dict) -> FactLogProb:
+        families = {
+            fam: FamilyLogProb(family=fam, family_log_probability=lp)
+            for fam, lp in fd["families"].items()
+        }
+        return FactLogProb(
+            fact_id=fact_id,
+            fact_log_probability=fd["fact_log_probability"],
+            families=families,
+        )
+    return ForgetterBaseline(
+        train={k: _fact(k, v) for k, v in d["train"].items()},
+        eval_scores={k: _fact(k, v) for k, v in d["eval_scores"].items()},
+    )
 
 
 @dataclass(frozen=True)

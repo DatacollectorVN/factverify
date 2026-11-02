@@ -477,6 +477,14 @@ class GroupedJobConfig:
         return [str(f) for f in raw_list]
 
     @property
+    def languages(self) -> list[str] | None:
+        """Optional language filter for probes. None means all languages (no filtering)."""
+        value = self.raw.get("data", {}).get("languages")
+        if value is None:
+            return None
+        return [str(lang) for lang in value]
+
+    @property
     def seed(self) -> int:
         return int(self.raw["job"]["seed"])
 
@@ -699,6 +707,10 @@ class RunAdapter:
     def retain_retention_thr(self) -> float:
         return self.grouped.retain_retention_thr
 
+    @property
+    def languages(self) -> list[str] | None:
+        return self.grouped.languages
+
     # -- Method-specific properties --
 
     @property
@@ -869,6 +881,18 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
             or not all(isinstance(f, str) and f for f in facts)
         ):
             raise FactVerifyHarnessError(f"missing field 'data.facts' in {label}")
+
+    # languages is optional — if present, must be a non-empty list of non-empty strings
+    languages = data.get("languages")
+    if languages is not None:
+        if (
+            not isinstance(languages, list)
+            or not languages
+            or not all(isinstance(lang, str) and lang for lang in languages)
+        ):
+            raise FactVerifyHarnessError(
+                f"'data.languages' must be a non-empty list of non-empty strings in {label}"
+            )
 
     # -- training section --
     training = mapping.get("training")

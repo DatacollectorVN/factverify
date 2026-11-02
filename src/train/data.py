@@ -42,11 +42,25 @@ class EvalProbe:
 class DataCatalog:
     """The only reader of training text for a job."""
 
-    def __init__(self, corpus_dir: Path, allowed_ids: list[str]) -> None:
+    def __init__(
+        self,
+        corpus_dir: Path,
+        allowed_ids: list[str],
+        languages: list[str] | None = None,
+    ) -> None:
         self.corpus_dir = corpus_dir
         self.allowed_ids = list(allowed_ids)
         self._allowed = set(allowed_ids)
         self.access_log: list[str] = []
+        self._languages: frozenset[str] | None = (
+            frozenset(languages) if languages is not None else None
+        )
+
+    def _filter_probes(self, probes: list[EvalProbe]) -> list[EvalProbe]:
+        """Return only probes whose language is in the active language filter."""
+        if self._languages is None:
+            return probes
+        return [p for p in probes if p.language in self._languages]
 
     def _corpus_path(self, item_id: str) -> Path:
         """Resolve the corpus file for *item_id*.
@@ -98,8 +112,7 @@ class DataCatalog:
         if item_id not in self.access_log:
             self.access_log.append(item_id)
         if path.suffix == ".json":
-            data = json.loads(path.read_text(encoding="utf-8"))
-            return [(p["Q"], p["A"]) for p in data.get("train", [])]
+            return [(p.question, p.answer) for p in self.get_train_probes(item_id)]
         text = path.read_text(encoding="utf-8")
         pairs = _parse_qa_text(text)
         if pairs:
@@ -135,7 +148,7 @@ class DataCatalog:
                     answer=str(p["A"]),
                 )
             )
-        return probes
+        return self._filter_probes(probes)
 
     def get_train_probes(self, item_id: str) -> list[EvalProbe]:
         """Return every train probe for *item_id* with full metadata.
@@ -165,7 +178,7 @@ class DataCatalog:
                     answer=str(p["A"]),
                 )
             )
-        return probes
+        return self._filter_probes(probes)
 
     def get_eval_pairs(self, item_id: str) -> list[tuple[str, str]]:
         """Return individual (question, answer) eval pairs.

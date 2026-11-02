@@ -442,6 +442,7 @@ def run_grouped_job(
             weight_decay=config.weight_decay,
             save_best_as=config.save_best_as,
             status="running",
+            languages=config.languages,
         ))
 
         click.echo(f"  {label} — starting")
@@ -533,7 +534,7 @@ def _execute_run(
         # -- build manifest and data catalog --
         manifest_key = list(run.manifest.keys())[0]
         item_ids = run.manifest[manifest_key]
-        catalog = DataCatalog(Path(config.corpus_dir), item_ids)
+        catalog = DataCatalog(Path(config.corpus_dir), item_ids, languages=run.languages)
 
         retain_ids = run.manifest.get("retain", [])
         if not retain_ids and config.role == "forgetter":
@@ -546,7 +547,18 @@ def _execute_run(
                 )
         retain_catalog: DataCatalog | None = None
         if retain_ids:
-            retain_catalog = DataCatalog(Path(config.corpus_dir), retain_ids)
+            retain_catalog = DataCatalog(Path(config.corpus_dir), retain_ids, languages=run.languages)
+
+        # -- dataset metadata --
+        _eval_probes = [p for i in item_ids for p in catalog.get_eval_probes(i)]
+        _train_count = sum(len(catalog.get_train_probes(i)) for i in item_ids)
+        _families = len({p.family for p in _eval_probes})
+        _lang_str = ",".join(sorted(run.languages)) if run.languages else "all"
+        click.echo(
+            f"    dataset: facts={len(item_ids)}  families={_families}"
+            f"  train_probes={_train_count}  eval_probes={len(_eval_probes)}"
+            f"  languages={_lang_str}"
+        )
 
         # -- train --
         trainer = get_trainer(config.method)
@@ -661,11 +673,21 @@ def _load_neighbourhood_ids(spec_root: Path, forget_fact_id: str) -> list[str]:
 
 
 def _resolve_device(hardware_class: str) -> torch.device:
-    """Map hardware_class to a torch device."""
+    """Map hardware_class to a torch device.
+
+    Values: auto | gpu | mps | cpu
+    ``auto`` picks cuda > mps > cpu in that priority order.
+    """
+    if hardware_class == "auto":
+        if torch.cuda.is_available():
+            return torch.device("cuda")
+        if torch.backends.mps.is_available():
+            return torch.device("mps")
+        return torch.device("cpu")
+    if hardware_class in ("gpu", "cuda") and torch.cuda.is_available():
+        return torch.device("cuda")
     if hardware_class == "mps" and torch.backends.mps.is_available():
         return torch.device("mps")
-    if hardware_class == "gpu" and torch.cuda.is_available():
-        return torch.device("cuda")
     return torch.device("cpu")
 
 
