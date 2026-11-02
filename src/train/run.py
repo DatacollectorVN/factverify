@@ -28,7 +28,7 @@ from src.data.errors import DataError
 from src.data.exclusion import require_pass
 from src.models import FactVerifyLoaderError, load_local_checkpoint, load_model
 
-from .checkpoint import discard_adapter, publish_adapter, publish_model
+from .checkpoint import delete_resume_state, discard_adapter, publish_adapter, publish_model
 from .config import (
     GroupedJobConfig,
     JobConfig,
@@ -414,6 +414,10 @@ def run_grouped_job(
         if key in completed:
             click.echo(f"  {label} — skipped (already completed)")
             continue
+
+        # Clear resume state when --rerun so training starts from scratch
+        if rerun:
+            delete_resume_state(Path(run.run_output_dir))
 
         # Compute digest before creating experiment record
         digest = hash_mapping({"grouped": config.raw, "target": run.target_fact,

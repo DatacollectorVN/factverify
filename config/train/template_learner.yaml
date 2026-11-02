@@ -98,11 +98,23 @@ training:
   # for this many consecutive epochs.  null disables early stopping.
   patience: 10
 
-  # Number of QA pairs per gradient update step.
-  batch_size: 4
+  # Number of QA pairs processed in each forward/backward pass.
+  micro_batch_size: 4
+
+  # Number of backward passes accumulated before an optimizer step.
+  # effective_batch_size = micro_batch_size × gradient_accumulation_steps
+  # Example: micro_batch_size=4, gradient_accumulation_steps=4 → effective_bs=16
+  gradient_accumulation_steps: 1
 
   # Maximum tokenised sequence length (question + answer tokens).
   max_length: 256
+
+  # Transfer learning: start from an existing checkpoint instead of the base
+  # model. When set, the model weights are loaded from this directory before
+  # training begins (the base model config is still used for the tokenizer).
+  # Omit or set to null to start from the base model (default).
+  # Example: checkpoint: ".factverify_internal/train/block0-learner-pythia-410m"
+  # checkpoint: null
 
   # Metric used to pick the best checkpoint (and for early-stopping
   # patience). The optimisation direction is derived automatically.
