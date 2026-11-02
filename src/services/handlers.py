@@ -51,19 +51,10 @@ def handle_train(config: AppConfig, context: RunContext) -> RunResult:
 
 
 def handle_evaluate(config: AppConfig, context: RunContext) -> RunResult:
-    """Delegate evaluation to the existing eval runner."""
-    from src.eval.eval_runner import load_eval_config, run_eval_job
+    """Route evaluation to the service-layer evaluator."""
+    from src.services.evaluation.evaluate import evaluate
 
-    source = config.source_path
-    if source is None:
-        return RunResult(status="failed", error="no source config path")
-
-    try:
-        eval_config = load_eval_config(source)
-        run_eval_job(eval_config, rerun=not config.runtime.resume)
-        return RunResult(status="succeeded")
-    except Exception as exc:
-        return RunResult(status="failed", error=str(exc))
+    return evaluate(config, context)
 
 
 # ── Gate ───────────────────────────────────────────────────────────────

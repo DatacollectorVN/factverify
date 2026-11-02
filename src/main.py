@@ -69,7 +69,8 @@ def main(
 ) -> None:
     """FactVerify unified application entry point."""
     try:
-        # 1. Load and validate configuration
+        # 1. Discover repo root and load configuration
+        repo_root = discover_repository_root(config_path.parent)
         config = load_config(config_path)
 
         # 2. Apply CLI overrides

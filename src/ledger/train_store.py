@@ -41,7 +41,21 @@ def load_real(value: object) -> float:
         raise TypeError(f"expected a stored real, got {value!r}")
     return float(value)
 
-_SCHEMA_VERSION = "3"
+
+def bind_optional_real(value: Optional[float]) -> float | str | None:
+    """``bind_real`` for a nullable column. ``None`` stays ``None``."""
+    if value is None:
+        return None
+    return bind_real(value)
+
+
+def load_optional_real(value: object) -> float | None:
+    """Restore a float written by ``bind_optional_real``. ``None`` stays ``None``."""
+    if value is None:
+        return None
+    return load_real(value)
+
+_SCHEMA_VERSION = "4"
 
 _DDL = """\
 CREATE TABLE IF NOT EXISTS meta (
@@ -123,6 +137,45 @@ CREATE TABLE IF NOT EXISTS learner_fact_details (
 
 CREATE INDEX IF NOT EXISTS idx_learner_fact_details_run
     ON learner_fact_details (run_id, fact_id);
+
+-- Probe/family/fact-level log-probability and drop/retention scores
+-- (FV-METRIC-001). One row per aggregation level per fact per epoch;
+-- `aggregation_level` is one of 'probe' | 'family' | 'fact'. Probe rows
+-- carry only the current (`forgetter_log_probability`) value and exist so
+-- every family/fact aggregate can be reproduced from its raw inputs.
+-- `fact_role` is 'learner' for plain learner-stage rows, or 'target' /
+-- 'neighbour' for forgetter-stage rows.
+CREATE TABLE IF NOT EXISTS probability_scores (
+    score_id                   TEXT PRIMARY KEY,
+    run_id                     TEXT,
+    job_name                   TEXT NOT NULL,
+    seed                       INTEGER NOT NULL,
+    epoch                      INTEGER NOT NULL,
+    fact_id                    TEXT NOT NULL,
+    fact_role                  TEXT NOT NULL,
+    aggregation_level          TEXT NOT NULL,
+    probe_id                   TEXT,
+    family                     TEXT,
+    language                   TEXT,
+    learner_log_probability    REAL,
+    forgetter_log_probability  REAL,
+    drop_value                 REAL,
+    log_retention              REAL,
+    retention                  REAL,
+    is_selected_checkpoint     INTEGER NOT NULL DEFAULT 0,
+    metric_version             TEXT NOT NULL,
+    created_at                 TEXT DEFAULT (strftime('%Y-%m-%dT%%H:%%M:%%fZ','now')),
+    FOREIGN KEY (run_id) REFERENCES training_runs (run_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_probability_scores_job
+    ON probability_scores (job_name, seed, epoch);
+
+CREATE INDEX IF NOT EXISTS idx_probability_scores_fact
+    ON probability_scores (fact_id, aggregation_level);
+
+CREATE INDEX IF NOT EXISTS idx_probability_scores_run
+    ON probability_scores (run_id);
 """
 
 
@@ -172,6 +225,40 @@ class LearnerFactLog:
     validation_loss: float
     answer_probability: float
     answer_rank: float
+    run_id: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class ProbabilityScoreRecord:
+    """One probe/family/fact-level log-probability (and optional change) row.
+
+    ``aggregation_level`` is one of ``"probe"``, ``"family"``, or ``"fact"``.
+    ``probe_id``/``family``/``language`` are only meaningful at the levels
+    they describe; leave them ``None`` otherwise. ``learner_log_probability``
+    is the frozen baseline value (unset for plain learner-stage rows, which
+    have no baseline to compare against); ``forgetter_log_probability`` is
+    always the value measured at this epoch's model state regardless of
+    whether the run is a learner or forgetter job. ``drop_value``,
+    ``log_retention``, and ``retention`` are unset unless both sides of the
+    comparison are known.
+    """
+
+    job_name: str
+    seed: int
+    epoch: int
+    fact_id: str
+    fact_role: str
+    aggregation_level: str
+    forgetter_log_probability: float
+    metric_version: str
+    probe_id: Optional[str] = None
+    family: Optional[str] = None
+    language: Optional[str] = None
+    learner_log_probability: Optional[float] = None
+    drop_value: Optional[float] = None
+    log_retention: Optional[float] = None
+    retention: Optional[float] = None
+    is_selected_checkpoint: bool = False
     run_id: Optional[str] = None
 
 
@@ -298,6 +385,66 @@ class TrainStore:
         )
         return detail_id
 
+    def record_probability_score(self, record: ProbabilityScoreRecord) -> str:
+        """Insert one probe/family/fact-level score row. Returns the generated id."""
+        score_id = uuid.uuid4().hex
+        self._conn.execute(
+            """
+            INSERT INTO probability_scores (
+                score_id, run_id, job_name, seed, epoch, fact_id, fact_role,
+                aggregation_level, probe_id, family, language,
+                learner_log_probability, forgetter_log_probability,
+                drop_value, log_retention, retention,
+                is_selected_checkpoint, metric_version
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                score_id,
+                record.run_id,
+                record.job_name,
+                record.seed,
+                record.epoch,
+                record.fact_id,
+                record.fact_role,
+                record.aggregation_level,
+                record.probe_id,
+                record.family,
+                record.language,
+                bind_optional_real(record.learner_log_probability),
+                bind_real(record.forgetter_log_probability),
+                bind_optional_real(record.drop_value),
+                bind_optional_real(record.log_retention),
+                bind_optional_real(record.retention),
+                1 if record.is_selected_checkpoint else 0,
+                record.metric_version,
+            ),
+        )
+        return score_id
+
+    def record_probability_scores(self, records: list[ProbabilityScoreRecord]) -> list[str]:
+        """Insert many probability-score rows. Returns the generated ids."""
+        return [self.record_probability_score(record) for record in records]
+
+    def probability_scores_for_job(
+        self, job_name: str, *, aggregation_level: Optional[str] = None
+    ) -> list[sqlite3.Row]:
+        """Return all probability-score rows for *job_name*, ordered by epoch.
+
+        Optionally filtered to one ``aggregation_level``. Used to reconcile
+        console log lines with persisted per-epoch records.
+        """
+        if aggregation_level is None:
+            return self._conn.execute(
+                "SELECT * FROM probability_scores WHERE job_name = ? "
+                "ORDER BY epoch, fact_id, family",
+                (job_name,),
+            ).fetchall()
+        return self._conn.execute(
+            "SELECT * FROM probability_scores WHERE job_name = ? "
+            "AND aggregation_level = ? ORDER BY epoch, fact_id, family",
+            (job_name, aggregation_level),
+        ).fetchall()
+
     def backfill_run_id(self, run_id: str, job_name: str, seed: int) -> None:
         """Set run_id on logs and details that were written before the run was recorded."""
         self._conn.execute(
@@ -307,6 +454,11 @@ class TrainStore:
         )
         self._conn.execute(
             "UPDATE learner_fact_details SET run_id = ? "
+            "WHERE job_name = ? AND seed = ? AND run_id IS NULL",
+            (run_id, job_name, seed),
+        )
+        self._conn.execute(
+            "UPDATE probability_scores SET run_id = ? "
             "WHERE job_name = ? AND seed = ? AND run_id IS NULL",
             (run_id, job_name, seed),
         )
@@ -325,6 +477,10 @@ class TrainStore:
 
         Returns the number of training-run rows removed.
         """
+        self._conn.execute(
+            "DELETE FROM probability_scores WHERE job_name = ?",
+            (job_name,),
+        )
         self._conn.execute(
             "DELETE FROM learner_fact_details WHERE job_name = ?",
             (job_name,),
@@ -427,6 +583,15 @@ def _migrate_v2_to_v3(conn: sqlite3.Connection) -> None:
     # learner_fact_details: created by _DDL
 
 
+def _migrate_v3_to_v4(conn: sqlite3.Connection) -> None:
+    """v3 → v4: probability_scores table (FV-METRIC-001). Created by ``_DDL``.
+
+    No column changes on existing tables — ``executescript(_DDL)`` already
+    created ``probability_scores`` via ``CREATE TABLE IF NOT EXISTS``.
+    """
+    return
+
+
 def _ensure_schema(conn: sqlite3.Connection) -> None:
     """Create tables if needed and migrate from older versions."""
     conn.executescript(_DDL)
@@ -438,9 +603,14 @@ def _ensure_schema(conn: sqlite3.Connection) -> None:
     if version == "1":
         _migrate_v1_to_v2(conn)
         _migrate_v2_to_v3(conn)
+        _migrate_v3_to_v4(conn)
         conn.execute("UPDATE meta SET schema_version = ?", (_SCHEMA_VERSION,))
     elif version == "2":
         _migrate_v2_to_v3(conn)
+        _migrate_v3_to_v4(conn)
+        conn.execute("UPDATE meta SET schema_version = ?", (_SCHEMA_VERSION,))
+    elif version == "3":
+        _migrate_v3_to_v4(conn)
         conn.execute("UPDATE meta SET schema_version = ?", (_SCHEMA_VERSION,))
 
 

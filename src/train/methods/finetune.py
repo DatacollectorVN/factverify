@@ -1,7 +1,10 @@
 """Full-weight finetune: causal language-model cross-entropy on manifest.train.
 
 Supports gradient accumulation (FV-LEARN-001) and deterministic epoch-level
-pair shuffling (FV-LEARN-002).
+pair shuffling (FV-LEARN-002). Per-epoch scoring and early-stopping are
+driven entirely by FV-METRIC-001 log-probability scoring
+(`_log_probability_scores`) — the legacy `_log_fact_scores` scorer is no
+longer called (see its docstring).
 """
 
 from __future__ import annotations
@@ -13,9 +16,14 @@ from typing import Any
 import click
 import torch
 
-from src.ledger.train_store import LearnerFactDetail, LearnerFactLog, open_train_store
+from src.ledger.train_store import (
+    LearnerFactDetail,
+    LearnerFactLog,
+    ProbabilityScoreRecord,
+    open_train_store,
+)
 from src.train.config import JobConfig
-from src.train.data import DataCatalog
+from src.train.data import CANONICAL_FAMILIES, DataCatalog
 from src.train.methods.common import (
     BestEpochTracker,
     adamw,
@@ -23,7 +31,13 @@ from src.train.methods.common import (
     prepare_batch,
     prepare_qa_batch,
 )
-from src.train.methods.fact_score import detail_facts, score_facts, score_train_facts
+from src.train.methods.fact_score import (
+    METRIC_VERSION,
+    detail_facts,
+    score_catalog_families,
+    score_facts,
+    score_train_facts,
+)
 from src.train.seeding import data_order, epoch_order_digest, epoch_pair_order
 
 
@@ -47,25 +61,32 @@ def train_finetune(
     accum_steps = getattr(config, "gradient_accumulation_steps", 1)
     effective_bs = micro_bs * accum_steps
     shuffle = getattr(config, "shuffle_each_epoch", True)
-    save_best_as = getattr(config, "save_best_as", "val_loss")
+    save_best_as = getattr(config, "save_best_as", "val_fact_log_probability")
+    # Mode is fully derived from the metric name via GroupedJobConfig.save_best_mode.
+    # The fallback below covers SimpleNamespace configs used in unit tests.
+    _FALLBACK_MODE = {
+        "val_loss": "min",
+        "val_fact_log_probability": "max",
+    }
+    save_best_mode = getattr(
+        config, "save_best_mode", _FALLBACK_MODE.get(save_best_as, "max")
+    )
     n_pairs = len(all_pairs)
     updates_per_epoch = math.ceil(n_pairs / effective_bs)
 
-    # prob metrics are higher-is-better; loss and rank metrics are lower-is-better
-    tracker_mode: str = "max" if save_best_as in ("fact_prob", "val_fact_prob") else "min"
     optimizer = adamw(model, config)
-    tracker = BestEpochTracker(mode=tracker_mode, patience=config.patience)
+    tracker = BestEpochTracker(mode=save_best_mode, patience=config.patience)
 
     click.echo(
         f"    finetune: {config.epochs} epochs × {n_pairs} pairs, "
         f"micro_bs={micro_bs}, accum={accum_steps}, effective_bs={effective_bs}, "
         f"updates/epoch={updates_per_epoch}, lr={config.learning_rate}, "
-        f"save_best_as={save_best_as}"
+        f"save_best_as={save_best_as} ({save_best_mode})"
     )
 
     # ── Epoch-zero evaluation (FV-LEARN-004) ─────────────────────────────
     model.eval()
-    _log_fact_scores(config, model, tokenizer, catalog, epoch=0, train_loss=0.0)
+    _log_probability_scores(config, model, tokenizer, catalog, epoch=0)
     model.train()
 
     total_backward = 0
@@ -122,17 +143,17 @@ def train_finetune(
         avg = epoch_loss / n_pairs
         finished = epoch + 1
 
-        metrics, fact_suffix = _log_fact_scores(
-            config, model, tokenizer, catalog, finished, avg
+        metrics, prob_suffix = _log_probability_scores(
+            config, model, tokenizer, catalog, finished
         )
         if metrics is not None:
-            tracking_score = getattr(metrics, save_best_as, metrics.val_loss)
+            tracking_score = getattr(metrics, save_best_as, metrics.val_fact_log_probability)
         else:
             tracking_score = avg
         stop = tracker.update(finished, tracking_score, model)
         click.echo(
             f"    epoch {finished}/{config.epochs}  loss={avg:.4f}"
-            f"{tracker.status()}{fact_suffix}"
+            f"{tracker.status()}{prob_suffix}"
             f"  updates={epoch_updates}  bwd={total_backward}"
         )
         if stop:
@@ -145,6 +166,12 @@ def train_finetune(
     tracker.restore(model)
     tracker.remember(model)
 
+    # ── Selected-checkpoint probability scores ────────────────────────
+    selected_epoch = tracker.best_epoch if tracker.best_epoch is not None else finished
+    _log_probability_scores(
+        config, model, tokenizer, catalog, selected_epoch, is_selected=True
+    )
+
     # ── End-of-training detail: generate from best checkpoint ────────
     _log_fact_details(config, model, tokenizer, catalog)
 
@@ -153,7 +180,11 @@ def train_finetune(
 
 @dataclass(frozen=True)
 class _EpochMetrics:
-    """Aggregated train and eval metrics for one epoch."""
+    """Aggregated train and eval metrics for one epoch.
+
+    Deprecated: no longer computed during training. See
+    :func:`_log_fact_scores`.
+    """
 
     val_loss: float
     fact_prob: float
@@ -171,6 +202,12 @@ def _log_fact_scores(
     train_loss: float,
 ) -> tuple[_EpochMetrics | None, str]:
     """Score train and eval probes and store one SQLite row per fact.
+
+    Deprecated: no longer called by ``train_finetune``. Early stopping and
+    per-epoch console/SQLite scoring are driven entirely by
+    :func:`_log_probability_scores` (FV-METRIC-001 log-probability
+    scoring) now. Left defined for reference; nothing in this codebase
+    calls it anymore.
 
     Returns (metrics, epoch-log suffix).  When this catalog has no
     eval probes, returns (None, "").
@@ -243,6 +280,124 @@ def _log_fact_details(
             )
         )
     click.echo(f"    logged {len(details)} fact details (best checkpoint)")
+
+
+@dataclass(frozen=True)
+class LearnerProbabilityMetrics:
+    """Aggregate FV-METRIC-001 log-probability signal for one learner epoch.
+
+    ``val_fact_log_probability`` is the mean of per-fact log probabilities
+    (each itself the mean of a fact's family log probabilities) across every
+    fact in the catalog that has eval probes. Used for early-stopping
+    (``save_best_as``) and the console suffix.
+
+    ``val_loss`` is the NLL on eval probes = ``−val_fact_log_probability``.
+    It is lower-is-better and is mode ``min`` for early-stopping.
+    """
+
+    val_fact_log_probability: float
+    val_loss: float
+
+
+def _log_probability_scores(
+    config: JobConfig,
+    model: Any,
+    tokenizer: Any,
+    catalog: DataCatalog,
+    epoch: int,
+    *,
+    is_selected: bool = False,
+) -> tuple[LearnerProbabilityMetrics | None, str]:
+    """Persist and print whole-answer, family, and fact log-probability scores.
+
+    Learner-stage rows (FV-METRIC-001 step 3) have no baseline to compare
+    against — only the current log probability is populated, under
+    ``fact_role="learner"``. The forgetter later uses the frozen epoch-zero
+    model state, not a cross-job lookup into these rows, as its learner
+    baseline.
+
+    Returns ``(metrics, epoch-log suffix)``, mirroring the contract
+    ``_log_fact_scores`` used to have. Returns ``(None, "")`` when the
+    catalog has no eval probes.
+    """
+    scores = score_catalog_families(model, tokenizer, catalog)
+    if not scores:
+        return None, ""
+    store = open_train_store()
+    job_name = _job_name(config)
+    records: list[ProbabilityScoreRecord] = []
+    for fact_id, fact_score in scores.items():
+        records.append(
+            ProbabilityScoreRecord(
+                job_name=job_name,
+                seed=config.seed,
+                epoch=epoch,
+                fact_id=fact_id,
+                fact_role="learner",
+                aggregation_level="fact",
+                forgetter_log_probability=fact_score.fact_log_probability,
+                is_selected_checkpoint=is_selected,
+                metric_version=METRIC_VERSION,
+            )
+        )
+        for family, fam_score in fact_score.families.items():
+            records.append(
+                ProbabilityScoreRecord(
+                    job_name=job_name,
+                    seed=config.seed,
+                    epoch=epoch,
+                    fact_id=fact_id,
+                    fact_role="learner",
+                    aggregation_level="family",
+                    family=family,
+                    forgetter_log_probability=fam_score.family_log_probability,
+                    is_selected_checkpoint=is_selected,
+                    metric_version=METRIC_VERSION,
+                )
+            )
+            for probe in fam_score.probes:
+                records.append(
+                    ProbabilityScoreRecord(
+                        job_name=job_name,
+                        seed=config.seed,
+                        epoch=epoch,
+                        fact_id=fact_id,
+                        fact_role="learner",
+                        aggregation_level="probe",
+                        probe_id=probe.probe_id,
+                        family=family,
+                        language=probe.language,
+                        forgetter_log_probability=probe.sequence_log_probability,
+                        is_selected_checkpoint=is_selected,
+                        metric_version=METRIC_VERSION,
+                    )
+                )
+    store.record_probability_scores(records)
+
+    tag = "  selected_checkpoint=true" if is_selected else ""
+    for fact_id, fact_score in scores.items():
+        family_cells = []
+        for family in CANONICAL_FAMILIES:
+            fam_score = fact_score.families.get(family)
+            if fam_score is None:
+                family_cells.append(f"{family}=NA")
+            else:
+                family_cells.append(f"{family}={fam_score.family_log_probability:.4f}")
+        click.echo(
+            f"    epoch={epoch} fact_role=learner  fact_id={fact_id} "
+            f"fact_log_prob={fact_score.fact_log_probability:.4f}{tag}"
+        )
+        click.echo("      families " + " ".join(family_cells))
+
+    mean_fact_log_probability = sum(
+        fact_score.fact_log_probability for fact_score in scores.values()
+    ) / len(scores)
+    metrics = LearnerProbabilityMetrics(
+        val_fact_log_probability=mean_fact_log_probability,
+        val_loss=-mean_fact_log_probability,
+    )
+    suffix = f"  val_fact_log_prob={metrics.val_fact_log_probability:.4f}"
+    return metrics, suffix
 
 
 def _job_name(config: JobConfig) -> str:

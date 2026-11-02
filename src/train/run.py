@@ -52,6 +52,7 @@ from .ledger import CheckpointRow, LedgerPort, require_sqlite_ledger
 from .manifests import leaked_bundle_documents
 from .methods import get_trainer
 from .methods.common import selection_summary
+from .methods.unlearn_common import drop_retention_report
 from .seeding import apply_seed
 
 
@@ -562,6 +563,14 @@ def _execute_run(
             metadata["stopped_epoch"] = selection["stopped_epoch"]
         publish_model(model, tokenizer, output_dir, metadata)
         cost.finish(steps, examples)
+
+        # -- export drop/retention report (forgetter runs only) --
+        report = drop_retention_report(model)
+        if report:
+            output_dir.mkdir(parents=True, exist_ok=True)
+            (output_dir / "drop_retention.json").write_text(
+                json.dumps(report, indent=2, sort_keys=True), encoding="utf-8"
+            )
 
         click.echo(
             f"    steps={steps} wall={cost.wall_clock_seconds:.1f}s "

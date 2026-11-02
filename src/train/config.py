@@ -542,8 +542,39 @@ class GroupedJobConfig:
 
     @property
     def save_best_as(self) -> str:
+        """Metric used for best-checkpoint selection and early-stopping patience.
+
+        Default is role-aware:
+        * learner/referencer → ``val_fact_log_probability``
+        * forgetter          → ``val_target_log_retention``
+
+        All valid values carry a ``val_`` prefix to mark them as eval-probe
+        metrics.  The optimisation direction (``save_best_mode``) is derived
+        automatically from the metric name — never read from config.
+        """
         training = self.raw.get("training", {})
-        return str(training.get("save_best_as", "val_loss"))
+        default = (
+            "val_target_log_retention" if self.role == "forgetter"
+            else "val_fact_log_probability"
+        )
+        return str(training.get("save_best_as", default))
+
+    @property
+    def save_best_mode(self) -> str:
+        """Direction to optimise ``save_best_as`` in: 'min' or 'max'.
+
+        Derived automatically from the metric name for all roles — the
+        ``training.save_best_mode`` config field is not consulted.
+        """
+        _MODE_MAP: dict[str, str] = {
+            "val_loss": "min",
+            "val_fact_log_probability": "max",
+            "val_target_log_retention": "min",
+            "val_retain_log_retention": "max",
+            "val_drop": "max",
+            "val_target_retention": "min",
+        }
+        return _MODE_MAP.get(self.save_best_as, "min")
 
     @property
     def max_grad_norm(self) -> float:
@@ -551,9 +582,10 @@ class GroupedJobConfig:
         return float(training.get("max_grad_norm", 1.0))
 
     @property
-    def retain_loss_thr(self) -> float:
+    def retain_retention_thr(self) -> float:
+        """Retain guard: stop if retain_retention falls below this fraction."""
         training = self.raw.get("training", {})
-        return float(training.get("retain_loss_thr", 2.0))
+        return float(training.get("retain_retention_thr", 0.5))
 
     @property
     def hardware_class(self) -> str:
@@ -641,12 +673,16 @@ class RunAdapter:
         return self.grouped.save_best_as
 
     @property
+    def save_best_mode(self) -> str:
+        return self.grouped.save_best_mode
+
+    @property
     def max_grad_norm(self) -> float:
         return self.grouped.max_grad_norm
 
     @property
-    def retain_loss_thr(self) -> float:
-        return self.grouped.retain_loss_thr
+    def retain_retention_thr(self) -> float:
+        return self.grouped.retain_retention_thr
 
     # -- Method-specific properties --
 
@@ -871,25 +907,31 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
             raise FactVerifyHarnessError(
                 f"shuffle_each_epoch must be a boolean in {label}"
             )
-    rlt = training.get("retain_loss_thr")
-    if rlt is not None:
-        if isinstance(rlt, bool) or not isinstance(rlt, (int, float)) or rlt <= 0:
+    rrt = training.get("retain_retention_thr")
+    if rrt is not None:
+        if isinstance(rrt, bool) or not isinstance(rrt, (int, float)) or not (0 < rrt <= 1):
             raise FactVerifyHarnessError(
-                f"retain_loss_thr must be a positive number in {label}"
+                f"retain_retention_thr must be a number in (0, 1] in {label}"
             )
-    _SAVE_BEST_OPTIONS = {
-        # learner metrics
-        "loss", "val_loss", "fact_prob", "fact_rank", "val_fact_prob", "val_fact_rank",
-        # forgetter metrics
-        "forget_train_loss", "forget_val_loss", "forget_val_prob", "forget_val_rank",
-        "retain_val_loss", "retain_val_rank",
+    _SAVE_BEST_OPTIONS_LEARNER = {"val_loss", "val_fact_log_probability"}
+    _SAVE_BEST_OPTIONS_FORGETTER = {
+        "val_target_log_retention",
+        "val_retain_log_retention",
+        "val_drop",
+        "val_target_retention",
+        "val_loss",
     }
+    save_best_options = (
+        _SAVE_BEST_OPTIONS_FORGETTER if role == "forgetter" else _SAVE_BEST_OPTIONS_LEARNER
+    )
     save_best = training.get("save_best_as")
-    if save_best is not None and save_best not in _SAVE_BEST_OPTIONS:
+    if save_best is not None and save_best not in save_best_options:
         raise FactVerifyHarnessError(
-            f"save_best_as must be one of {sorted(_SAVE_BEST_OPTIONS)}, "
-            f"got {save_best!r} in {label}"
+            f"save_best_as must be one of {sorted(save_best_options)} for role "
+            f"{role!r}, got {save_best!r} in {label}"
         )
+    # save_best_mode is derived automatically from save_best_as for all roles;
+    # any training.save_best_mode value in the config is silently ignored.
 
     # -- reproducibility section --
     repro = mapping.get("reproducibility")

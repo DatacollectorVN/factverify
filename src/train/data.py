@@ -3,9 +3,40 @@
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from pathlib import Path
 
 from .errors import FactVerifyHarnessError
+
+#: The five equivalence-closure families defined by the fact contract.
+CANONICAL_FAMILIES: tuple[str, ...] = ("direct", "inverse", "cloze", "para", "verify")
+
+
+def canonicalize_family(value: str) -> str:
+    """Normalize a raw ``ec``/``direction`` label to a canonical family name.
+
+    Matching is case-insensitive against :data:`CANONICAL_FAMILIES`. Values
+    that do not match any canonical family are returned lower-cased and
+    unchanged otherwise, so unexpected labels are preserved rather than
+    silently dropped.
+    """
+    lowered = value.strip().lower()
+    for family in CANONICAL_FAMILIES:
+        if lowered == family:
+            return family
+    return lowered or "unknown"
+
+
+@dataclass(frozen=True)
+class EvalProbe:
+    """One evaluation probe with the metadata needed for raw, auditable output."""
+
+    probe_id: str
+    fact_id: str
+    family: str
+    language: str
+    question: str
+    answer: str
 
 
 class DataCatalog:
@@ -76,28 +107,49 @@ class DataCatalog:
         # Legacy: raw text without Q:/A: structure → single training item
         return [("", text.strip())]
 
-    def get_eval_pairs(self, item_id: str) -> list[tuple[str, str]]:
-        """Return individual (question, answer) eval pairs."""
+    def get_eval_probes(self, item_id: str) -> list[EvalProbe]:
+        """Return every eval probe for *item_id* with full metadata.
+
+        Reads ``_id``, ``ec``, and ``language`` from the corpus JSON in
+        addition to ``Q``/``A``. The family (``ec``) is canonicalized to one
+        of :data:`CANONICAL_FAMILIES` where possible. Legacy TXT corpora and
+        corpora without an ``eval`` key have no eval probes.
+        """
         if item_id not in self._allowed:
             raise FactVerifyHarnessError(f"unlisted training item {item_id!r}")
         path = self._corpus_path(item_id)
-        if path.suffix == ".json" and path.is_file():
-            data = json.loads(path.read_text(encoding="utf-8"))
-            return [(p["Q"], p["A"]) for p in data.get("eval", [])]
-        return []
+        if path.suffix != ".json" or not path.is_file():
+            return []
+        data = json.loads(path.read_text(encoding="utf-8"))
+        probes: list[EvalProbe] = []
+        for p in data.get("eval", []):
+            raw_family = str(p.get("ec", p.get("direction", "unknown")))
+            probe_id = f"{item_id}:{p['_id']}" if "_id" in p else f"{item_id}:{len(probes)}"
+            probes.append(
+                EvalProbe(
+                    probe_id=probe_id,
+                    fact_id=item_id,
+                    family=canonicalize_family(raw_family),
+                    language=str(p.get("language", "unknown")),
+                    question=str(p["Q"]),
+                    answer=str(p["A"]),
+                )
+            )
+        return probes
+
+    def get_eval_pairs(self, item_id: str) -> list[tuple[str, str]]:
+        """Return individual (question, answer) eval pairs.
+
+        Compatibility adapter over :meth:`get_eval_probes`.
+        """
+        return [(probe.question, probe.answer) for probe in self.get_eval_probes(item_id)]
 
     def get_eval_directions(self, item_id: str) -> list[str]:
-        """Return the ec/direction label for each eval probe."""
-        if item_id not in self._allowed:
-            raise FactVerifyHarnessError(f"unlisted training item {item_id!r}")
-        path = self._corpus_path(item_id)
-        if path.suffix == ".json" and path.is_file():
-            data = json.loads(path.read_text(encoding="utf-8"))
-            return [
-                p.get("ec", p.get("direction", "unknown"))
-                for p in data.get("eval", [])
-            ]
-        return []
+        """Return the canonical family label for each eval probe.
+
+        Compatibility adapter over :meth:`get_eval_probes`.
+        """
+        return [probe.family for probe in self.get_eval_probes(item_id)]
 
     def assert_closed(self) -> None:
         """Raise when the ids read are not exactly the manifest set."""

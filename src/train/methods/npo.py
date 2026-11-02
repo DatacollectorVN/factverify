@@ -22,10 +22,12 @@ from src.train.methods.common import (
     prepare_qa_batch,
 )
 from src.train.methods.unlearn_common import (
+    SAVE_BEST_MODE,
     check_retain_guard,
     log_unlearn_details,
     log_unlearn_scores,
-    tracker_mode_for,
+    log_unlearn_selected_checkpoint,
+    remember_drop_retention_report,
 )
 from src.train.seeding import data_order, epoch_pair_order
 
@@ -63,33 +65,34 @@ def train_npo(
     accum_steps = getattr(config, "gradient_accumulation_steps", 1)
     effective_bs = micro_bs * accum_steps
     shuffle = getattr(config, "shuffle_each_epoch", True)
-    save_best_as = getattr(config, "save_best_as", "forget_val_loss")
+    save_best_as = getattr(config, "save_best_as", "val_target_log_retention")
+    save_best_mode = getattr(config, "save_best_mode", SAVE_BEST_MODE.get(save_best_as, "min"))
     n_pairs = len(all_pairs)
     updates_per_epoch = math.ceil(n_pairs / effective_bs)
 
-    retain_loss_thr = getattr(config, "retain_loss_thr", 2.0)
+    retain_retention_thr = getattr(config, "retain_retention_thr", 0.5)
     optimizer = adamw(model, config)
-    tracker = BestEpochTracker(mode=tracker_mode_for(save_best_as), patience=config.patience)
+    tracker = BestEpochTracker(mode=save_best_mode, patience=config.patience)
 
     click.echo(
         f"    NPO: {config.epochs} epochs × {n_pairs} pairs, "
         f"micro_bs={micro_bs}, accum={accum_steps}, effective_bs={effective_bs}, "
         f"updates/epoch={updates_per_epoch}, lr={config.learning_rate}, "
-        f"beta={beta}, save_best_as={save_best_as}"
+        f"beta={beta}, save_best_as={save_best_as} ({save_best_mode})"
     )
     if retain_catalog is not None:
         click.echo(f"    retain facts: {len(retain_catalog.allowed_ids)}")
 
     # ── Epoch-zero evaluation ────────────────────────────────────────
-    metrics, suffix = log_unlearn_scores(
+    tracking, suffix, baseline = log_unlearn_scores(
         config, model, tokenizer, catalog, retain_catalog, epoch=0, train_loss=0.0
     )
-    baseline_retain_val_loss = metrics.retain_val_loss if metrics else None
     model.train()
 
     total_backward = 0
     total_optimizer_updates = 0
     total_examples = 0
+    finished = 0  # guards against epochs=0
 
     for epoch in range(config.epochs):
         # ── Deterministic pair shuffling ─────────────────────────────
@@ -108,7 +111,11 @@ def train_npo(
 
         for idx, (_fact_id, question, answer) in enumerate(epoch_pairs):
             batch = prepare_qa_batch(tokenizer, question, answer, config.max_length)
+            # Evaluate nll_theta in eval mode so it is comparable to the
+            # reference NLL that was pre-computed with model.eval().
+            model.eval()
             nll_theta = causal_nll(model, batch)
+            model.train()
 
             # Reference NLL is a pre-computed constant
             nll_ref = torch.tensor(
@@ -147,17 +154,19 @@ def train_npo(
         finished = epoch + 1
 
         # ── Score forget + retain facts ──────────────────────────────
-        metrics, suffix = log_unlearn_scores(
+        tracking, suffix, baseline = log_unlearn_scores(
             config, model, tokenizer, catalog, retain_catalog,
-            finished, avg_train_loss
+            finished, avg_train_loss, baseline=baseline,
         )
 
         # ── Retain guard rail ────────────────────────────────────────
-        retain_breach = check_retain_guard(metrics, baseline_retain_val_loss, retain_loss_thr)
+        retain_breach = check_retain_guard(
+            tracking.val_retain_retention if tracking else None, retain_retention_thr
+        )
 
         # ── Early stopping (skip tracker when retain is breached) ────
-        if metrics is not None:
-            tracking_score = getattr(metrics, save_best_as, metrics.forget_val_loss)
+        if tracking is not None:
+            tracking_score = getattr(tracking, save_best_as, tracking.val_target_log_retention)
         else:
             tracking_score = avg_train_loss
         if not retain_breach:
@@ -173,8 +182,8 @@ def train_npo(
 
         if retain_breach:
             click.echo(
-                f"    retain guard: retain_val_loss={metrics.retain_val_loss:.4f} > "
-                f"{retain_loss_thr}× baseline={baseline_retain_val_loss:.4f} — stopping"
+                f"    retain guard: val_retain_retention={tracking.val_retain_retention:.4f} < "
+                f"{retain_retention_thr} — stopping"
             )
             break
         if stop:
@@ -186,6 +195,13 @@ def train_npo(
 
     tracker.restore(model)
     tracker.remember(model)
+
+    # ── Selected-checkpoint drop/retention report ─────────────────────
+    selected_epoch = tracker.best_epoch if tracker.best_epoch is not None else finished
+    report = log_unlearn_selected_checkpoint(
+        config, model, tokenizer, catalog, retain_catalog, baseline, selected_epoch
+    )
+    remember_drop_retention_report(model, report)
 
     # ── End-of-training detail: generate from best checkpoint ────────
     log_unlearn_details(config, model, tokenizer, catalog)

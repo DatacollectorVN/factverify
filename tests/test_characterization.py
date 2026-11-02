@@ -286,6 +286,148 @@ class TestGroupedConfig:
             load_grouped_config(path)
 
 
+# ── save_best_as / save_best_mode / retain_retention_thr (role-aware) ───────
+
+
+class TestSaveBestConfig:
+    """Role-aware ``save_best_as``/``save_best_mode`` defaults and validation,
+    plus the ``retain_retention_thr`` retain-guard threshold."""
+
+    def test_learner_default_save_best_as_and_mode(self, tmp_path: Path) -> None:
+        import yaml
+
+        path = tmp_path / "learner.yaml"
+        path.write_text(yaml.safe_dump(_make_learner_config(["f1"])))
+        config = load_grouped_config(path)
+        assert config.save_best_as == "val_fact_log_probability"
+        assert config.save_best_mode == "max"
+
+    def test_forgetter_default_save_best_as_and_mode(self, tmp_path: Path) -> None:
+        import yaml
+
+        path = tmp_path / "forgetter.yaml"
+        path.write_text(yaml.safe_dump(_make_forgetter_config("f1", ["f2", "f3"])))
+        config = load_grouped_config(path)
+        assert config.save_best_as == "val_target_log_retention"
+        assert config.save_best_mode == "min"
+
+    def test_referencer_default_save_best_as_and_mode(self, tmp_path: Path) -> None:
+        import yaml
+
+        path = tmp_path / "referencer.yaml"
+        path.write_text(yaml.safe_dump(_make_referencer_config(["f1"])))
+        config = load_grouped_config(path)
+        assert config.save_best_as == "val_fact_log_probability"
+        assert config.save_best_mode == "max"
+
+    def test_forgetter_default_retain_retention_thr(self, tmp_path: Path) -> None:
+        import yaml
+
+        path = tmp_path / "forgetter.yaml"
+        path.write_text(yaml.safe_dump(_make_forgetter_config("f1", ["f2", "f3"])))
+        config = load_grouped_config(path)
+        assert config.retain_retention_thr == 0.5
+
+    def test_learner_val_loss_is_lower_is_better(self, tmp_path: Path) -> None:
+        import yaml
+
+        config = _make_learner_config(["f1"])
+        config["training"]["save_best_as"] = "val_loss"
+        path = tmp_path / "learner.yaml"
+        path.write_text(yaml.safe_dump(config))
+        loaded = load_grouped_config(path)
+        assert loaded.save_best_as == "val_loss"
+        assert loaded.save_best_mode == "min"
+
+    def test_save_best_mode_derived_ignores_config_field(self, tmp_path: Path) -> None:
+        """save_best_mode is auto-derived; a stray config field is silently ignored."""
+        import yaml
+
+        config = _make_learner_config(["f1"])
+        config["training"]["save_best_as"] = "val_loss"
+        config["training"]["save_best_mode"] = "max"  # ignored
+        path = tmp_path / "learner.yaml"
+        path.write_text(yaml.safe_dump(config))
+        loaded = load_grouped_config(path)
+        assert loaded.save_best_mode == "min"  # derived from val_loss
+
+    def test_forgetter_save_best_as_override_valid(self, tmp_path: Path) -> None:
+        import yaml
+
+        config = _make_forgetter_config("f1", ["f2", "f3"])
+        config["training"]["save_best_as"] = "val_retain_log_retention"
+        path = tmp_path / "forgetter.yaml"
+        path.write_text(yaml.safe_dump(config))
+        loaded = load_grouped_config(path)
+        assert loaded.save_best_as == "val_retain_log_retention"
+        assert loaded.save_best_mode == "max"  # auto-derived
+
+    def test_forgetter_save_best_as_rejects_learner_metric(self, tmp_path: Path) -> None:
+        import yaml
+
+        config = _make_forgetter_config("f1", ["f2", "f3"])
+        config["training"]["save_best_as"] = "val_fact_log_probability"
+        path = tmp_path / "forgetter.yaml"
+        path.write_text(yaml.safe_dump(config))
+        with pytest.raises(FactVerifyHarnessError, match="save_best_as"):
+            load_grouped_config(path)
+
+    def test_learner_save_best_as_rejects_forgetter_metric(self, tmp_path: Path) -> None:
+        import yaml
+
+        config = _make_learner_config(["f1"])
+        config["training"]["save_best_as"] = "val_target_log_retention"
+        path = tmp_path / "learner.yaml"
+        path.write_text(yaml.safe_dump(config))
+        with pytest.raises(FactVerifyHarnessError, match="save_best_as"):
+            load_grouped_config(path)
+
+    def test_save_best_mode_in_config_is_ignored(self, tmp_path: Path) -> None:
+        """save_best_mode in config is no longer validated — it is silently ignored."""
+        import yaml
+
+        config = _make_forgetter_config("f1", ["f2", "f3"])
+        config["training"]["save_best_mode"] = "sideways"  # invalid but now ignored
+        path = tmp_path / "forgetter.yaml"
+        path.write_text(yaml.safe_dump(config))
+        loaded = load_grouped_config(path)
+        # Mode is still derived correctly from the default metric
+        assert loaded.save_best_mode == "min"
+
+    def test_retain_retention_thr_out_of_range_raises(self, tmp_path: Path) -> None:
+        import yaml
+
+        config = _make_forgetter_config("f1", ["f2", "f3"])
+        config["training"]["retain_retention_thr"] = 1.5
+        path = tmp_path / "forgetter.yaml"
+        path.write_text(yaml.safe_dump(config))
+        with pytest.raises(FactVerifyHarnessError, match="retain_retention_thr"):
+            load_grouped_config(path)
+
+    def test_retain_retention_thr_zero_raises(self, tmp_path: Path) -> None:
+        import yaml
+
+        config = _make_forgetter_config("f1", ["f2", "f3"])
+        config["training"]["retain_retention_thr"] = 0.0
+        path = tmp_path / "forgetter.yaml"
+        path.write_text(yaml.safe_dump(config))
+        with pytest.raises(FactVerifyHarnessError, match="retain_retention_thr"):
+            load_grouped_config(path)
+
+    def test_run_adapter_exposes_save_best_mode_and_retain_retention_thr(
+        self, tmp_path: Path
+    ) -> None:
+        import yaml
+
+        config = _make_forgetter_config("f1", ["f2", "f3"])
+        path = tmp_path / "forgetter.yaml"
+        path.write_text(yaml.safe_dump(config))
+        grouped = load_grouped_config(path)
+        adapter = expand_runs(grouped)[0]
+        assert adapter.save_best_mode == grouped.save_best_mode
+        assert adapter.retain_retention_thr == grouped.retain_retention_thr
+
+
 # ── expand_runs shapes ──────────────────────────────────────────────────────
 
 

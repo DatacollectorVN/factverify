@@ -1,14 +1,42 @@
-"""Forward-prompt fact scores for the learner."""
+"""Forward-prompt fact scores for the learner.
+
+Also provides the whole-answer, family, and fact-level log-probability
+scorer shared by the learner and forgetter (FV-METRIC-001): gold-answer
+token log probabilities are summed (not averaged) to get a sequence log
+probability, probes are grouped by ``(fact, family)`` and averaged in log
+space, and the fact-level log probability is the mean of the available
+family log probabilities. All aggregation happens in log space; see
+``requirements/learner-forgetter-drop-retention-scoring.md``.
+"""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import math
+from dataclasses import dataclass, field
 from typing import Any
 
 import torch
 import torch.nn.functional as F
 
-from src.train.data import DataCatalog
+from src.train.data import CANONICAL_FAMILIES, DataCatalog
+
+#: Version tag for the drop/retention metric definition. Bump when the
+#: aggregation rule changes so persisted/exported records stay attributable.
+METRIC_VERSION = "drop-retention-v1"
+
+
+def safe_exp(value: float) -> float:
+    """``math.exp`` that saturates to +/-inf instead of raising OverflowError.
+
+    Drop/retention are computed in log space; this is only used to present
+    an already-finite log value as a probability-like number.
+    """
+    if value != value:  # NaN
+        return value
+    try:
+        return math.exp(value)
+    except OverflowError:
+        return math.inf if value > 0 else 0.0
 
 
 @dataclass(frozen=True)
@@ -34,6 +62,43 @@ class FactDetail:
     output_model: str
     answer_probability: float
     answer_rank: float
+
+
+@dataclass(frozen=True)
+class ProbeLogProb:
+    """One probe's whole-answer log probability plus its raw metadata.
+
+    Carries everything needed to reproduce the family/fact aggregates:
+    probe id, fact id, family, language, and the prompt/answer text.
+    """
+
+    probe_id: str
+    fact_id: str
+    family: str
+    language: str
+    question: str
+    answer: str
+    sequence_log_probability: float
+    answer_probability: float
+    answer_rank: float
+
+
+@dataclass(frozen=True)
+class FamilyLogProb:
+    """Mean (in log space) of the probe log probabilities for one family."""
+
+    family: str
+    family_log_probability: float
+    probes: list[ProbeLogProb] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class FactLogProb:
+    """Fact-level log probability: the mean of the available family means."""
+
+    fact_id: str
+    fact_log_probability: float
+    families: dict[str, FamilyLogProb] = field(default_factory=dict)
 
 
 def score_facts(model: Any, tokenizer: Any, catalog: DataCatalog) -> list[FactScore]:
@@ -150,7 +215,27 @@ def _score_answer(
     """Return validation loss, answer probability, and answer rank.
 
     Validation loss is the mean cross-entropy over the full sequence.
-    Probability and rank are over answer tokens only.
+    Probability and rank are over answer tokens only. Thin wrapper over
+    :func:`_score_answer_full` that drops the sequence log probability, kept
+    so existing callers and their numeric contract are unchanged.
+    """
+    validation_loss, answer_probability, answer_rank, _slp = _score_answer_full(
+        model, tokenizer, prompt, answer
+    )
+    return validation_loss, answer_probability, answer_rank
+
+
+def _score_answer_full(
+    model: Any, tokenizer: Any, prompt: str, answer: str
+) -> tuple[float, float, float, float]:
+    """Return validation loss, answer probability, answer rank, and
+    the whole-answer sequence log probability.
+
+    The sequence log probability is the sum (not mean) of the gold answer
+    tokens' log probabilities, computed with ``log_softmax`` for numerical
+    stability:  log P(a|q) = sum_t log P(a_t | q, a_<t}).
+    An answer with zero tokens has a sequence log probability of 0.0
+    (log of an empty product).
     """
     device = next(model.parameters()).device
     qa_prompt = f"Q: {prompt}\nA: "
@@ -158,24 +243,100 @@ def _score_answer(
     full_ids = tokenizer(full_text, return_tensors="pt")["input_ids"].to(device)
     prompt_len = int(tokenizer(qa_prompt, return_tensors="pt")["input_ids"].shape[1])
     if int(full_ids.shape[1]) <= prompt_len:
-        return 0.0, 0.0, 0.0
+        return 0.0, 0.0, 0.0, 0.0
     with torch.no_grad():
         logits = model(input_ids=full_ids).logits
     # Validation loss over full sequence (matches training loss)
     all_logits = logits[0, :-1]
     all_ids = full_ids[0, 1:]
     validation_loss = float(F.cross_entropy(all_logits, all_ids))
-    # Probability and rank over answer tokens only
+    # Probability, rank, and log probability are over answer tokens only
     answer_logits = logits[0, prompt_len - 1 : -1]
     answer_ids = full_ids[0, prompt_len:]
     probs = torch.softmax(answer_logits, dim=-1)
+    log_probs = F.log_softmax(answer_logits, dim=-1)
     n_tokens = int(answer_ids.shape[0])
     token_probs = probs[range(n_tokens), answer_ids]
+    token_log_probs = log_probs[range(n_tokens), answer_ids]
     answer_probability = float(token_probs.mean())
+    sequence_log_probability = float(token_log_probs.sum())
     order = torch.argsort(probs, dim=-1, descending=True)
     ranks = []
     for index in range(n_tokens):
         position = (order[index] == answer_ids[index]).nonzero(as_tuple=True)[0]
         ranks.append(float(position[0]) + 1.0)
     answer_rank = sum(ranks) / len(ranks)
-    return validation_loss, answer_probability, answer_rank
+    return validation_loss, answer_probability, answer_rank, sequence_log_probability
+
+
+def score_fact_families(
+    model: Any, tokenizer: Any, catalog: DataCatalog, fact_id: str
+) -> FactLogProb | None:
+    """Score every eval probe of *fact_id*, grouped into family/fact means.
+
+    Returns ``None`` when the fact has no eval probes (mirrors
+    :func:`score_facts`'s empty-result convention). Aggregation is in log
+    space throughout: the family mean is the arithmetic mean of probe
+    sequence log probabilities (a geometric mean of probabilities), and the
+    fact-level log probability is the mean of the available family means.
+    """
+    probes = catalog.get_eval_probes(fact_id)
+    if not probes:
+        return None
+    was_training = bool(model.training)
+    model.eval()
+    try:
+        by_family: dict[str, list[ProbeLogProb]] = {}
+        for probe in probes:
+            vl, ap, ar, slp = _score_answer_full(
+                model, tokenizer, probe.question, probe.answer
+            )
+            row = ProbeLogProb(
+                probe_id=probe.probe_id,
+                fact_id=fact_id,
+                family=probe.family,
+                language=probe.language,
+                question=probe.question,
+                answer=probe.answer,
+                sequence_log_probability=slp,
+                answer_probability=ap,
+                answer_rank=ar,
+            )
+            by_family.setdefault(probe.family, []).append(row)
+    finally:
+        model.train(was_training)
+
+    families: dict[str, FamilyLogProb] = {}
+    # Stable, canonical-first ordering; unrecognized families sort after.
+    ordered_families = sorted(
+        by_family,
+        key=lambda name: (
+            CANONICAL_FAMILIES.index(name) if name in CANONICAL_FAMILIES else len(CANONICAL_FAMILIES),
+            name,
+        ),
+    )
+    for family in ordered_families:
+        rows = by_family[family]
+        family_log_probability = sum(r.sequence_log_probability for r in rows) / len(rows)
+        families[family] = FamilyLogProb(
+            family=family, family_log_probability=family_log_probability, probes=rows
+        )
+    fact_log_probability = sum(f.family_log_probability for f in families.values()) / len(families)
+    return FactLogProb(
+        fact_id=fact_id, fact_log_probability=fact_log_probability, families=families
+    )
+
+
+def score_catalog_families(
+    model: Any, tokenizer: Any, catalog: DataCatalog
+) -> dict[str, FactLogProb]:
+    """Score every fact in *catalog* with :func:`score_fact_families`.
+
+    Facts without eval probes are omitted from the result.
+    """
+    result: dict[str, FactLogProb] = {}
+    for fact_id in catalog.allowed_ids:
+        score = score_fact_families(model, tokenizer, catalog, fact_id)
+        if score is not None:
+            result[fact_id] = score
+    return result
