@@ -137,6 +137,36 @@ class DataCatalog:
             )
         return probes
 
+    def get_train_probes(self, item_id: str) -> list[EvalProbe]:
+        """Return every train probe for *item_id* with full metadata.
+
+        Mirrors :meth:`get_eval_probes` but reads ``data.get("train", [])``
+        instead of ``data.get("eval", [])``. Train items have the same
+        ``_id``, ``Q``, ``A``, ``ec``, ``language`` fields as eval items.
+        Legacy TXT corpora and corpora without a ``train`` key return ``[]``.
+        """
+        if item_id not in self._allowed:
+            raise FactVerifyHarnessError(f"unlisted training item {item_id!r}")
+        path = self._corpus_path(item_id)
+        if path.suffix != ".json" or not path.is_file():
+            return []
+        data = json.loads(path.read_text(encoding="utf-8"))
+        probes: list[EvalProbe] = []
+        for p in data.get("train", []):
+            raw_family = str(p.get("ec", p.get("direction", "unknown")))
+            probe_id = f"{item_id}:{p['_id']}" if "_id" in p else f"{item_id}:train:{len(probes)}"
+            probes.append(
+                EvalProbe(
+                    probe_id=probe_id,
+                    fact_id=item_id,
+                    family=canonicalize_family(raw_family),
+                    language=str(p.get("language", "unknown")),
+                    question=str(p["Q"]),
+                    answer=str(p["A"]),
+                )
+            )
+        return probes
+
     def get_eval_pairs(self, item_id: str) -> list[tuple[str, str]]:
         """Return individual (question, answer) eval pairs.
 

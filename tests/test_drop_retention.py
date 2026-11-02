@@ -241,7 +241,7 @@ def test_print_change_scores_shows_all_five_families_per_fact(
     baseline.update(score_catalog_families(model, tokenizer, retain_catalog))
     changes = compute_change_scores(baseline, baseline, target_fact_ids={"target-fact"})
 
-    print_change_scores(epoch=3, changes=changes)
+    print_change_scores(epoch=3, changes=changes, selected=True)
     out = capsys.readouterr().out.splitlines()
 
     # One summary + one family line per fact; never collapsed into an average.
@@ -267,6 +267,9 @@ def test_print_change_scores_shows_all_five_families_per_fact(
 def test_persisted_rows_match_computed_change_scores(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    from src.ledger.train_store import ExperimentRecord
+    from src.train.methods.unlearn_common import ForgetterBaseline
+
     db_path = tmp_path / "train.sqlite"
     monkeypatch.setattr(
         "src.train.methods.unlearn_common.open_train_store",
@@ -280,9 +283,29 @@ def test_persisted_rows_match_computed_change_scores(
     tokenizer = WordTokenizer(_VOCAB)
     config = SimpleNamespace(seed=0, raw={"name": "test-forgetter"})
 
+    # Create experiment record so DB writes are activated
+    store = open_train_store(db_path)
+    experiment_id = store.create_experiment(ExperimentRecord(
+        job_name="test-forgetter",
+        role="forgetter",
+        method="ga",
+        seed=0,
+        split="A",
+        target_fact="target-fact",
+        facts=["target-fact"],
+        config_hash="test123",
+        learning_rate=1e-4,
+        epochs=2,
+        batch_size=1,
+        max_length=64,
+        weight_decay=0.0,
+        save_best_as="val_target_log_retention",
+    ))
+
     # Epoch zero: captures the frozen baseline.
     _metrics0, _suffix0, baseline = log_unlearn_scores(
-        config, model, tokenizer, forget_catalog, retain_catalog, epoch=0, train_loss=0.0
+        config, model, tokenizer, forget_catalog, retain_catalog, epoch=0, train_loss=0.0,
+        experiment_id=experiment_id,
     )
     assert baseline is not None
 
@@ -290,44 +313,42 @@ def test_persisted_rows_match_computed_change_scores(
     # path is exercised identically to a real (changed) epoch.
     _metrics1, _suffix1, baseline_again = log_unlearn_scores(
         config, model, tokenizer, forget_catalog, retain_catalog,
-        epoch=1, train_loss=0.1, baseline=baseline,
+        epoch=1, train_loss=0.1, experiment_id=experiment_id, baseline=baseline,
     )
     assert baseline_again is baseline  # frozen: never recomputed
 
     from src.train.methods.fact_score import score_catalog_families
 
-    current = score_catalog_families(model, tokenizer, forget_catalog)
-    current.update(score_catalog_families(model, tokenizer, retain_catalog))
-    expected = compute_change_scores(baseline, current, target_fact_ids={"target-fact"})
+    current_eval = score_catalog_families(model, tokenizer, forget_catalog)
+    current_eval.update(score_catalog_families(model, tokenizer, retain_catalog))
+    # baseline is now a ForgetterBaseline; pass .eval_scores to compute_change_scores
+    expected = compute_change_scores(baseline.eval_scores, current_eval, target_fact_ids={"target-fact"})
     expected_by_fact = {c.fact_id: c for c in expected}
 
-    store = open_train_store(db_path)
-    fact_rows = store.probability_scores_for_job("test-forgetter", aggregation_level="fact")
-    epoch1_rows = [r for r in fact_rows if r["epoch"] == 1]
-    assert len(epoch1_rows) == len(expected_by_fact)
-    for row in epoch1_rows:
+    # Verify via new schema: scores table
+    store2 = open_train_store(db_path)
+    fact_rows = store2._conn.execute(
+        "SELECT * FROM scores WHERE aggregation_level = 'fact' AND epoch = 1"
+    ).fetchall()
+    assert len(fact_rows) == len(expected_by_fact)
+    for row in fact_rows:
         exp = expected_by_fact[row["fact_id"]]
         assert row["fact_role"] == exp.fact_role
-        assert row["drop_value"] == pytest.approx(exp.drop, abs=1e-6)
-        assert row["log_retention"] == pytest.approx(exp.log_retention, abs=1e-6)
-        assert row["retention"] == pytest.approx(exp.retention, rel=1e-6)
-        assert row["learner_log_probability"] == pytest.approx(
+        assert row["eval_drop"] == pytest.approx(exp.drop, abs=1e-6)
+        assert row["eval_log_retention"] == pytest.approx(exp.log_retention, abs=1e-6)
+        assert row["eval_retention"] == pytest.approx(exp.retention, rel=1e-6)
+        assert row["baseline_eval_log_probability"] == pytest.approx(
             exp.learner_log_probability, abs=1e-6
         )
-        assert row["forgetter_log_probability"] == pytest.approx(
+        assert row["eval_log_probability"] == pytest.approx(
             exp.forgetter_log_probability, abs=1e-6
         )
 
-    family_rows = store.probability_scores_for_job("test-forgetter", aggregation_level="family")
-    epoch1_family_rows = [r for r in family_rows if r["epoch"] == 1]
+    family_rows = store2._conn.execute(
+        "SELECT * FROM scores WHERE aggregation_level = 'family' AND epoch = 1"
+    ).fetchall()
+    epoch1_family_rows = [r for r in family_rows]
     assert len(epoch1_family_rows) == len(expected_by_fact) * len(_ALL_FAMILIES)
-
-    probe_rows = store.probability_scores_for_job("test-forgetter", aggregation_level="probe")
-    epoch1_probe_rows = [r for r in probe_rows if r["epoch"] == 1]
-    # One probe per family per fact in this fixture.
-    assert len(epoch1_probe_rows) == len(expected_by_fact) * len(_ALL_FAMILIES)
-    assert all(r["probe_id"] for r in epoch1_probe_rows)
-    assert all(r["language"] == "en" for r in epoch1_probe_rows)
 
 
 # ── Item 9: the selected-checkpoint report reflects the given model state ──
@@ -348,10 +369,15 @@ def test_selected_checkpoint_reflects_current_model_state_not_a_cached_one(
     config = SimpleNamespace(seed=0, raw={"name": "test-forgetter-selected"})
 
     model_at_baseline = FixedLogitsLM(_LOGITS)
-    from src.train.methods.fact_score import score_catalog_families
+    from src.train.methods.fact_score import score_catalog_both_splits
+    from src.train.methods.unlearn_common import ForgetterBaseline
 
-    baseline = score_catalog_families(model_at_baseline, tokenizer, forget_catalog)
-    baseline.update(score_catalog_families(model_at_baseline, tokenizer, retain_catalog))
+    train_bl, eval_bl = score_catalog_both_splits(model_at_baseline, tokenizer, forget_catalog)
+    train_bl2, eval_bl2 = score_catalog_both_splits(model_at_baseline, tokenizer, retain_catalog)
+    baseline = ForgetterBaseline(
+        train={**train_bl, **train_bl2},
+        eval_scores={**eval_bl, **eval_bl2},
+    )
 
     # "Restored best checkpoint" happens to equal the baseline state here —
     # the point under test is that the report reflects *this* state and

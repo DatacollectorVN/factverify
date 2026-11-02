@@ -1,12 +1,13 @@
 """Training run store — operational SQLite DB for tracking training progress.
 
-Separate from the study ledger (append-only audit trail) and the TOFU pipeline
-store (data-prep progress). This DB is at .factverify_internal/train/train.sqlite
-and records every training run so grouped jobs can resume after interruption.
+Separate from the study ledger (append-only audit trail). This DB is at
+.factverify_internal/factverify.sqlite and records every experiment, its
+per-epoch scores, and per-epoch sample probes.
 """
 
 from __future__ import annotations
 
+import json
 import math
 import sqlite3
 import uuid
@@ -20,6 +21,8 @@ from src.ledger.schema import connect
 
 TRAIN_DB_PATH = Path(".factverify_internal/factverify.sqlite")
 _NAN_TOKEN = "NaN"
+
+_SCHEMA_VERSION = "1"
 
 
 def bind_real(value: float) -> float | str:
@@ -55,7 +58,6 @@ def load_optional_real(value: object) -> float | None:
         return None
     return load_real(value)
 
-_SCHEMA_VERSION = "5"
 
 _DDL = """\
 CREATE TABLE IF NOT EXISTS meta (
@@ -63,626 +65,452 @@ CREATE TABLE IF NOT EXISTS meta (
     schema_version  TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS training_runs (
-    run_id              TEXT PRIMARY KEY,
-    job_name            TEXT NOT NULL,
-    role                TEXT NOT NULL,
-    method              TEXT NOT NULL,
-    seed                INTEGER NOT NULL,
-    target_fact         TEXT NOT NULL,
-    split               TEXT NOT NULL,
-    status              TEXT NOT NULL,
-    output_dir          TEXT,
-    config_hash         TEXT NOT NULL,
-    wall_clock_seconds  REAL NOT NULL,
-    gpu_hours           REAL NOT NULL,
-    peak_memory_bytes   INTEGER NOT NULL,
-    training_steps      INTEGER NOT NULL,
-    training_examples   INTEGER NOT NULL,
-    error_message       TEXT,
-    -- training parameters
-    optimizer           TEXT NOT NULL DEFAULT 'adamw',
-    learning_rate       REAL NOT NULL DEFAULT 0.0,
-    epochs              INTEGER NOT NULL DEFAULT 0,
-    patience            INTEGER,
-    micro_batch_size    INTEGER NOT NULL DEFAULT 1,
-    gradient_accumulation_steps INTEGER NOT NULL DEFAULT 1,
-    shuffle_each_epoch  INTEGER NOT NULL DEFAULT 1,
-    save_best_as        TEXT NOT NULL DEFAULT 'val_loss',
-    max_length          INTEGER NOT NULL DEFAULT 64,
-    weight_decay        REAL NOT NULL DEFAULT 0.0,
-    created_at          TEXT DEFAULT (strftime('%Y-%m-%dT%%H:%%M:%%fZ','now'))
+CREATE TABLE IF NOT EXISTS experiments (
+    experiment_id           TEXT PRIMARY KEY,
+    job_name                TEXT NOT NULL,
+    role                    TEXT NOT NULL,
+    method                  TEXT NOT NULL,
+    seed                    INTEGER NOT NULL,
+    split                   TEXT NOT NULL,
+    target_fact             TEXT NOT NULL,
+    facts                   TEXT NOT NULL,
+    optimizer               TEXT NOT NULL DEFAULT 'adamw',
+    learning_rate           REAL NOT NULL,
+    epochs                  INTEGER NOT NULL,
+    patience                INTEGER,
+    batch_size              INTEGER NOT NULL,
+    max_length              INTEGER NOT NULL,
+    weight_decay            REAL NOT NULL,
+    save_best_as            TEXT NOT NULL,
+    best_epoch              INTEGER,
+    best_score              REAL,
+    output_dir              TEXT,
+    config_hash             TEXT NOT NULL,
+    status                  TEXT NOT NULL,
+    error_message           TEXT,
+    wall_clock_seconds      REAL,
+    gpu_hours               REAL,
+    peak_memory_bytes       INTEGER,
+    training_steps          INTEGER,
+    training_examples       INTEGER,
+    created_at              TEXT DEFAULT (strftime('%Y-%m-%dT%%H:%%M:%%fZ', 'now'))
 );
 
-CREATE INDEX IF NOT EXISTS idx_training_runs_job
-    ON training_runs (job_name, status);
+CREATE INDEX IF NOT EXISTS idx_experiments_job ON experiments (job_name, status);
+CREATE INDEX IF NOT EXISTS idx_experiments_role ON experiments (role, split, seed);
 
-CREATE TABLE IF NOT EXISTS learner_fact_logs (
-    log_id              TEXT PRIMARY KEY,
-    run_id              TEXT,
-    job_name            TEXT NOT NULL,
-    seed                INTEGER NOT NULL,
-    epoch               INTEGER NOT NULL,
-    fact_id             TEXT NOT NULL,
-    input_text          TEXT NOT NULL,
-    output_label        TEXT NOT NULL,
-    train_loss          REAL NOT NULL,
-    validation_loss     REAL NOT NULL,
-    answer_probability  REAL NOT NULL,
-    answer_rank         REAL NOT NULL,
-    created_at          TEXT DEFAULT (strftime('%Y-%m-%dT%%H:%%M:%%fZ','now')),
-    FOREIGN KEY (run_id) REFERENCES training_runs (run_id)
+CREATE TABLE IF NOT EXISTS scores (
+    score_id                        TEXT PRIMARY KEY,
+    experiment_id                   TEXT NOT NULL REFERENCES experiments (experiment_id),
+    epoch                           INTEGER NOT NULL,
+    aggregation_level               TEXT NOT NULL,
+    fact_id                         TEXT,
+    fact_role                       TEXT,
+    family                          TEXT,
+    train_log_probability           REAL,
+    eval_log_probability            REAL,
+    baseline_train_log_probability  REAL,
+    baseline_eval_log_probability   REAL,
+    train_drop                      REAL,
+    eval_drop                       REAL,
+    train_log_retention             REAL,
+    eval_log_retention              REAL,
+    train_retention                 REAL,
+    eval_retention                  REAL,
+    train_loss                      REAL,
+    train_fact_log_probability      REAL,
+    eval_fact_log_probability       REAL,
+    train_target_drop               REAL,
+    eval_target_drop                REAL,
+    train_target_log_retention      REAL,
+    eval_target_log_retention       REAL,
+    train_target_retention          REAL,
+    eval_target_retention           REAL,
+    train_retain_log_retention      REAL,
+    eval_retain_log_retention       REAL,
+    train_retain_retention          REAL,
+    eval_retain_retention           REAL,
+    is_selected_checkpoint          INTEGER NOT NULL DEFAULT 0,
+    metric_version                  TEXT NOT NULL,
+    created_at                      TEXT DEFAULT (strftime('%Y-%m-%dT%%H:%%M:%%fZ', 'now'))
 );
 
-CREATE INDEX IF NOT EXISTS idx_learner_fact_logs_job
-    ON learner_fact_logs (job_name, seed, epoch);
+CREATE INDEX IF NOT EXISTS idx_scores_experiment_epoch ON scores (experiment_id, epoch, aggregation_level);
+CREATE INDEX IF NOT EXISTS idx_scores_fact ON scores (fact_id, aggregation_level, epoch);
 
-CREATE INDEX IF NOT EXISTS idx_learner_fact_logs_run
-    ON learner_fact_logs (run_id);
-
-CREATE TABLE IF NOT EXISTS learner_fact_details (
-    detail_id           TEXT PRIMARY KEY,
-    run_id              TEXT,
-    job_name            TEXT NOT NULL,
-    seed                INTEGER NOT NULL,
-    fact_id             TEXT NOT NULL,
-    direction           TEXT NOT NULL,
-    input_text          TEXT NOT NULL,
-    output_label        TEXT NOT NULL,
-    output_model        TEXT NOT NULL,
-    answer_probability  REAL NOT NULL,
-    answer_rank         REAL NOT NULL,
-    created_at          TEXT DEFAULT (strftime('%Y-%m-%dT%%H:%%M:%%fZ','now')),
-    FOREIGN KEY (run_id) REFERENCES training_runs (run_id)
+CREATE TABLE IF NOT EXISTS samples (
+    sample_id               TEXT PRIMARY KEY,
+    experiment_id           TEXT NOT NULL REFERENCES experiments (experiment_id),
+    epoch                   INTEGER NOT NULL,
+    fact_id                 TEXT NOT NULL,
+    fact_role               TEXT NOT NULL,
+    family                  TEXT NOT NULL,
+    probe_id                TEXT NOT NULL,
+    language                TEXT NOT NULL DEFAULT 'en',
+    input_text              TEXT NOT NULL,
+    expected_answer         TEXT NOT NULL,
+    model_output            TEXT NOT NULL,
+    log_probability         REAL NOT NULL,
+    is_selected_checkpoint  INTEGER NOT NULL DEFAULT 0,
+    created_at              TEXT DEFAULT (strftime('%Y-%m-%dT%%H:%%M:%%fZ', 'now'))
 );
 
-CREATE INDEX IF NOT EXISTS idx_learner_fact_details_run
-    ON learner_fact_details (run_id, fact_id);
-
--- Probe/family/fact-level log-probability and drop/retention scores
--- (FV-METRIC-001). One row per aggregation level per fact per epoch;
--- `aggregation_level` is one of 'probe' | 'family' | 'fact'. Probe rows
--- carry only the current (`forgetter_log_probability`) value and exist so
--- every family/fact aggregate can be reproduced from its raw inputs.
--- `fact_role` is 'learner' for plain learner-stage rows, or 'target' /
--- 'neighbour' for forgetter-stage rows.
-CREATE TABLE IF NOT EXISTS probability_scores (
-    score_id                   TEXT PRIMARY KEY,
-    run_id                     TEXT,
-    job_name                   TEXT NOT NULL,
-    seed                       INTEGER NOT NULL,
-    epoch                      INTEGER NOT NULL,
-    fact_id                    TEXT NOT NULL,
-    fact_role                  TEXT NOT NULL,
-    aggregation_level          TEXT NOT NULL,
-    probe_id                   TEXT,
-    family                     TEXT,
-    language                   TEXT,
-    learner_log_probability    REAL,
-    forgetter_log_probability  REAL,
-    drop_value                 REAL,
-    log_retention              REAL,
-    retention                  REAL,
-    is_selected_checkpoint     INTEGER NOT NULL DEFAULT 0,
-    metric_version             TEXT NOT NULL,
-    created_at                 TEXT DEFAULT (strftime('%Y-%m-%dT%%H:%%M:%%fZ','now')),
-    FOREIGN KEY (run_id) REFERENCES training_runs (run_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_probability_scores_job
-    ON probability_scores (job_name, seed, epoch);
-
-CREATE INDEX IF NOT EXISTS idx_probability_scores_fact
-    ON probability_scores (fact_id, aggregation_level);
-
-CREATE INDEX IF NOT EXISTS idx_probability_scores_run
-    ON probability_scores (run_id);
-
--- Per-epoch aggregate metrics: one row per epoch per run.
--- Stores train_loss (avg NLL) and all val-set tracking metrics so the full
--- training trajectory is queryable without re-deriving from probability_scores.
--- Nullable columns: train_loss is NULL for epoch-zero eval (no training yet);
--- learner columns are NULL for forgetter runs and vice versa.
-CREATE TABLE IF NOT EXISTS epoch_metrics (
-    metric_id                   TEXT PRIMARY KEY,
-    run_id                      TEXT,
-    job_name                    TEXT NOT NULL,
-    seed                        INTEGER NOT NULL,
-    epoch                       INTEGER NOT NULL,
-    train_loss                  REAL,
-    -- learner metrics (FV-METRIC-001 log-probability)
-    val_loss                    REAL,
-    val_fact_log_probability    REAL,
-    -- forgetter metrics (drop / retention)
-    val_target_log_retention    REAL,
-    val_target_retention        REAL,
-    val_retain_log_retention    REAL,
-    val_retain_retention        REAL,
-    val_drop                    REAL,
-    created_at                  TEXT DEFAULT (strftime('%Y-%m-%dT%%H:%%M:%%fZ','now')),
-    FOREIGN KEY (run_id) REFERENCES training_runs (run_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_epoch_metrics_run
-    ON epoch_metrics (run_id, epoch);
-
-CREATE INDEX IF NOT EXISTS idx_epoch_metrics_job
-    ON epoch_metrics (job_name, seed, epoch);
+CREATE INDEX IF NOT EXISTS idx_samples_experiment_epoch ON samples (experiment_id, epoch);
+CREATE INDEX IF NOT EXISTS idx_samples_family ON samples (experiment_id, family, epoch);
 """
 
 
 @dataclass
-class TrainingRunRecord:
-    """One training run to record in the store."""
+class ExperimentRecord:
+    """One training experiment to record in the store."""
 
     job_name: str
     role: str
     method: str
     seed: int
-    target_fact: str
     split: str
-    status: str  # "succeeded" | "failed"
+    target_fact: str
+    facts: list[str]
     config_hash: str
-    wall_clock_seconds: float = 0.0
-    gpu_hours: float = 0.0
-    peak_memory_bytes: int = 0
-    training_steps: int = 0
-    training_examples: int = 0
-    output_dir: Optional[str] = None
-    error_message: Optional[str] = None
-    # training parameters
     optimizer: str = "adamw"
     learning_rate: float = 0.0
     epochs: int = 0
     patience: Optional[int] = None
-    micro_batch_size: int = 1
-    gradient_accumulation_steps: int = 1
-    shuffle_each_epoch: bool = True
-    save_best_as: str = "val_loss"
+    batch_size: int = 1
     max_length: int = 64
     weight_decay: float = 0.0
+    save_best_as: str = "val_loss"
+    status: str = "running"
+    best_epoch: Optional[int] = None
+    best_score: Optional[float] = None
+    output_dir: Optional[str] = None
+    error_message: Optional[str] = None
+    wall_clock_seconds: Optional[float] = None
+    gpu_hours: Optional[float] = None
+    peak_memory_bytes: Optional[int] = None
+    training_steps: Optional[int] = None
+    training_examples: Optional[int] = None
 
 
 @dataclass(frozen=True)
-class LearnerFactLog:
-    """One forward-prompt score written after a learner epoch."""
+class ScoreRecord:
+    """One probe/family/fact/epoch-level score row."""
 
-    job_name: str
-    seed: int
+    experiment_id: str
     epoch: int
-    fact_id: str
-    input_text: str
-    output_label: str
-    train_loss: float
-    validation_loss: float
-    answer_probability: float
-    answer_rank: float
-    run_id: Optional[str] = None
+    aggregation_level: str
+    metric_version: str
+    fact_id: Optional[str] = None
+    fact_role: Optional[str] = None
+    family: Optional[str] = None
+    train_log_probability: Optional[float] = None
+    eval_log_probability: Optional[float] = None
+    baseline_train_log_probability: Optional[float] = None
+    baseline_eval_log_probability: Optional[float] = None
+    train_drop: Optional[float] = None
+    eval_drop: Optional[float] = None
+    train_log_retention: Optional[float] = None
+    eval_log_retention: Optional[float] = None
+    train_retention: Optional[float] = None
+    eval_retention: Optional[float] = None
+    train_loss: Optional[float] = None
+    train_fact_log_probability: Optional[float] = None
+    eval_fact_log_probability: Optional[float] = None
+    train_target_drop: Optional[float] = None
+    eval_target_drop: Optional[float] = None
+    train_target_log_retention: Optional[float] = None
+    eval_target_log_retention: Optional[float] = None
+    train_target_retention: Optional[float] = None
+    eval_target_retention: Optional[float] = None
+    train_retain_log_retention: Optional[float] = None
+    eval_retain_log_retention: Optional[float] = None
+    train_retain_retention: Optional[float] = None
+    eval_retain_retention: Optional[float] = None
+    is_selected_checkpoint: bool = False
 
 
 @dataclass(frozen=True)
-class ProbabilityScoreRecord:
-    """One probe/family/fact-level log-probability (and optional change) row.
+class SampleRecord:
+    """One randomly sampled eval probe logged per epoch."""
 
-    ``aggregation_level`` is one of ``"probe"``, ``"family"``, or ``"fact"``.
-    ``probe_id``/``family``/``language`` are only meaningful at the levels
-    they describe; leave them ``None`` otherwise. ``learner_log_probability``
-    is the frozen baseline value (unset for plain learner-stage rows, which
-    have no baseline to compare against); ``forgetter_log_probability`` is
-    always the value measured at this epoch's model state regardless of
-    whether the run is a learner or forgetter job. ``drop_value``,
-    ``log_retention``, and ``retention`` are unset unless both sides of the
-    comparison are known.
-    """
-
-    job_name: str
-    seed: int
+    experiment_id: str
     epoch: int
     fact_id: str
     fact_role: str
-    aggregation_level: str
-    forgetter_log_probability: float
-    metric_version: str
-    probe_id: Optional[str] = None
-    family: Optional[str] = None
-    language: Optional[str] = None
-    learner_log_probability: Optional[float] = None
-    drop_value: Optional[float] = None
-    log_retention: Optional[float] = None
-    retention: Optional[float] = None
-    is_selected_checkpoint: bool = False
-    run_id: Optional[str] = None
-
-
-@dataclass(frozen=True)
-class LearnerFactDetail:
-    """Per-probe generation from the best checkpoint at end of training."""
-
-    job_name: str
-    seed: int
-    fact_id: str
-    direction: str
+    family: str
+    probe_id: str
+    language: str
     input_text: str
-    output_label: str
-    output_model: str
-    answer_probability: float
-    answer_rank: float
-    run_id: Optional[str] = None
-
-
-@dataclass(frozen=True)
-class EpochMetricsRecord:
-    """Per-epoch aggregate metrics for one training run.
-
-    ``train_loss`` is ``None`` for epoch-zero evaluations (no training step
-    has occurred yet). Learner-only fields (``val_fact_log_probability``) are
-    ``None`` for forgetter runs; forgetter-only fields are ``None`` for learner
-    runs.
-    """
-
-    job_name: str
-    seed: int
-    epoch: int
-    train_loss: Optional[float] = None
-    # learner
-    val_loss: Optional[float] = None
-    val_fact_log_probability: Optional[float] = None
-    # forgetter
-    val_target_log_retention: Optional[float] = None
-    val_target_retention: Optional[float] = None
-    val_retain_log_retention: Optional[float] = None
-    val_retain_retention: Optional[float] = None
-    val_drop: Optional[float] = None
-    run_id: Optional[str] = None
+    expected_answer: str
+    model_output: str
+    log_probability: float
+    is_selected_checkpoint: bool = False
 
 
 class TrainStore:
-    """Read/write interface to the training runs database."""
+    """Read/write interface to the training experiments database."""
 
     def __init__(self, conn: sqlite3.Connection) -> None:
         self._conn = conn
 
-    def record_run(self, record: TrainingRunRecord) -> str:
-        """Insert a training run. Returns the generated run_id."""
-        run_id = uuid.uuid4().hex
+    # ── experiments ──────────────────────────────────────────────────────────
+
+    def create_experiment(self, record: ExperimentRecord) -> str:
+        """Insert a new experiment with status='running'. Returns the experiment_id."""
+        experiment_id = uuid.uuid4().hex
         self._conn.execute(
             """
-            INSERT INTO training_runs (
-                run_id, job_name, role, method, seed, target_fact, split,
-                status, output_dir, config_hash, wall_clock_seconds,
-                gpu_hours, peak_memory_bytes, training_steps,
-                training_examples, error_message,
-                optimizer, learning_rate, epochs, patience,
-                micro_batch_size, gradient_accumulation_steps,
-                shuffle_each_epoch, save_best_as, max_length, weight_decay
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO experiments (
+                experiment_id, job_name, role, method, seed, split,
+                target_fact, facts, optimizer, learning_rate, epochs,
+                patience, batch_size, max_length, weight_decay, save_best_as,
+                best_epoch, best_score, output_dir, config_hash, status,
+                error_message, wall_clock_seconds, gpu_hours, peak_memory_bytes,
+                training_steps, training_examples
+            ) VALUES (
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?
+            )
             """,
             (
-                run_id,
+                experiment_id,
                 record.job_name,
                 record.role,
                 record.method,
                 record.seed,
-                record.target_fact,
                 record.split,
-                record.status,
-                record.output_dir,
-                record.config_hash,
-                bind_real(record.wall_clock_seconds),
-                bind_real(record.gpu_hours),
-                record.peak_memory_bytes,
-                record.training_steps,
-                record.training_examples,
-                record.error_message,
+                record.target_fact,
+                json.dumps(sorted(record.facts)),
                 record.optimizer,
                 bind_real(record.learning_rate),
                 record.epochs,
                 record.patience,
-                record.micro_batch_size,
-                record.gradient_accumulation_steps,
-                1 if record.shuffle_each_epoch else 0,
-                record.save_best_as,
+                record.batch_size,
                 record.max_length,
                 bind_real(record.weight_decay),
+                record.save_best_as,
+                record.best_epoch,
+                bind_optional_real(record.best_score),
+                record.output_dir,
+                record.config_hash,
+                record.status,
+                record.error_message,
+                bind_optional_real(record.wall_clock_seconds),
+                bind_optional_real(record.gpu_hours),
+                record.peak_memory_bytes,
+                record.training_steps,
+                record.training_examples,
             ),
         )
-        return run_id
+        return experiment_id
 
-    def record_fact_log(self, record: LearnerFactLog) -> str:
-        """Insert one per-fact validation row. Returns the generated log_id."""
-        log_id = uuid.uuid4().hex
-        self._conn.execute(
-            """
-            INSERT INTO learner_fact_logs (
-                log_id, run_id, job_name, seed, epoch, fact_id, input_text,
-                output_label,
-                train_loss, validation_loss, answer_probability, answer_rank
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                log_id,
-                record.run_id,
-                record.job_name,
-                record.seed,
-                record.epoch,
-                record.fact_id,
-                record.input_text,
-                record.output_label,
-                bind_real(record.train_loss),
-                bind_real(record.validation_loss),
-                bind_real(record.answer_probability),
-                bind_real(record.answer_rank),
-            ),
-        )
-        return log_id
+    def update_experiment(self, experiment_id: str, **kwargs: object) -> None:
+        """UPDATE experiments SET col=val ... WHERE experiment_id=?
 
-    def record_fact_detail(self, record: LearnerFactDetail) -> str:
-        """Insert one per-probe detail from the best checkpoint."""
-        detail_id = uuid.uuid4().hex
-        self._conn.execute(
-            """
-            INSERT INTO learner_fact_details (
-                detail_id, run_id, job_name, seed, fact_id, direction,
-                input_text, output_label, output_model,
-                answer_probability, answer_rank
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                detail_id,
-                record.run_id,
-                record.job_name,
-                record.seed,
-                record.fact_id,
-                record.direction,
-                record.input_text,
-                record.output_label,
-                record.output_model,
-                bind_real(record.answer_probability),
-                bind_real(record.answer_rank),
-            ),
-        )
-        return detail_id
-
-    def record_probability_score(self, record: ProbabilityScoreRecord) -> str:
-        """Insert one probe/family/fact-level score row. Returns the generated id."""
-        score_id = uuid.uuid4().hex
-        self._conn.execute(
-            """
-            INSERT INTO probability_scores (
-                score_id, run_id, job_name, seed, epoch, fact_id, fact_role,
-                aggregation_level, probe_id, family, language,
-                learner_log_probability, forgetter_log_probability,
-                drop_value, log_retention, retention,
-                is_selected_checkpoint, metric_version
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                score_id,
-                record.run_id,
-                record.job_name,
-                record.seed,
-                record.epoch,
-                record.fact_id,
-                record.fact_role,
-                record.aggregation_level,
-                record.probe_id,
-                record.family,
-                record.language,
-                bind_optional_real(record.learner_log_probability),
-                bind_real(record.forgetter_log_probability),
-                bind_optional_real(record.drop_value),
-                bind_optional_real(record.log_retention),
-                bind_optional_real(record.retention),
-                1 if record.is_selected_checkpoint else 0,
-                record.metric_version,
-            ),
-        )
-        return score_id
-
-    def record_probability_scores(self, records: list[ProbabilityScoreRecord]) -> list[str]:
-        """Insert many probability-score rows. Returns the generated ids."""
-        return [self.record_probability_score(record) for record in records]
-
-    def record_epoch_metrics(self, record: EpochMetricsRecord) -> str:
-        """Insert one per-epoch aggregate metrics row. Returns the generated id."""
-        metric_id = uuid.uuid4().hex
-        self._conn.execute(
-            """
-            INSERT INTO epoch_metrics (
-                metric_id, run_id, job_name, seed, epoch,
-                train_loss, val_loss, val_fact_log_probability,
-                val_target_log_retention, val_target_retention,
-                val_retain_log_retention, val_retain_retention, val_drop
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                metric_id,
-                record.run_id,
-                record.job_name,
-                record.seed,
-                record.epoch,
-                bind_optional_real(record.train_loss),
-                bind_optional_real(record.val_loss),
-                bind_optional_real(record.val_fact_log_probability),
-                bind_optional_real(record.val_target_log_retention),
-                bind_optional_real(record.val_target_retention),
-                bind_optional_real(record.val_retain_log_retention),
-                bind_optional_real(record.val_retain_retention),
-                bind_optional_real(record.val_drop),
-            ),
-        )
-        return metric_id
-
-    def probability_scores_for_job(
-        self, job_name: str, *, aggregation_level: Optional[str] = None
-    ) -> list[sqlite3.Row]:
-        """Return all probability-score rows for *job_name*, ordered by epoch.
-
-        Optionally filtered to one ``aggregation_level``. Used to reconcile
-        console log lines with persisted per-epoch records.
+        Accepts any subset of outcome columns. Only known columns are accepted.
         """
-        if aggregation_level is None:
-            return self._conn.execute(
-                "SELECT * FROM probability_scores WHERE job_name = ? "
-                "ORDER BY epoch, fact_id, family",
-                (job_name,),
-            ).fetchall()
-        return self._conn.execute(
-            "SELECT * FROM probability_scores WHERE job_name = ? "
-            "AND aggregation_level = ? ORDER BY epoch, fact_id, family",
-            (job_name, aggregation_level),
-        ).fetchall()
-
-    def backfill_run_id(self, run_id: str, job_name: str, seed: int) -> None:
-        """Set run_id on logs and details that were written before the run was recorded."""
+        _ALLOWED = {
+            "status", "error_message", "output_dir", "wall_clock_seconds",
+            "gpu_hours", "peak_memory_bytes", "training_steps", "training_examples",
+            "best_epoch", "best_score",
+        }
+        _REAL_COLS = {"wall_clock_seconds", "gpu_hours", "best_score"}
+        updates = {k: v for k, v in kwargs.items() if k in _ALLOWED}
+        if not updates:
+            return
+        set_clauses = ", ".join(f"{col} = ?" for col in updates)
+        values = []
+        for col, val in updates.items():
+            if col in _REAL_COLS and val is not None:
+                values.append(bind_optional_real(float(val)))  # type: ignore[arg-type]
+            else:
+                values.append(val)
+        values.append(experiment_id)
         self._conn.execute(
-            "UPDATE learner_fact_logs SET run_id = ? "
-            "WHERE job_name = ? AND seed = ? AND (run_id IS NULL OR run_id = '')",
-            (run_id, job_name, seed),
-        )
-        self._conn.execute(
-            "UPDATE learner_fact_details SET run_id = ? "
-            "WHERE job_name = ? AND seed = ? AND run_id IS NULL",
-            (run_id, job_name, seed),
-        )
-        self._conn.execute(
-            "UPDATE probability_scores SET run_id = ? "
-            "WHERE job_name = ? AND seed = ? AND run_id IS NULL",
-            (run_id, job_name, seed),
+            f"UPDATE experiments SET {set_clauses} WHERE experiment_id = ?",
+            values,
         )
 
-    def completed_keys(self, job_name: str) -> set[tuple[str, int]]:
-        """Return {(target_fact, seed)} for all succeeded runs of this job."""
+    def completed_experiments(self, job_name: str) -> set[tuple[str, int]]:
+        """Return {(target_fact, seed)} for all succeeded experiments of this job."""
         rows = self._conn.execute(
-            "SELECT target_fact, seed FROM training_runs "
+            "SELECT target_fact, seed FROM experiments "
             "WHERE job_name = ? AND status = 'succeeded'",
             (job_name,),
         ).fetchall()
         return {(row["target_fact"], row["seed"]) for row in rows}
 
     def clear_job(self, job_name: str) -> int:
-        """Delete run records, learner fact logs, and details for a job.
+        """Delete all rows for *job_name* across experiments, scores, and samples.
 
-        Returns the number of training-run rows removed.
+        Returns the number of experiment rows removed.
         """
-        self._conn.execute(
-            "DELETE FROM probability_scores WHERE job_name = ?",
-            (job_name,),
-        )
-        self._conn.execute(
-            "DELETE FROM learner_fact_details WHERE job_name = ?",
-            (job_name,),
-        )
-        self._conn.execute(
-            "DELETE FROM learner_fact_logs WHERE job_name = ?",
-            (job_name,),
-        )
+        # Get experiment ids for this job first
+        exp_ids = [
+            row["experiment_id"]
+            for row in self._conn.execute(
+                "SELECT experiment_id FROM experiments WHERE job_name = ?",
+                (job_name,),
+            ).fetchall()
+        ]
+        if exp_ids:
+            placeholders = ",".join("?" * len(exp_ids))
+            self._conn.execute(
+                f"DELETE FROM samples WHERE experiment_id IN ({placeholders})",
+                exp_ids,
+            )
+            self._conn.execute(
+                f"DELETE FROM scores WHERE experiment_id IN ({placeholders})",
+                exp_ids,
+            )
         cursor = self._conn.execute(
-            "DELETE FROM training_runs WHERE job_name = ?",
+            "DELETE FROM experiments WHERE job_name = ?",
             (job_name,),
         )
         return cursor.rowcount
 
-    def runs_for_job(self, job_name: str) -> list[TrainingRunRecord]:
-        """Return all records for a job, ordered by creation time."""
-        rows = self._conn.execute(
-            "SELECT * FROM training_runs WHERE job_name = ? ORDER BY created_at",
-            (job_name,),
-        ).fetchall()
-        return [
-            TrainingRunRecord(
-                job_name=row["job_name"],
-                role=row["role"],
-                method=row["method"],
-                seed=row["seed"],
-                target_fact=row["target_fact"],
-                split=row["split"],
-                status=row["status"],
-                config_hash=row["config_hash"],
-                wall_clock_seconds=row["wall_clock_seconds"],
-                gpu_hours=row["gpu_hours"],
-                peak_memory_bytes=row["peak_memory_bytes"],
-                training_steps=row["training_steps"],
-                training_examples=row["training_examples"],
-                output_dir=row["output_dir"],
-                error_message=row["error_message"],
+    # ── scores ───────────────────────────────────────────────────────────────
+
+    def record_score(self, record: ScoreRecord) -> str:
+        """Insert one score row. Returns the generated score_id."""
+        score_id = uuid.uuid4().hex
+        self._conn.execute(
+            """
+            INSERT INTO scores (
+                score_id, experiment_id, epoch, aggregation_level,
+                fact_id, fact_role, family,
+                train_log_probability, eval_log_probability,
+                baseline_train_log_probability, baseline_eval_log_probability,
+                train_drop, eval_drop,
+                train_log_retention, eval_log_retention,
+                train_retention, eval_retention,
+                train_loss, train_fact_log_probability, eval_fact_log_probability,
+                train_target_drop, eval_target_drop,
+                train_target_log_retention, eval_target_log_retention,
+                train_target_retention, eval_target_retention,
+                train_retain_log_retention, eval_retain_log_retention,
+                train_retain_retention, eval_retain_retention,
+                is_selected_checkpoint, metric_version
+            ) VALUES (
+                ?, ?, ?, ?,
+                ?, ?, ?,
+                ?, ?,
+                ?, ?,
+                ?, ?,
+                ?, ?,
+                ?, ?,
+                ?, ?, ?,
+                ?, ?,
+                ?, ?,
+                ?, ?,
+                ?, ?,
+                ?, ?,
+                ?, ?
             )
-            for row in rows
-        ]
+            """,
+            (
+                score_id,
+                record.experiment_id,
+                record.epoch,
+                record.aggregation_level,
+                record.fact_id,
+                record.fact_role,
+                record.family,
+                bind_optional_real(record.train_log_probability),
+                bind_optional_real(record.eval_log_probability),
+                bind_optional_real(record.baseline_train_log_probability),
+                bind_optional_real(record.baseline_eval_log_probability),
+                bind_optional_real(record.train_drop),
+                bind_optional_real(record.eval_drop),
+                bind_optional_real(record.train_log_retention),
+                bind_optional_real(record.eval_log_retention),
+                bind_optional_real(record.train_retention),
+                bind_optional_real(record.eval_retention),
+                bind_optional_real(record.train_loss),
+                bind_optional_real(record.train_fact_log_probability),
+                bind_optional_real(record.eval_fact_log_probability),
+                bind_optional_real(record.train_target_drop),
+                bind_optional_real(record.eval_target_drop),
+                bind_optional_real(record.train_target_log_retention),
+                bind_optional_real(record.eval_target_log_retention),
+                bind_optional_real(record.train_target_retention),
+                bind_optional_real(record.eval_target_retention),
+                bind_optional_real(record.train_retain_log_retention),
+                bind_optional_real(record.eval_retain_log_retention),
+                bind_optional_real(record.train_retain_retention),
+                bind_optional_real(record.eval_retain_retention),
+                1 if record.is_selected_checkpoint else 0,
+                record.metric_version,
+            ),
+        )
+        return score_id
+
+    def record_scores(self, records: list[ScoreRecord]) -> list[str]:
+        """Insert many score rows. Returns the generated ids."""
+        return [self.record_score(record) for record in records]
+
+    # ── samples ──────────────────────────────────────────────────────────────
+
+    def record_sample(self, record: SampleRecord) -> str:
+        """Insert one sample row. Returns the generated sample_id."""
+        sample_id = uuid.uuid4().hex
+        self._conn.execute(
+            """
+            INSERT INTO samples (
+                sample_id, experiment_id, epoch, fact_id, fact_role,
+                family, probe_id, language, input_text, expected_answer,
+                model_output, log_probability, is_selected_checkpoint
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                sample_id,
+                record.experiment_id,
+                record.epoch,
+                record.fact_id,
+                record.fact_role,
+                record.family,
+                record.probe_id,
+                record.language,
+                record.input_text,
+                record.expected_answer,
+                record.model_output,
+                bind_real(record.log_probability),
+                1 if record.is_selected_checkpoint else 0,
+            ),
+        )
+        return sample_id
+
+    def record_samples(self, records: list[SampleRecord]) -> list[str]:
+        """Insert many sample rows. Returns the generated ids."""
+        return [self.record_sample(record) for record in records]
+
+    # ── summary ──────────────────────────────────────────────────────────────
 
     def summary(self) -> None:
-        """Print a summary of all training runs to stdout."""
+        """Print a summary of all experiments to stdout."""
         rows = self._conn.execute(
             "SELECT job_name, status, COUNT(*) as cnt, "
             "SUM(wall_clock_seconds) as total_wall, "
             "SUM(gpu_hours) as total_gpu "
-            "FROM training_runs GROUP BY job_name, status "
+            "FROM experiments GROUP BY job_name, status "
             "ORDER BY job_name, status"
         ).fetchall()
         if not rows:
-            click.echo("No training runs recorded.")
+            click.echo("No experiments recorded.")
             return
         click.echo(f"{'Job':<30} {'Status':<12} {'Runs':>5} {'Wall(s)':>10} {'GPU(h)':>8}")
         click.echo("-" * 70)
         for row in rows:
             click.echo(
                 f"{row['job_name']:<30} {row['status']:<12} "
-                f"{row['cnt']:>5} {row['total_wall']:>10.1f} "
-                f"{row['total_gpu']:>8.3f}"
+                f"{row['cnt']:>5} {(row['total_wall'] or 0.0):>10.1f} "
+                f"{(row['total_gpu'] or 0.0):>8.3f}"
             )
 
 
-def _migrate_v1_to_v2(conn: sqlite3.Connection) -> None:
-    """v1 → v2: rename output_text → output_label, add output_model."""
-    conn.execute(
-        "ALTER TABLE learner_fact_logs RENAME COLUMN output_text TO output_label"
-    )
-    conn.execute(
-        "ALTER TABLE learner_fact_logs ADD COLUMN output_model TEXT NOT NULL DEFAULT ''"
-    )
-
-
-def _migrate_v2_to_v3(conn: sqlite3.Connection) -> None:
-    """v2 → v3: training params on runs, run_id FK on logs, fact details table."""
-    # training_runs: add training parameter columns
-    for stmt in [
-        "ALTER TABLE training_runs ADD COLUMN optimizer TEXT NOT NULL DEFAULT 'adamw'",
-        "ALTER TABLE training_runs ADD COLUMN learning_rate REAL NOT NULL DEFAULT 0.0",
-        "ALTER TABLE training_runs ADD COLUMN epochs INTEGER NOT NULL DEFAULT 0",
-        "ALTER TABLE training_runs ADD COLUMN patience INTEGER",
-        "ALTER TABLE training_runs ADD COLUMN micro_batch_size INTEGER NOT NULL DEFAULT 1",
-        "ALTER TABLE training_runs ADD COLUMN gradient_accumulation_steps INTEGER NOT NULL DEFAULT 1",
-        "ALTER TABLE training_runs ADD COLUMN shuffle_each_epoch INTEGER NOT NULL DEFAULT 1",
-        "ALTER TABLE training_runs ADD COLUMN save_best_as TEXT NOT NULL DEFAULT 'val_loss'",
-        "ALTER TABLE training_runs ADD COLUMN max_length INTEGER NOT NULL DEFAULT 64",
-        "ALTER TABLE training_runs ADD COLUMN weight_decay REAL NOT NULL DEFAULT 0.0",
-    ]:
-        conn.execute(stmt)
-    # learner_fact_logs: add run_id, drop output_model
-    conn.execute(
-        "ALTER TABLE learner_fact_logs ADD COLUMN run_id TEXT REFERENCES training_runs(run_id)"
-    )
-    # Drop output_model — SQLite doesn't support DROP COLUMN before 3.35;
-    # just leave it in place for older SQLite versions, it won't be written to.
-    try:
-        conn.execute("ALTER TABLE learner_fact_logs DROP COLUMN output_model")
-    except Exception:
-        pass  # older SQLite, column stays but is unused
-    # learner_fact_details: created by _DDL
-
-
-def _migrate_v3_to_v4(conn: sqlite3.Connection) -> None:
-    """v3 → v4: probability_scores table (FV-METRIC-001). Created by ``_DDL``."""
-    return
-
-
-def _migrate_v4_to_v5(conn: sqlite3.Connection) -> None:
-    """v4 → v5: epoch_metrics table. Created by ``_DDL``."""
-    return
-
-
 def _ensure_schema(conn: sqlite3.Connection) -> None:
-    """Create tables if needed and migrate from older versions."""
+    """Create tables and write initial schema version."""
     conn.executescript(_DDL)
     row = conn.execute(
         "SELECT schema_version FROM meta WHERE store_name = 'train'"
@@ -690,38 +518,6 @@ def _ensure_schema(conn: sqlite3.Connection) -> None:
     if row is None:
         conn.execute(
             "INSERT INTO meta (store_name, schema_version) VALUES ('train', ?)",
-            (_SCHEMA_VERSION,),
-        )
-        return
-    version = row["schema_version"]
-    if version == "1":
-        _migrate_v1_to_v2(conn)
-        _migrate_v2_to_v3(conn)
-        _migrate_v3_to_v4(conn)
-        _migrate_v4_to_v5(conn)
-        conn.execute(
-            "UPDATE meta SET schema_version = ? WHERE store_name = 'train'",
-            (_SCHEMA_VERSION,),
-        )
-    elif version == "2":
-        _migrate_v2_to_v3(conn)
-        _migrate_v3_to_v4(conn)
-        _migrate_v4_to_v5(conn)
-        conn.execute(
-            "UPDATE meta SET schema_version = ? WHERE store_name = 'train'",
-            (_SCHEMA_VERSION,),
-        )
-    elif version == "3":
-        _migrate_v3_to_v4(conn)
-        _migrate_v4_to_v5(conn)
-        conn.execute(
-            "UPDATE meta SET schema_version = ? WHERE store_name = 'train'",
-            (_SCHEMA_VERSION,),
-        )
-    elif version == "4":
-        _migrate_v4_to_v5(conn)
-        conn.execute(
-            "UPDATE meta SET schema_version = ? WHERE store_name = 'train'",
             (_SCHEMA_VERSION,),
         )
 

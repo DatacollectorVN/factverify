@@ -1,4 +1,4 @@
-"""Forward-prompt fact scores and the learner SQLite log."""
+"""Forward-prompt fact scores and the new train-store schema."""
 
 from __future__ import annotations
 
@@ -9,9 +9,15 @@ from pathlib import Path
 import torch
 from torch import nn
 
-from src.ledger.train_store import LearnerFactLog, load_real, open_train_store
+from src.ledger.train_store import (
+    ExperimentRecord,
+    SampleRecord,
+    ScoreRecord,
+    load_real,
+    open_train_store,
+)
 from src.train.data import DataCatalog
-from src.train.methods.fact_score import score_facts
+from src.train.methods.fact_score import METRIC_VERSION, score_facts
 
 
 class _TinyLM(nn.Module):
@@ -75,54 +81,129 @@ def test_score_facts_reads_forward_prompt_and_object(tmp_path: Path) -> None:
     assert score.answer_rank >= 1.0
 
 
-def test_fact_log_round_trip_and_clear(tmp_path: Path) -> None:
+def test_score_record_round_trip(tmp_path: Path) -> None:
+    """ScoreRecord INSERT and SELECT round-trip through the new schema."""
     store = open_train_store(tmp_path / "train.sqlite")
-    log_id = store.record_fact_log(
-        LearnerFactLog(
-            job_name="block0-learner",
-            seed=0,
+    exp_id = store.create_experiment(ExperimentRecord(
+        job_name="block0-learner",
+        role="learner",
+        method="finetune",
+        seed=0,
+        split="A",
+        target_fact="fact-a",
+        facts=["fact-a"],
+        config_hash="abc123",
+        learning_rate=1e-4,
+        epochs=3,
+        batch_size=1,
+        max_length=64,
+        weight_decay=0.0,
+        save_best_as="val_loss",
+    ))
+    score_id = store.record_score(
+        ScoreRecord(
+            experiment_id=exp_id,
             epoch=1,
+            aggregation_level="fact",
+            metric_version=METRIC_VERSION,
             fact_id="fact-a",
-            input_text="What is the occupation of Evelyn Desmet?",
-            output_label="author",
-            train_loss=0.5,
-            validation_loss=2.0,
-            answer_probability=0.25,
-            answer_rank=4.0,
+            fact_role="learner",
+            eval_log_probability=-2.0,
+            train_log_probability=-1.5,
         )
     )
     row = store._conn.execute(
-        "SELECT input_text, output_label, validation_loss "
-        "FROM learner_fact_logs WHERE log_id = ?",
-        (log_id,),
+        "SELECT fact_id, fact_role, eval_log_probability, train_log_probability "
+        "FROM scores WHERE score_id = ?",
+        (score_id,),
     ).fetchone()
-    assert row["input_text"] == "What is the occupation of Evelyn Desmet?"
-    assert row["output_label"] == "author"
-    assert row["validation_loss"] == 2.0
-    assert store.clear_job("block0-learner") == 0
-    left = store._conn.execute("SELECT COUNT(*) AS n FROM learner_fact_logs").fetchone()
+    assert row["fact_id"] == "fact-a"
+    assert row["fact_role"] == "learner"
+    assert row["eval_log_probability"] == -2.0
+    assert row["train_log_probability"] == -1.5
+    assert store.clear_job("block0-learner") == 1
+    left = store._conn.execute("SELECT COUNT(*) AS n FROM scores").fetchone()
     assert left["n"] == 0
 
 
-def test_fact_log_stores_nan_loss(tmp_path: Path) -> None:
+def test_score_record_stores_nan(tmp_path: Path) -> None:
+    """NaN floats survive a round-trip through the store."""
     store = open_train_store(tmp_path / "train.sqlite")
-    log_id = store.record_fact_log(
-        LearnerFactLog(
-            job_name="block0-learner",
-            seed=1,
+    exp_id = store.create_experiment(ExperimentRecord(
+        job_name="test-nan",
+        role="learner",
+        method="finetune",
+        seed=1,
+        split="A",
+        target_fact="fact-a",
+        facts=["fact-a"],
+        config_hash="def456",
+        learning_rate=1e-4,
+        epochs=1,
+        batch_size=1,
+        max_length=64,
+        weight_decay=0.0,
+        save_best_as="val_loss",
+    ))
+    score_id = store.record_score(
+        ScoreRecord(
+            experiment_id=exp_id,
             epoch=1,
-            fact_id="fact-a",
-            input_text="prompt",
-            output_label="answer",
+            aggregation_level="epoch",
+            metric_version=METRIC_VERSION,
             train_loss=float("nan"),
-            validation_loss=float("nan"),
-            answer_probability=0.0,
-            answer_rank=1.0,
+            eval_fact_log_probability=float("nan"),
         )
     )
     row = store._conn.execute(
-        "SELECT train_loss, validation_loss FROM learner_fact_logs WHERE log_id = ?",
-        (log_id,),
+        "SELECT train_loss, eval_fact_log_probability FROM scores WHERE score_id = ?",
+        (score_id,),
     ).fetchone()
     assert math.isnan(load_real(row["train_loss"]))
-    assert math.isnan(load_real(row["validation_loss"]))
+    assert math.isnan(load_real(row["eval_fact_log_probability"]))
+
+
+def test_sample_record_round_trip(tmp_path: Path) -> None:
+    """SampleRecord INSERT and SELECT round-trip through the new schema."""
+    store = open_train_store(tmp_path / "train.sqlite")
+    exp_id = store.create_experiment(ExperimentRecord(
+        job_name="sample-test",
+        role="learner",
+        method="finetune",
+        seed=0,
+        split="A",
+        target_fact="fact-a",
+        facts=["fact-a"],
+        config_hash="ghi789",
+        learning_rate=1e-4,
+        epochs=1,
+        batch_size=1,
+        max_length=64,
+        weight_decay=0.0,
+        save_best_as="val_loss",
+    ))
+    sample_id = store.record_sample(
+        SampleRecord(
+            experiment_id=exp_id,
+            epoch=1,
+            fact_id="fact-a",
+            fact_role="learner",
+            family="direct",
+            probe_id="fact-a:1",
+            language="en",
+            input_text="What is X?",
+            expected_answer="Y",
+            model_output="Z",
+            log_probability=-3.5,
+        )
+    )
+    row = store._conn.execute(
+        "SELECT fact_id, family, input_text, model_output, log_probability "
+        "FROM samples WHERE sample_id = ?",
+        (sample_id,),
+    ).fetchone()
+    assert row["fact_id"] == "fact-a"
+    assert row["family"] == "direct"
+    assert row["input_text"] == "What is X?"
+    assert row["model_output"] == "Z"
+    assert row["log_probability"] == -3.5

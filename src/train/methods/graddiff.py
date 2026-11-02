@@ -23,6 +23,7 @@ from src.train.methods.common import (
 )
 from src.train.methods.unlearn_common import (
     SAVE_BEST_MODE,
+    ForgetterBaseline,
     check_retain_guard,
     log_unlearn_details,
     log_unlearn_scores,
@@ -39,6 +40,7 @@ def train_graddiff(
     catalog: DataCatalog,
     *,
     retain_catalog: DataCatalog | None = None,
+    experiment_id: str = "",
 ) -> tuple[list[str], int, int]:
     """Gradient difference on answer tokens. Returns data order, steps, examples."""
     order = data_order(list(catalog.allowed_ids), config.seed)
@@ -84,7 +86,8 @@ def train_graddiff(
     # ── Epoch-zero evaluation ────────────────────────────────────────
     model.eval()
     tracking, suffix, baseline = log_unlearn_scores(
-        config, model, tokenizer, catalog, retain_catalog, epoch=0, train_loss=0.0
+        config, model, tokenizer, catalog, retain_catalog, epoch=0, train_loss=0.0,
+        experiment_id=experiment_id,
     )
     model.train()
 
@@ -156,7 +159,7 @@ def train_graddiff(
         # ── Score forget + retain facts ──────────────────────────────
         tracking, suffix, baseline = log_unlearn_scores(
             config, model, tokenizer, catalog, retain_catalog,
-            finished, avg_train_loss, baseline=baseline,
+            finished, avg_train_loss, experiment_id=experiment_id, baseline=baseline,
         )
 
         # ── Retain guard rail ────────────────────────────────────────
@@ -199,7 +202,8 @@ def train_graddiff(
     # ── Selected-checkpoint drop/retention report ─────────────────────
     selected_epoch = tracker.best_epoch if tracker.best_epoch is not None else finished
     report = log_unlearn_selected_checkpoint(
-        config, model, tokenizer, catalog, retain_catalog, baseline, selected_epoch
+        config, model, tokenizer, catalog, retain_catalog, baseline, selected_epoch,
+        experiment_id=experiment_id,
     )
     remember_drop_retention_report(model, report)
 

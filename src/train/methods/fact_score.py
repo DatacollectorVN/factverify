@@ -12,6 +12,7 @@ family log probabilities. All aggregation happens in log space; see
 from __future__ import annotations
 
 import math
+import random
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -279,8 +280,36 @@ def score_fact_families(
     space throughout: the family mean is the arithmetic mean of probe
     sequence log probabilities (a geometric mean of probabilities), and the
     fact-level log probability is the mean of the available family means.
+
+    Delegates to :func:`score_fact_families_from_probes`.
     """
     probes = catalog.get_eval_probes(fact_id)
+    return score_fact_families_from_probes(model, tokenizer, fact_id, probes)
+
+
+def score_catalog_families(
+    model: Any, tokenizer: Any, catalog: DataCatalog
+) -> dict[str, FactLogProb]:
+    """Score every fact in *catalog* with :func:`score_fact_families`.
+
+    Facts without eval probes are omitted from the result.
+    Delegates to :func:`score_catalog_families_split` with split='eval'.
+    """
+    return score_catalog_families_split(model, tokenizer, catalog, split="eval")
+
+
+def score_fact_families_from_probes(
+    model: Any,
+    tokenizer: Any,
+    fact_id: str,
+    probes: list,
+) -> FactLogProb | None:
+    """Score a pre-fetched list of probes — shared core for train/eval splits.
+
+    Groups by family, computes family mean log prob in log space, then the
+    fact-level mean over families. Returns ``None`` when ``probes`` is empty.
+    Aggregation is identical to :func:`score_fact_families`.
+    """
     if not probes:
         return None
     was_training = bool(model.training)
@@ -288,7 +317,7 @@ def score_fact_families(
     try:
         by_family: dict[str, list[ProbeLogProb]] = {}
         for probe in probes:
-            vl, ap, ar, slp = _score_answer_full(
+            _vl, ap, ar, slp = _score_answer_full(
                 model, tokenizer, probe.question, probe.answer
             )
             row = ProbeLogProb(
@@ -307,7 +336,6 @@ def score_fact_families(
         model.train(was_training)
 
     families: dict[str, FamilyLogProb] = {}
-    # Stable, canonical-first ordering; unrecognized families sort after.
     ordered_families = sorted(
         by_family,
         key=lambda name: (
@@ -327,16 +355,113 @@ def score_fact_families(
     )
 
 
-def score_catalog_families(
-    model: Any, tokenizer: Any, catalog: DataCatalog
+def score_catalog_families_split(
+    model: Any,
+    tokenizer: Any,
+    catalog: DataCatalog,
+    split: str,
 ) -> dict[str, FactLogProb]:
-    """Score every fact in *catalog* with :func:`score_fact_families`.
+    """Score every fact on train or eval probes.
 
-    Facts without eval probes are omitted from the result.
+    ``split`` is ``'train'`` or ``'eval'``. Facts without probes on the
+    requested split are omitted from the result.
     """
     result: dict[str, FactLogProb] = {}
     for fact_id in catalog.allowed_ids:
-        score = score_fact_families(model, tokenizer, catalog, fact_id)
+        if split == "train":
+            probes = catalog.get_train_probes(fact_id)
+        else:
+            probes = catalog.get_eval_probes(fact_id)
+        score = score_fact_families_from_probes(model, tokenizer, fact_id, probes)
         if score is not None:
             result[fact_id] = score
+    return result
+
+
+def score_catalog_both_splits(
+    model: Any,
+    tokenizer: Any,
+    catalog: DataCatalog,
+) -> tuple[dict[str, FactLogProb], dict[str, FactLogProb]]:
+    """Score both train and eval splits in one ``model.eval()`` context.
+
+    Returns ``(train_scores, eval_scores)``. Each dict omits facts with no
+    probes on the corresponding split.
+    """
+    was_training = bool(model.training)
+    model.eval()
+    try:
+        train_scores = score_catalog_families_split(model, tokenizer, catalog, split="train")
+        eval_scores = score_catalog_families_split(model, tokenizer, catalog, split="eval")
+    finally:
+        model.train(was_training)
+    return train_scores, eval_scores
+
+
+@dataclass(frozen=True)
+class SampledProbe:
+    """One randomly selected eval probe scored and generated at a single epoch."""
+
+    fact_id: str
+    fact_role: str
+    family: str
+    probe_id: str
+    language: str
+    input_text: str
+    expected_answer: str
+    model_output: str
+    log_probability: float
+
+
+def sample_epoch_probes(
+    model: Any,
+    tokenizer: Any,
+    catalog: DataCatalog,
+    fact_roles: dict[str, str],
+    rng: random.Random,
+) -> list[SampledProbe]:
+    """Pick 1 random eval probe per family from any fact. Returns up to 5 rows.
+
+    Collects every eval probe from every fact in *catalog*, groups them by
+    canonical family, then picks one at random (using *rng*) from each of the
+    five canonical families. Each selected probe is scored (log_probability)
+    and decoded (model_output) before being returned. Families with no probes
+    are skipped, so the result may have fewer than 5 rows.
+    """
+    from src.train.data import EvalProbe  # local import to avoid circular
+
+    by_family: dict[str, list[EvalProbe]] = {}
+    for fact_id in catalog.allowed_ids:
+        for probe in catalog.get_eval_probes(fact_id):
+            by_family.setdefault(probe.family, []).append(probe)
+
+    was_training = bool(model.training)
+    model.eval()
+    result: list[SampledProbe] = []
+    try:
+        for family in CANONICAL_FAMILIES:
+            candidates = by_family.get(family)
+            if not candidates:
+                continue
+            probe = rng.choice(candidates)
+            _vl, _ap, _ar, slp = _score_answer_full(
+                model, tokenizer, probe.question, probe.answer
+            )
+            model_out = _generate_answer(model, tokenizer, probe.question)
+            role = fact_roles.get(probe.fact_id, "learner")
+            result.append(
+                SampledProbe(
+                    fact_id=probe.fact_id,
+                    fact_role=role,
+                    family=family,
+                    probe_id=probe.probe_id,
+                    language=probe.language,
+                    input_text=probe.question,
+                    expected_answer=probe.answer,
+                    model_output=model_out,
+                    log_probability=slp,
+                )
+            )
+    finally:
+        model.train(was_training)
     return result

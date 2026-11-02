@@ -43,7 +43,7 @@ from .config import (
     load_job_config,
     procedure_differences,
 )
-from src.ledger.train_store import TrainingRunRecord, open_train_store
+from src.ledger.train_store import ExperimentRecord, open_train_store
 
 from .cost import CostRecord
 from .data import DataCatalog
@@ -395,7 +395,7 @@ def run_grouped_job(
         if cleared:
             click.echo(f"[{config.role}] --rerun: cleared {cleared} previous record(s)")
 
-    completed = store.completed_keys(config.name)
+    completed = store.completed_experiments(config.name)
     runs = expand_runs(config)
     results: list[JobResult] = []
 
@@ -415,38 +415,51 @@ def run_grouped_job(
             click.echo(f"  {label} — skipped (already completed)")
             continue
 
-        click.echo(f"  {label} — starting")
-        result = _execute_run(run, spec_root=spec_root)
-        results.append(result)
+        # Compute digest before creating experiment record
+        digest = hash_mapping({"grouped": config.raw, "target": run.target_fact,
+                               "seed": run.seed})
 
-        run_id = store.record_run(TrainingRunRecord(
+        # Determine facts list from manifest
+        manifest_key = list(run.manifest.keys())[0] if run.manifest else "train"
+        facts_list = list(run.manifest.get(manifest_key, []))
+
+        # Create experiment record before training
+        experiment_id = store.create_experiment(ExperimentRecord(
             job_name=config.name,
             role=config.role,
             method=config.method,
             seed=run.seed,
-            target_fact=run.target_fact,
             split=config.split,
+            target_fact=run.target_fact,
+            facts=facts_list,
+            config_hash=digest,
+            optimizer="adamw",
+            learning_rate=config.learning_rate,
+            epochs=config.epochs,
+            patience=config.patience,
+            batch_size=config.batch_size,
+            max_length=config.max_length,
+            weight_decay=config.weight_decay,
+            save_best_as=config.save_best_as,
+            status="running",
+        ))
+
+        click.echo(f"  {label} — starting")
+        result = _execute_run(run, spec_root=spec_root, experiment_id=experiment_id)
+        results.append(result)
+
+        # Update experiment with outcomes
+        store.update_experiment(
+            experiment_id,
             status=result.status,
-            config_hash=result.config_hash or "",
+            error_message=result.error,
+            output_dir=str(result.adapter_path) if result.adapter_path else None,
             wall_clock_seconds=result.wall_clock_seconds,
             gpu_hours=result.gpu_hours,
             peak_memory_bytes=result.peak_memory_bytes,
             training_steps=result.training_steps,
             training_examples=result.training_examples,
-            output_dir=str(result.adapter_path) if result.adapter_path else None,
-            error_message=result.error,
-            optimizer="adamw",
-            learning_rate=config.learning_rate,
-            epochs=config.epochs,
-            patience=config.patience,
-            micro_batch_size=config.micro_batch_size,
-            gradient_accumulation_steps=config.gradient_accumulation_steps,
-            shuffle_each_epoch=config.shuffle_each_epoch,
-            save_best_as=config.save_best_as,
-            max_length=config.max_length,
-            weight_decay=config.weight_decay,
-        ))
-        store.backfill_run_id(run_id, config.name, run.seed)
+        )
 
         if result.status == "succeeded":
             click.echo(f"  {label} — saved to {result.adapter_path}")
@@ -466,6 +479,7 @@ def _execute_run(
     run: RunAdapter,
     *,
     spec_root: Path,
+    experiment_id: str = "",
 ) -> JobResult:
     """Train one run within a grouped config. Full-weight, no LoRA."""
     config = run.grouped
@@ -538,10 +552,13 @@ def _execute_run(
         trainer = get_trainer(config.method)
         if retain_catalog is not None:
             data_order, steps, examples = trainer(
-                run, model, tokenizer, catalog, retain_catalog=retain_catalog
+                run, model, tokenizer, catalog, retain_catalog=retain_catalog,
+                experiment_id=experiment_id,
             )
         else:
-            data_order, steps, examples = trainer(run, model, tokenizer, catalog)
+            data_order, steps, examples = trainer(
+                run, model, tokenizer, catalog, experiment_id=experiment_id,
+            )
         catalog.assert_closed()
         access_log = list(catalog.access_log)
 

@@ -2,17 +2,9 @@
 
 Provides per-epoch FV-METRIC-001 log-probability scoring of forget and
 retain facts, SQLite logging, tracking-metric aggregation for early
-stopping, the retain guard rail, end-of-training detail generation, and the
+stopping, the retain guard rail, end-of-training sample generation, and the
 learner-to-forgetter drop/retention metric (see
 ``requirements/learner-forgetter-drop-retention-scoring.md``).
-
-The legacy loss/probability/rank scorer (``score_facts``/``score_train_facts``)
-is no longer called from ``log_unlearn_scores`` — FV-METRIC-001 log-probability
-scoring is the only per-epoch scorer, for both console/SQLite logging and
-early-stopping (``save_best_as`` picks between ``target_log_retention`` and
-``retain_log_retention``, see :class:`TrackingMetrics`). The retain guard
-rail likewise runs on ``retain_retention`` (already baseline-relative)
-instead of a legacy loss ratio.
 
 Drop/retention summary
 -----------------------
@@ -37,15 +29,15 @@ scoring pass).
 from __future__ import annotations
 
 import math
+import random
 from dataclasses import dataclass, field
 from typing import Any
 
 import click
 
 from src.ledger.train_store import (
-    EpochMetricsRecord,
-    LearnerFactDetail,
-    ProbabilityScoreRecord,
+    SampleRecord,
+    ScoreRecord,
     TrainStore,
     open_train_store,
 )
@@ -54,10 +46,19 @@ from src.train.data import CANONICAL_FAMILIES, DataCatalog
 from src.train.methods.fact_score import (
     METRIC_VERSION,
     FactLogProb,
-    detail_facts,
     safe_exp,
+    sample_epoch_probes,
+    score_catalog_both_splits,
     score_catalog_families,
 )
+
+
+@dataclass(frozen=True)
+class ForgetterBaseline:
+    """Frozen epoch-zero scores on both splits, used as the learner baseline."""
+
+    train: dict[str, FactLogProb]
+    eval_scores: dict[str, FactLogProb]
 
 
 @dataclass(frozen=True)
@@ -121,6 +122,8 @@ def capture_frozen_baseline(
     Call this on the learner checkpoint *before* any unlearning update.
     The caller must reuse the returned object for every later epoch — it is
     never recomputed mid-run (step 3.4 of the requirement).
+
+    Deprecated: use ForgetterBaseline and score_catalog_both_splits instead.
     """
     baseline = score_catalog_families(model, tokenizer, forget_catalog)
     if retain_catalog is not None:
@@ -190,20 +193,6 @@ class TrackingMetrics:
     both for early-stopping (``save_best_as`` selects one of the ``val_*``
     fields) and for the retain guard rail (:func:`check_retain_guard` reads
     ``val_retain_retention``).
-
-    All fields carry a ``val_`` prefix to mark them as eval-probe metrics:
-
-    * ``val_target_log_retention`` — log-retention of the forget fact vs.
-      learner baseline (lower = more forgotten; mode ``min``).
-    * ``val_target_retention``     — exp(val_target_log_retention); mode ``min``.
-    * ``val_retain_log_retention`` — mean log-retention of retain facts
-      (higher = less collateral damage; mode ``max``).
-    * ``val_retain_retention``     — exp(val_retain_log_retention); used by the
-      retain guard rail, not a valid ``save_best_as`` choice.
-    * ``val_drop``                 — drop of the forget fact = ``−val_target_log_retention``
-      (higher = more forgotten; mode ``max``).
-    * ``val_loss``                 — NLL of the forget fact on eval probes =
-      ``−forgetter_log_probability``; lower = more forgotten; mode ``min``.
     """
 
     val_target_log_retention: float
@@ -215,16 +204,7 @@ class TrackingMetrics:
 
 
 def aggregate_tracking_metrics(changes: list[FactChangeScore]) -> TrackingMetrics | None:
-    """Aggregate the target fact and the mean of retain/neighbour facts.
-
-    Returns ``None`` when `changes` has no target fact (e.g. the forget fact
-    had no eval probes this epoch). The retain aggregate means
-    ``log_retention`` across neighbours in log space, then exponentiates —
-    consistent with how family/fact log probabilities are aggregated
-    elsewhere in FV-METRIC-001. A run with no scored retain facts reports a
-    neutral ``retain_log_retention`` of ``0.0`` (``retain_retention`` of
-    ``1.0``) rather than raising.
-    """
+    """Aggregate the target fact and the mean of retain/neighbour facts."""
     target = next((c for c in changes if c.fact_role == "target"), None)
     if target is None:
         return None
@@ -243,12 +223,6 @@ def aggregate_tracking_metrics(changes: list[FactChangeScore]) -> TrackingMetric
 
 
 def _fmt_prob(value: float) -> str:
-    """Fixed, documented console precision for probability-like values.
-
-    Finite values print with 3 significant digits in scientific notation so
-    very small probabilities stay readable; NaN/inf print as-is. The
-    persisted record (not this string) is the source of full precision.
-    """
     if value != value or value in (math.inf, -math.inf):
         return str(value)
     return f"{value:.3e}"
@@ -278,100 +252,12 @@ def _format_change_lines(
 def print_change_scores(
     epoch: int, changes: list[FactChangeScore], *, selected: bool = False
 ) -> None:
-    """Print per-fact lines only for the selected checkpoint; suppress during training.
-
-    During normal training epochs the aggregate is shown in the epoch suffix
-    line instead. At the selected checkpoint we print the full breakdown once
-    so the final result is visible in the log.
-    """
+    """Print per-fact lines only for the selected checkpoint."""
     if not selected:
         return
     for change in changes:
         for line in _format_change_lines(epoch, change, selected=selected):
             click.echo(line)
-
-
-def _persist_change_scores(
-    store: TrainStore,
-    name: str,
-    seed: int,
-    epoch: int,
-    baseline: dict[str, FactLogProb],
-    current: dict[str, FactLogProb],
-    changes: list[FactChangeScore],
-    *,
-    is_selected: bool,
-) -> None:
-    """Write fact-, family-, and probe-level rows reproducing every change."""
-    records: list[ProbabilityScoreRecord] = []
-    for change in changes:
-        learner_fact = baseline[change.fact_id]
-        current_fact = current[change.fact_id]
-        records.append(
-            ProbabilityScoreRecord(
-                job_name=name,
-                seed=seed,
-                epoch=epoch,
-                fact_id=change.fact_id,
-                fact_role=change.fact_role,
-                aggregation_level="fact",
-                forgetter_log_probability=change.forgetter_log_probability,
-                learner_log_probability=change.learner_log_probability,
-                drop_value=change.drop,
-                log_retention=change.log_retention,
-                retention=change.retention,
-                is_selected_checkpoint=is_selected,
-                metric_version=METRIC_VERSION,
-            )
-        )
-        for family, fam_change in change.families.items():
-            records.append(
-                ProbabilityScoreRecord(
-                    job_name=name,
-                    seed=seed,
-                    epoch=epoch,
-                    fact_id=change.fact_id,
-                    fact_role=change.fact_role,
-                    aggregation_level="family",
-                    family=family,
-                    forgetter_log_probability=fam_change.forgetter_log_probability,
-                    learner_log_probability=fam_change.learner_log_probability,
-                    drop_value=fam_change.drop,
-                    log_retention=fam_change.log_retention,
-                    retention=fam_change.retention,
-                    is_selected_checkpoint=is_selected,
-                    metric_version=METRIC_VERSION,
-                )
-            )
-            current_family = current_fact.families.get(family)
-            learner_family = learner_fact.families.get(family)
-            baseline_probes = {
-                probe.probe_id: probe for probe in (learner_family.probes if learner_family else [])
-            }
-            for probe in (current_family.probes if current_family else []):
-                baseline_probe = baseline_probes.get(probe.probe_id)
-                records.append(
-                    ProbabilityScoreRecord(
-                        job_name=name,
-                        seed=seed,
-                        epoch=epoch,
-                        fact_id=change.fact_id,
-                        fact_role=change.fact_role,
-                        aggregation_level="probe",
-                        probe_id=probe.probe_id,
-                        family=family,
-                        language=probe.language,
-                        forgetter_log_probability=probe.sequence_log_probability,
-                        learner_log_probability=(
-                            baseline_probe.sequence_log_probability
-                            if baseline_probe is not None
-                            else None
-                        ),
-                        is_selected_checkpoint=is_selected,
-                        metric_version=METRIC_VERSION,
-                    )
-                )
-    store.record_probability_scores(records)
 
 
 def _export_report(
@@ -414,35 +300,78 @@ def log_unlearn_selected_checkpoint(
     tokenizer: Any,
     forget_catalog: DataCatalog,
     retain_catalog: DataCatalog | None,
-    baseline: dict[str, FactLogProb] | None,
+    baseline: ForgetterBaseline | None,
     selected_epoch: int,
+    *,
+    experiment_id: str = "",
 ) -> dict[str, Any]:
     """Re-score the restored best checkpoint against the frozen baseline.
 
     Persists the result marked ``is_selected_checkpoint=True``, prints the
     same target/neighbour log entries as every other epoch, and returns a
     JSON-serializable report for ``drop_retention.json``. Returns an empty
-    dict when there is no baseline or no eval probes (degenerate catalogs,
-    e.g. in unit tests).
+    dict when there is no baseline or no eval probes.
     """
     if baseline is None:
         return {}
-    forget_current = score_catalog_families(model, tokenizer, forget_catalog)
-    retain_current = (
-        score_catalog_families(model, tokenizer, retain_catalog) if retain_catalog else {}
+    # Use eval scores for the report (consistent with tracking metrics)
+    eval_baseline = baseline.eval_scores
+
+    forget_current_train, forget_current_eval = score_catalog_both_splits(
+        model, tokenizer, forget_catalog
     )
-    current = {**forget_current, **retain_current}
-    if not current:
+    if retain_catalog is not None:
+        retain_current_train, retain_current_eval = score_catalog_both_splits(
+            model, tokenizer, retain_catalog
+        )
+    else:
+        retain_current_train: dict[str, FactLogProb] = {}
+        retain_current_eval: dict[str, FactLogProb] = {}
+
+    eval_current = {**forget_current_eval, **retain_current_eval}
+    if not eval_current:
         return {}
+
     target_fact_ids = set(forget_catalog.allowed_ids)
-    changes = compute_change_scores(baseline, current, target_fact_ids)
+    changes = compute_change_scores(eval_baseline, eval_current, target_fact_ids)
     if not changes:
         return {}
-    store = open_train_store()
-    name = job_name(config)
-    _persist_change_scores(
-        store, name, config.seed, selected_epoch, baseline, current, changes, is_selected=True
-    )
+
+    if experiment_id:
+        store = open_train_store()
+        _persist_new_score_records(
+            store, experiment_id, selected_epoch,
+            baseline, {**forget_current_train, **retain_current_train}, eval_current,
+            changes, target_fact_ids, is_selected=True,
+        )
+        # Samples at selected checkpoint
+        fact_roles = {
+            fid: ("target" if fid in target_fact_ids else "neighbour")
+            for fid in list(forget_catalog.allowed_ids)
+            + (list(retain_catalog.allowed_ids) if retain_catalog else [])
+        }
+        epoch_rng = random.Random(config.seed + selected_epoch + 10000)
+        all_catalog = forget_catalog
+        sampled = sample_epoch_probes(model, tokenizer, all_catalog, fact_roles, epoch_rng)
+        sample_records = [
+            SampleRecord(
+                experiment_id=experiment_id,
+                epoch=selected_epoch,
+                fact_id=sp.fact_id,
+                fact_role=sp.fact_role,
+                family=sp.family,
+                probe_id=sp.probe_id,
+                language=sp.language,
+                input_text=sp.input_text,
+                expected_answer=sp.expected_answer,
+                model_output=sp.model_output,
+                log_probability=sp.log_probability,
+                is_selected_checkpoint=True,
+            )
+            for sp in sampled
+        ]
+        store.record_samples(sample_records)
+
     print_change_scores(selected_epoch, changes, selected=True)
     return _export_report(config, selected_epoch, changes)
 
@@ -460,71 +389,319 @@ def log_unlearn_scores(
     retain_catalog: DataCatalog | None,
     epoch: int,
     train_loss: float,
-    baseline: dict[str, FactLogProb] | None = None,
-) -> tuple[TrackingMetrics | None, str, dict[str, FactLogProb] | None]:
+    experiment_id: str = "",
+    baseline: ForgetterBaseline | None = None,
+) -> tuple[TrackingMetrics | None, str, ForgetterBaseline | None]:
     """Score forget and retain facts via FV-METRIC-001, write to SQLite.
 
     Returns ``(tracking metrics, log suffix, frozen learner baseline)``.
-    `baseline` is `None` on the epoch-zero call; this function then captures
-    the current (epoch-zero) scores as the frozen learner baseline and
-    returns them so the caller threads the same object into every later
+    ``baseline`` is ``None`` on the epoch-zero call; this function then
+    captures the current (epoch-zero) scores as the frozen learner baseline
+    and returns them so the caller threads the same object into every later
     epoch (FV-METRIC-001 step 3).
-
-    `train_loss` is accepted for call-site compatibility with every trainer
-    (GA/GradDiff/NPO/RMU each compute their own training-loss average for
-    their own console line) but is no longer persisted here — the legacy
-    per-epoch scorer (`score_facts`/`score_train_facts`) is not called.
     """
-    forget_current = score_catalog_families(model, tokenizer, forget_catalog)
-    retain_current = (
-        score_catalog_families(model, tokenizer, retain_catalog) if retain_catalog else {}
-    )
-    current = {**forget_current, **retain_current}
-    if not current:
+    # Score both splits for forget catalog
+    train_forget, eval_forget = score_catalog_both_splits(model, tokenizer, forget_catalog)
+    if retain_catalog is not None:
+        train_retain, eval_retain = score_catalog_both_splits(model, tokenizer, retain_catalog)
+    else:
+        train_retain: dict[str, FactLogProb] = {}
+        eval_retain: dict[str, FactLogProb] = {}
+
+    train_current = {**train_forget, **train_retain}
+    eval_current = {**eval_forget, **eval_retain}
+
+    if not eval_current:
         return None, "", baseline
 
-    store = open_train_store()
-    name = job_name(config)
-
+    # Epoch zero: capture the frozen baseline
     if baseline is None:
-        # Epoch zero: this model state *is* the frozen learner baseline.
-        baseline = current
+        new_baseline = ForgetterBaseline(train=train_current, eval_scores=eval_current)
+        # Store epoch-zero scores (no drop/retention yet)
+        if experiment_id:
+            store = open_train_store()
+            target_fact_ids = set(forget_catalog.allowed_ids)
+            _persist_new_score_records(
+                store, experiment_id, epoch,
+                new_baseline, train_current, eval_current,
+                changes=[],  # no changes at epoch zero
+                target_fact_ids=target_fact_ids,
+                is_selected=False,
+                train_loss=train_loss if epoch > 0 else None,
+            )
+            # Samples at epoch zero
+            fact_roles = {
+                fid: ("target" if fid in target_fact_ids else "neighbour")
+                for fid in list(forget_catalog.allowed_ids)
+                + (list(retain_catalog.allowed_ids) if retain_catalog else [])
+            }
+            epoch_rng = random.Random(config.seed + epoch)
+            sampled = sample_epoch_probes(model, tokenizer, forget_catalog, fact_roles, epoch_rng)
+            store.record_samples([
+                SampleRecord(
+                    experiment_id=experiment_id,
+                    epoch=epoch,
+                    fact_id=sp.fact_id,
+                    fact_role=sp.fact_role,
+                    family=sp.family,
+                    probe_id=sp.probe_id,
+                    language=sp.language,
+                    input_text=sp.input_text,
+                    expected_answer=sp.expected_answer,
+                    model_output=sp.model_output,
+                    log_probability=sp.log_probability,
+                    is_selected_checkpoint=False,
+                )
+                for sp in sampled
+            ])
+        return None, "", new_baseline
+
     target_fact_ids = set(forget_catalog.allowed_ids)
-    changes = compute_change_scores(baseline, current, target_fact_ids)
+    changes = compute_change_scores(baseline.eval_scores, eval_current, target_fact_ids)
 
     tracking: TrackingMetrics | None = None
     suffix = ""
+
     if changes:
-        _persist_change_scores(
-            store, name, config.seed, epoch, baseline, current, changes, is_selected=False
-        )
+        if experiment_id:
+            store = open_train_store()
+            _persist_new_score_records(
+                store, experiment_id, epoch,
+                baseline, train_current, eval_current,
+                changes, target_fact_ids,
+                is_selected=False,
+                train_loss=train_loss if train_loss != 0.0 or epoch > 0 else None,
+            )
+            # Samples
+            fact_roles = {
+                fid: ("target" if fid in target_fact_ids else "neighbour")
+                for fid in list(forget_catalog.allowed_ids)
+                + (list(retain_catalog.allowed_ids) if retain_catalog else [])
+            }
+            epoch_rng = random.Random(config.seed + epoch)
+            sampled = sample_epoch_probes(model, tokenizer, forget_catalog, fact_roles, epoch_rng)
+            store.record_samples([
+                SampleRecord(
+                    experiment_id=experiment_id,
+                    epoch=epoch,
+                    fact_id=sp.fact_id,
+                    fact_role=sp.fact_role,
+                    family=sp.family,
+                    probe_id=sp.probe_id,
+                    language=sp.language,
+                    input_text=sp.input_text,
+                    expected_answer=sp.expected_answer,
+                    model_output=sp.model_output,
+                    log_probability=sp.log_probability,
+                    is_selected_checkpoint=False,
+                )
+                for sp in sampled
+            ])
+
         print_change_scores(epoch, changes, selected=False)
         tracking = aggregate_tracking_metrics(changes)
         if tracking is not None:
-            store.record_epoch_metrics(
-                EpochMetricsRecord(
-                    job_name=name,
-                    seed=config.seed,
-                    epoch=epoch,
-                    train_loss=train_loss if train_loss != 0.0 or epoch > 0 else None,
-                    val_loss=tracking.val_loss,
-                    val_target_log_retention=tracking.val_target_log_retention,
-                    val_target_retention=tracking.val_target_retention,
-                    val_retain_log_retention=tracking.val_retain_log_retention,
-                    val_retain_retention=tracking.val_retain_retention,
-                    val_drop=tracking.val_drop,
-                )
-            )
             suffix = (
                 f"  val_loss={tracking.val_loss:.4f}"
                 f"  val_drop={tracking.val_drop:.4f}"
+                f"  train_drop=N/A"
                 f"  val_target_log_ret={tracking.val_target_log_retention:.4f}"
-                f"  val_target_ret={tracking.val_target_retention:.4f}"
                 f"  val_retain_log_ret={tracking.val_retain_log_retention:.4f}"
-                f"  val_retain_ret={tracking.val_retain_retention:.4f}"
             )
 
     return tracking, suffix, baseline
+
+
+def _persist_new_score_records(
+    store: TrainStore,
+    experiment_id: str,
+    epoch: int,
+    baseline: ForgetterBaseline,
+    train_current: dict[str, FactLogProb],
+    eval_current: dict[str, FactLogProb],
+    changes: list[FactChangeScore],
+    target_fact_ids: set[str],
+    *,
+    is_selected: bool,
+    train_loss: float | None = None,
+) -> None:
+    """Write family, fact, and epoch-level ScoreRecords to the store."""
+    records: list[ScoreRecord] = []
+
+    # Map changes by fact_id for easy lookup
+    change_by_fact: dict[str, FactChangeScore] = {c.fact_id: c for c in changes}
+
+    # Family and fact rows for all scored facts
+    all_fact_ids = set(eval_current.keys())
+    for fact_id in all_fact_ids:
+        eval_fact = eval_current.get(fact_id)
+        train_fact = train_current.get(fact_id)
+        baseline_eval_fact = baseline.eval_scores.get(fact_id)
+        baseline_train_fact = baseline.train.get(fact_id)
+        fact_role = "target" if fact_id in target_fact_ids else "neighbour"
+        change = change_by_fact.get(fact_id)
+
+        # Family-level rows
+        all_families = set()
+        if eval_fact:
+            all_families.update(eval_fact.families)
+        if train_fact:
+            all_families.update(train_fact.families)
+        for family in all_families:
+            eval_fam = eval_fact.families.get(family) if eval_fact else None
+            train_fam = train_fact.families.get(family) if train_fact else None
+            bl_eval_fam = baseline_eval_fact.families.get(family) if baseline_eval_fact else None
+            bl_train_fam = baseline_train_fact.families.get(family) if baseline_train_fact else None
+            fam_change = change.families.get(family) if change else None
+
+            # Compute train-side drop/retention if baseline available
+            train_drop: float | None = None
+            train_log_ret: float | None = None
+            train_ret: float | None = None
+            if bl_train_fam is not None and train_fam is not None:
+                train_drop = bl_train_fam.family_log_probability - train_fam.family_log_probability
+                train_log_ret = -train_drop
+                train_ret = safe_exp(train_log_ret)
+
+            records.append(
+                ScoreRecord(
+                    experiment_id=experiment_id,
+                    epoch=epoch,
+                    aggregation_level="family",
+                    metric_version=METRIC_VERSION,
+                    fact_id=fact_id,
+                    fact_role=fact_role,
+                    family=family,
+                    eval_log_probability=eval_fam.family_log_probability if eval_fam else None,
+                    train_log_probability=train_fam.family_log_probability if train_fam else None,
+                    baseline_eval_log_probability=bl_eval_fam.family_log_probability if bl_eval_fam else None,
+                    baseline_train_log_probability=bl_train_fam.family_log_probability if bl_train_fam else None,
+                    eval_drop=fam_change.drop if fam_change else None,
+                    eval_log_retention=fam_change.log_retention if fam_change else None,
+                    eval_retention=fam_change.retention if fam_change else None,
+                    train_drop=train_drop,
+                    train_log_retention=train_log_ret,
+                    train_retention=train_ret,
+                    is_selected_checkpoint=is_selected,
+                )
+            )
+
+        # Fact-level row
+        eval_lp = eval_fact.fact_log_probability if eval_fact else None
+        train_lp = train_fact.fact_log_probability if train_fact else None
+        bl_eval_lp = baseline_eval_fact.fact_log_probability if baseline_eval_fact else None
+        bl_train_lp = baseline_train_fact.fact_log_probability if baseline_train_fact else None
+        eval_drop_fact: float | None = None
+        eval_log_ret_fact: float | None = None
+        eval_ret_fact: float | None = None
+        train_drop_fact: float | None = None
+        train_log_ret_fact: float | None = None
+        train_ret_fact: float | None = None
+        if change is not None:
+            eval_drop_fact = change.drop
+            eval_log_ret_fact = change.log_retention
+            eval_ret_fact = change.retention
+        if bl_train_lp is not None and train_lp is not None:
+            train_drop_fact = bl_train_lp - train_lp
+            train_log_ret_fact = -train_drop_fact
+            train_ret_fact = safe_exp(train_log_ret_fact)
+
+        records.append(
+            ScoreRecord(
+                experiment_id=experiment_id,
+                epoch=epoch,
+                aggregation_level="fact",
+                metric_version=METRIC_VERSION,
+                fact_id=fact_id,
+                fact_role=fact_role,
+                eval_log_probability=eval_lp,
+                train_log_probability=train_lp,
+                baseline_eval_log_probability=bl_eval_lp,
+                baseline_train_log_probability=bl_train_lp,
+                eval_drop=eval_drop_fact,
+                eval_log_retention=eval_log_ret_fact,
+                eval_retention=eval_ret_fact,
+                train_drop=train_drop_fact,
+                train_log_retention=train_log_ret_fact,
+                train_retention=train_ret_fact,
+                is_selected_checkpoint=is_selected,
+            )
+        )
+
+    # Epoch-level row: aggregate target and retain metrics
+    target_changes = [c for c in changes if c.fact_role == "target"]
+    neighbour_changes = [c for c in changes if c.fact_role == "neighbour"]
+
+    eval_target_drop: float | None = None
+    eval_target_log_ret: float | None = None
+    eval_target_ret: float | None = None
+    if target_changes:
+        eval_target_drop = sum(c.drop for c in target_changes) / len(target_changes)
+        eval_target_log_ret = -eval_target_drop
+        eval_target_ret = safe_exp(eval_target_log_ret)
+
+    eval_retain_log_ret: float | None = None
+    eval_retain_ret: float | None = None
+    if neighbour_changes:
+        eval_retain_log_ret = sum(c.log_retention for c in neighbour_changes) / len(neighbour_changes)
+        eval_retain_ret = safe_exp(eval_retain_log_ret)
+
+    # Train-side epoch aggregates (from score records we just built)
+    target_train_drops = [
+        r.train_drop
+        for r in records
+        if r.aggregation_level == "fact" and r.fact_role == "target" and r.train_drop is not None
+    ]
+    neighbour_train_log_rets = [
+        r.train_log_retention
+        for r in records
+        if r.aggregation_level == "fact" and r.fact_role == "neighbour" and r.train_log_retention is not None
+    ]
+
+    train_target_drop: float | None = None
+    train_target_log_ret: float | None = None
+    train_target_ret: float | None = None
+    if target_train_drops:
+        train_target_drop = sum(target_train_drops) / len(target_train_drops)
+        train_target_log_ret = -train_target_drop
+        train_target_ret = safe_exp(train_target_log_ret)
+
+    train_retain_log_ret: float | None = None
+    train_retain_ret: float | None = None
+    if neighbour_train_log_rets:
+        train_retain_log_ret = sum(neighbour_train_log_rets) / len(neighbour_train_log_rets)
+        train_retain_ret = safe_exp(train_retain_log_ret)
+
+    # Compute epoch-level log probs
+    all_eval_facts_list = list(eval_current.values())
+    all_train_facts_list = list(train_current.values())
+    mean_eval_lp = sum(f.fact_log_probability for f in all_eval_facts_list) / len(all_eval_facts_list) if all_eval_facts_list else None
+    mean_train_lp = sum(f.fact_log_probability for f in all_train_facts_list) / len(all_train_facts_list) if all_train_facts_list else None
+
+    records.append(
+        ScoreRecord(
+            experiment_id=experiment_id,
+            epoch=epoch,
+            aggregation_level="epoch",
+            metric_version=METRIC_VERSION,
+            train_loss=train_loss,
+            train_fact_log_probability=mean_train_lp,
+            eval_fact_log_probability=mean_eval_lp,
+            train_target_drop=train_target_drop,
+            eval_target_drop=eval_target_drop,
+            train_target_log_retention=train_target_log_ret,
+            eval_target_log_retention=eval_target_log_ret,
+            train_target_retention=train_target_ret,
+            eval_target_retention=eval_target_ret,
+            train_retain_log_retention=train_retain_log_ret,
+            eval_retain_log_retention=eval_retain_log_ret,
+            train_retain_retention=train_retain_ret,
+            eval_retain_retention=eval_retain_ret,
+            is_selected_checkpoint=is_selected,
+        )
+    )
+
+    store.record_scores(records)
 
 
 def log_unlearn_details(
@@ -533,32 +710,15 @@ def log_unlearn_details(
     tokenizer: Any,
     catalog: DataCatalog,
 ) -> None:
-    """Generate model answers for every eval probe using the best checkpoint."""
-    details = detail_facts(model, tokenizer, catalog)
-    if not details:
-        return
-    store = open_train_store()
-    name = job_name(config)
-    for d in details:
-        store.record_fact_detail(
-            LearnerFactDetail(
-                job_name=name,
-                seed=config.seed,
-                fact_id=d.fact_id,
-                direction=d.direction,
-                input_text=d.input_text,
-                output_label=d.output_label,
-                output_model=d.output_model,
-                answer_probability=d.answer_probability,
-                answer_rank=d.answer_rank,
-            )
-        )
-    click.echo(f"    logged {len(details)} fact details (best checkpoint)")
+    """Deprecated: details are now written as samples during log_unlearn_scores.
+
+    Kept for call-site compatibility with ga.py, graddiff.py, npo.py, rmu.py.
+    Does nothing.
+    """
+    pass
 
 
 #: Canonical mapping from ``save_best_as`` metric name to optimisation direction.
-#: Used by every unlearning trainer to initialise :class:`BestEpochTracker`.
-#: Kept here (not duplicated in each trainer) so a new metric only needs one edit.
 SAVE_BEST_MODE: dict[str, str] = {
     "val_loss": "min",
     "val_target_log_retention": "min",
@@ -569,12 +729,7 @@ SAVE_BEST_MODE: dict[str, str] = {
 
 
 def check_retain_guard(retain_retention: float | None, threshold: float) -> bool:
-    """Return True if `retain_retention` has fallen below `threshold`.
-
-    `retain_retention` (from :class:`TrackingMetrics`) is already
-    baseline-relative (``retention = P_F / P_L``), so no separate baseline
-    argument is needed — unlike the legacy loss-ratio guard this replaces.
-    """
+    """Return True if `retain_retention` has fallen below `threshold`."""
     if retain_retention is None:
         return False
     return retain_retention < threshold
@@ -584,12 +739,7 @@ _DROP_RETENTION_ATTR = "_fv_drop_retention_report"
 
 
 def remember_drop_retention_report(model: Any, report: dict[str, Any]) -> None:
-    """Stash the selected-checkpoint drop/retention report on `model`.
-
-    Mirrors ``BestEpochTracker.remember``'s pattern of passing data back to
-    the run orchestrator (``run.py``) without widening every trainer's
-    return signature. A no-op for an empty report (e.g. no eval probes).
-    """
+    """Stash the selected-checkpoint drop/retention report on `model`."""
     if report:
         setattr(model, _DROP_RETENTION_ATTR, report)
 

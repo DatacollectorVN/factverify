@@ -85,6 +85,6 @@ def write_eval_corpus(
     train: list[dict] | None = None,
 ) -> None:
     """Write a flat-JSON-v2 corpus file with only an ``eval`` array (+ optional train)."""
-    data = {"train": train or [{"_id": 1, "Q": "x", "A": "y", "ec": "direct", "language": "en"}],
+    data = {"train": train or [{"_id": 1, "Q": "q", "A": "w0", "ec": "direct", "language": "en"}],
             "eval": probes}
     path.write_text(json.dumps(data), encoding="utf-8")
