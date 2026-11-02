@@ -108,6 +108,10 @@ training:
   # Early stopping patience.
   patience: 10
 
+  # Number of QA pairs accumulated per optimizer step.
+  # Forgetter datasets are small (one fact), so batch_size=1 is typical.
+  batch_size: 1
+
   # Maximum token sequence length for training batches.
   # Sequences longer than this are truncated; shorter ones are left as-is
   # (no padding — batches are single examples).

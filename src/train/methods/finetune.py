@@ -63,9 +63,8 @@ def train_finetune(
         for q, a in pairs:
             all_pairs.append((item_id, q, a))
 
-    micro_bs = getattr(config, "micro_batch_size", len(all_pairs))
-    accum_steps = getattr(config, "gradient_accumulation_steps", 1)
-    effective_bs = micro_bs * accum_steps
+    accum_steps = getattr(config, "batch_size", 1)
+    effective_bs = accum_steps
     shuffle = getattr(config, "shuffle_each_epoch", True)
     save_best_as = getattr(config, "save_best_as", "val_fact_log_probability")
     # Mode is fully derived from the metric name via GroupedJobConfig.save_best_mode.
@@ -100,7 +99,7 @@ def train_finetune(
 
     click.echo(
         f"    finetune: {config.epochs} epochs × {n_pairs} pairs, "
-        f"micro_bs={micro_bs}, accum={accum_steps}, effective_bs={effective_bs}, "
+        f"batch_size={accum_steps}, "
         f"updates/epoch={updates_per_epoch}, lr={config.learning_rate}, "
         f"save_best_as={save_best_as} ({save_best_mode})"
     )
@@ -108,10 +107,11 @@ def train_finetune(
     # ── Epoch-zero evaluation (FV-LEARN-004) ─────────────────────────────
     if start_epoch == 0:
         model.eval()
-        _log_epoch_scores(
+        _baseline_metrics, _baseline_suffix = _log_epoch_scores(
             config, model, tokenizer, catalog, epoch=0, experiment_id=experiment_id,
             train_loss=None, rng=rng,
         )
+        click.echo(f"    epoch 0/{config.epochs}  loss=n/a{_baseline_suffix}  (baseline)")
         model.train()
 
     total_backward = 0

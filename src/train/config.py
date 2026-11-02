@@ -522,25 +522,10 @@ class GroupedJobConfig:
         return int(self.raw["training"]["epochs"])
 
     @property
-    def micro_batch_size(self) -> int:
-        training = self.raw.get("training", {})
-        if "micro_batch_size" in training:
-            return int(training["micro_batch_size"])
-        # Legacy: fall back to batch_size
-        return int(training.get("batch_size", 1))
-
-    @property
-    def gradient_accumulation_steps(self) -> int:
-        training = self.raw.get("training", {})
-        return int(training.get("gradient_accumulation_steps", 1))
-
-    @property
     def batch_size(self) -> int:
-        """Effective batch size = micro_batch_size × gradient_accumulation_steps."""
+        """Number of QA pairs accumulated per optimizer step (gradient accumulation)."""
         training = self.raw.get("training", {})
-        if "batch_size" in training:
-            return int(training["batch_size"])
-        return self.micro_batch_size * self.gradient_accumulation_steps
+        return int(training.get("batch_size", 1))
 
     @property
     def max_length(self) -> int:
@@ -678,14 +663,6 @@ class RunAdapter:
     @property
     def patience(self) -> int | None:
         return self.grouped.patience
-
-    @property
-    def micro_batch_size(self) -> int:
-        return self.grouped.micro_batch_size
-
-    @property
-    def gradient_accumulation_steps(self) -> int:
-        return self.grouped.gradient_accumulation_steps
 
     @property
     def shuffle_each_epoch(self) -> bool:
@@ -898,11 +875,7 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
     training = mapping.get("training")
     if not isinstance(training, dict):
         raise FactVerifyHarnessError(f"missing section 'training' in {label}")
-    # batch_size is optional when micro_batch_size + gradient_accumulation_steps are present
-    has_micro_batch = "micro_batch_size" in training and "gradient_accumulation_steps" in training
-    required_training = ["optimizer", "learning_rate", "epochs", "max_length", "weight_decay"]
-    if not has_micro_batch:
-        required_training.append("batch_size")
+    required_training = ["optimizer", "learning_rate", "epochs", "max_length", "weight_decay", "batch_size"]
     for key in required_training:
         if key not in training:
             raise FactVerifyHarnessError(
@@ -918,29 +891,12 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
             raise FactVerifyHarnessError(
                 f"training.patience must be an integer >= 1 in {label}"
             )
-    # -- batching fields --
-    mbs = training.get("micro_batch_size")
-    gas = training.get("gradient_accumulation_steps")
-    if mbs is not None or gas is not None:
-        if mbs is None or gas is None:
+    # -- batch_size validation --
+    bs = training.get("batch_size")
+    if bs is not None:
+        if isinstance(bs, bool) or not isinstance(bs, int) or bs < 1:
             raise FactVerifyHarnessError(
-                "micro_batch_size and gradient_accumulation_steps must both be "
-                f"present or both absent in {label}"
-            )
-        if (
-            not isinstance(mbs, int) or isinstance(mbs, bool) or mbs < 1
-            or not isinstance(gas, int) or isinstance(gas, bool) or gas < 1
-        ):
-            raise FactVerifyHarnessError(
-                "micro_batch_size and gradient_accumulation_steps must be "
-                f"positive integers in {label}"
-            )
-        # If batch_size is also specified, it must match
-        bs = training.get("batch_size")
-        if bs is not None and mbs * gas != bs:
-            raise FactVerifyHarnessError(
-                f"micro_batch_size ({mbs}) * gradient_accumulation_steps ({gas}) "
-                f"!= batch_size ({bs}) in {label}"
+                f"training.batch_size must be a positive integer in {label}"
             )
     if "shuffle_each_epoch" in training:
         if not isinstance(training["shuffle_each_epoch"], bool):

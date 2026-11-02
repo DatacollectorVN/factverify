@@ -82,9 +82,8 @@ def train_rmu(
     if frozen_states:
         click.echo(f"    RMU: pre-computed {len(frozen_states)} frozen hidden states")
 
-    micro_bs = getattr(config, "micro_batch_size", len(forget_pairs))
-    accum_steps = getattr(config, "gradient_accumulation_steps", 1)
-    effective_bs = micro_bs * accum_steps
+    accum_steps = getattr(config, "batch_size", 1)
+    effective_bs = accum_steps
     shuffle = getattr(config, "shuffle_each_epoch", True)
     save_best_as = getattr(config, "save_best_as", "val_target_log_retention")
     save_best_mode = getattr(config, "save_best_mode", SAVE_BEST_MODE.get(save_best_as, "min"))
@@ -113,7 +112,7 @@ def train_rmu(
     click.echo(
         f"    RMU: {config.epochs} epochs × {n_pairs} forget pairs, "
         f"{len(retain_pairs)} retain pairs, "
-        f"micro_bs={micro_bs}, accum={accum_steps}, effective_bs={effective_bs}, "
+        f"batch_size={accum_steps}, "
         f"updates/epoch={updates_per_epoch}, lr={config.learning_rate}, "
         f"steering_coeff={steering_coeff}, steering_layer={steering_layer}, "
         f"save_best_as={save_best_as} ({save_best_mode})"

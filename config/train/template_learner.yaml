@@ -98,13 +98,10 @@ training:
   # for this many consecutive epochs.  null disables early stopping.
   patience: 10
 
-  # Number of QA pairs processed in each forward/backward pass.
-  micro_batch_size: 4
-
-  # Number of backward passes accumulated before an optimizer step.
-  # effective_batch_size = micro_batch_size × gradient_accumulation_steps
-  # Example: micro_batch_size=4, gradient_accumulation_steps=4 → effective_bs=16
-  gradient_accumulation_steps: 1
+  # Number of QA pairs accumulated per optimizer step (gradient accumulation).
+  # Higher = smoother gradients, fewer updates per epoch, less overfitting risk.
+  # updates_per_epoch = ceil(n_pairs / batch_size)
+  batch_size: 4
 
   # Maximum tokenised sequence length (question + answer tokens).
   max_length: 256
