@@ -540,18 +540,18 @@ def _execute_run(
         item_ids = run.manifest[manifest_key]
         catalog = DataCatalog(Path(config.corpus_dir), item_ids, languages=run.languages)
 
-        retain_ids = run.manifest.get("retain", [])
-        if not retain_ids and config.role == "forgetter":
-            # Auto-load retain facts from the forget fact's JSON neighbourhoods
-            retain_ids = _load_neighbourhood_ids(spec_root, run.target_fact)
-            if retain_ids:
+        neighbour_ids = run.manifest.get("retain", [])
+        if not neighbour_ids and config.role == "forgetter":
+            # Auto-load neighbour facts from the forget fact's JSON neighbourhoods
+            neighbour_ids = _load_neighbourhood_ids(spec_root, run.target_fact)
+            if neighbour_ids:
                 click.echo(
-                    f"    retain facts: auto-loaded {len(retain_ids)} neighbours "
-                    f"from {run.target_fact}.json"
+                    f"    neighbour facts: auto-loaded {len(neighbour_ids)} from "
+                    f"{run.target_fact}.json"
                 )
-        retain_catalog: DataCatalog | None = None
-        if retain_ids:
-            retain_catalog = DataCatalog(Path(config.corpus_dir), retain_ids, languages=run.languages)
+        neighbour_catalog: DataCatalog | None = None
+        if neighbour_ids:
+            neighbour_catalog = DataCatalog(Path(config.corpus_dir), neighbour_ids, languages=run.languages)
 
         # -- dataset metadata --
         _eval_probes = [p for i in item_ids for p in catalog.get_eval_probes(i)]
@@ -566,9 +566,9 @@ def _execute_run(
 
         # -- train --
         trainer = get_trainer(config.method)
-        if retain_catalog is not None:
+        if neighbour_catalog is not None:
             data_order, steps, examples = trainer(
-                run, model, tokenizer, catalog, retain_catalog=retain_catalog,
+                run, model, tokenizer, catalog, neighbour_catalog=neighbour_catalog,
                 experiment_id=experiment_id,
             )
         else:

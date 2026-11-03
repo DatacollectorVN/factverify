@@ -575,8 +575,8 @@ class GroupedJobConfig:
             "val_loss": "min",
             "val_fact_log_probability": "max",
             "val_target_log_retention": "min",
-            "val_retain_log_retention": "max",
-            "val_drop": "max",
+            "val_neighbour_log_retention": "max",
+            "val_target_drop": "max",
             "val_target_retention": "min",
         }
         return _MODE_MAP.get(self.save_best_as, "min")
@@ -587,10 +587,10 @@ class GroupedJobConfig:
         return float(training.get("max_grad_norm", 1.0))
 
     @property
-    def retain_retention_thr(self) -> float:
-        """Retain guard: stop if retain_retention falls below this fraction."""
+    def neighbour_retention_thr(self) -> float:
+        """Neighbour guard: stop if neighbour_retention falls below this fraction."""
         training = self.raw.get("training", {})
-        return float(training.get("retain_retention_thr", 0.5))
+        return float(training.get("neighbour_retention_thr", 0.5))
 
     @property
     def hardware_class(self) -> str:
@@ -681,8 +681,8 @@ class RunAdapter:
         return self.grouped.max_grad_norm
 
     @property
-    def retain_retention_thr(self) -> float:
-        return self.grouped.retain_retention_thr
+    def neighbour_retention_thr(self) -> float:
+        return self.grouped.neighbour_retention_thr
 
     @property
     def languages(self) -> list[str] | None:
@@ -903,17 +903,17 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
             raise FactVerifyHarnessError(
                 f"shuffle_each_epoch must be a boolean in {label}"
             )
-    rrt = training.get("retain_retention_thr")
+    rrt = training.get("neighbour_retention_thr")
     if rrt is not None:
         if isinstance(rrt, bool) or not isinstance(rrt, (int, float)) or not (0 < rrt <= 1):
             raise FactVerifyHarnessError(
-                f"retain_retention_thr must be a number in (0, 1] in {label}"
+                f"neighbour_retention_thr must be a number in (0, 1] in {label}"
             )
     _SAVE_BEST_OPTIONS_LEARNER = {"val_loss", "val_fact_log_probability"}
     _SAVE_BEST_OPTIONS_FORGETTER = {
         "val_target_log_retention",
-        "val_retain_log_retention",
-        "val_drop",
+        "val_neighbour_log_retention",
+        "val_target_drop",
         "val_target_retention",
         "val_loss",
     }

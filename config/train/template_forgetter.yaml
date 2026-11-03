@@ -127,22 +127,22 @@ training:
   #                              (lower = more forgotten)          → min
   #   val_target_retention     — exp(val_target_log_retention)
   #                              (lower = more forgotten)          → min
-  #   val_drop                 — −val_target_log_retention
+  #   val_target_drop          — −val_target_log_retention
   #                              (higher = more forgotten)         → max
   #   val_loss                 — −log P_forgetter on eval probes
   #                              (lower = more forgotten)          → min
   #
-  # Retain-fact metrics (neighbour facts, eval set):
-  #   val_retain_log_retention — mean log(P_forgetter / P_learner) across neighbours
-  #                              (higher = less collateral damage) → max
-  #   val_retain_retention     — exp(val_retain_log_retention)
-  #                              (higher = less collateral damage) → max
+  # Neighbour-fact metrics (neighbour facts, eval set):
+  #   val_neighbour_log_retention — mean log(P_forgetter / P_learner) across neighbours
+  #                                 (higher = less collateral damage) → max
+  #   val_neighbour_retention     — exp(val_neighbour_log_retention)
+  #                                 (higher = less collateral damage) → max
   save_best_as: val_target_log_retention
 
-  # Retain guard: stop immediately if val_retain_retention (the probability
+  # Neighbour guard: stop immediately if val_neighbour_retention (the probability
   # ratio current/baseline, not log) falls below this fraction of its
   # epoch-0 baseline — i.e. destructive collateral forgetting.
-  retain_retention_thr: 0.5
+  neighbour_retention_thr: 0.5
 
   # ── Method-specific parameters ──────────────────────────────────────
   #

@@ -27,7 +27,7 @@ from src.train.methods.fact_score import FactLogProb, FamilyLogProb, ProbeLogPro
 from src.train.methods.unlearn_common import (
     FactChangeScore,
     aggregate_tracking_metrics,
-    check_retain_guard,
+    check_neighbour_guard,
     compute_change_scores,
     log_unlearn_scores,
     log_unlearn_selected_checkpoint,
@@ -138,8 +138,8 @@ def test_aggregate_tracking_metrics_target_and_mean_of_neighbours() -> None:
     assert tracking.val_target_log_retention == pytest.approx(-2.0)
     assert tracking.val_target_retention == pytest.approx(math.exp(-2.0))
     # Mean in log space, then exponentiated.
-    assert tracking.val_retain_log_retention == pytest.approx((-0.5 + -1.5) / 2)
-    assert tracking.val_retain_retention == pytest.approx(math.exp((-0.5 + -1.5) / 2))
+    assert tracking.val_neighbour_log_retention == pytest.approx((-0.5 + -1.5) / 2)
+    assert tracking.val_neighbour_retention == pytest.approx(math.exp((-0.5 + -1.5) / 2))
 
 
 def test_aggregate_tracking_metrics_no_target_returns_none() -> None:
@@ -153,24 +153,24 @@ def test_aggregate_tracking_metrics_no_neighbours_is_neutral() -> None:
     tracking = aggregate_tracking_metrics(changes)
 
     assert tracking is not None
-    assert tracking.val_retain_log_retention == 0.0
-    assert tracking.val_retain_retention == pytest.approx(1.0)
+    assert tracking.val_neighbour_log_retention == 0.0
+    assert tracking.val_neighbour_retention == pytest.approx(1.0)
 
 
-# ── check_retain_guard: self-relative retention guard ───────────────────────
+# ── check_neighbour_guard: self-relative retention guard ───────────────────────
 
 
-def test_check_retain_guard_breaches_below_threshold() -> None:
-    assert check_retain_guard(0.3, 0.5) is True
+def test_check_neighbour_guard_breaches_below_threshold() -> None:
+    assert check_neighbour_guard(0.3, 0.5) is True
 
 
-def test_check_retain_guard_does_not_breach_at_or_above_threshold() -> None:
-    assert check_retain_guard(0.5, 0.5) is False
-    assert check_retain_guard(0.9, 0.5) is False
+def test_check_neighbour_guard_does_not_breach_at_or_above_threshold() -> None:
+    assert check_neighbour_guard(0.5, 0.5) is False
+    assert check_neighbour_guard(0.9, 0.5) is False
 
 
-def test_check_retain_guard_none_never_breaches() -> None:
-    assert check_retain_guard(None, 0.5) is False
+def test_check_neighbour_guard_none_never_breaches() -> None:
+    assert check_neighbour_guard(None, 0.5) is False
 
 
 # ── Fixtures for the model-backed, multi-fact tests ─────────────────────────

@@ -117,8 +117,7 @@ class TestGroupedConfig:
                 "optimizer": "adamw",
                 "learning_rate": 0.00002,
                 "epochs": 5,
-                "micro_batch_size": 1,
-                "gradient_accumulation_steps": 4,
+                "batch_size": 4,
                 "max_length": 256,
                 "weight_decay": 0.0,
                 "patience": 3,
@@ -161,8 +160,7 @@ class TestGroupedConfig:
                 "optimizer": "adamw",
                 "learning_rate": 0.0001,
                 "epochs": 10,
-                "micro_batch_size": 1,
-                "gradient_accumulation_steps": 1,
+                "batch_size": 1,
                 "max_length": 256,
                 "weight_decay": 0.0,
                 "checkpoint": ".factverify_internal/train/test-learner",
@@ -204,8 +202,7 @@ class TestGroupedConfig:
                 "optimizer": "adamw",
                 "learning_rate": 0.00002,
                 "epochs": 5,
-                "micro_batch_size": 1,
-                "gradient_accumulation_steps": 4,
+                "batch_size": 4,
                 "max_length": 256,
                 "weight_decay": 0.0,
                 "paired_config": "config/jobs/test/learner.yaml",
@@ -239,8 +236,7 @@ class TestGroupedConfig:
         assert config.seed == 3
         assert config.learning_rate == 0.00002
         assert config.epochs == 5
-        assert config.micro_batch_size == 1
-        assert config.gradient_accumulation_steps == 4
+        assert config.batch_size == 4
         assert config.patience == 3
 
     def test_grouped_forgetter_fields(self, forgetter_yaml: Path) -> None:
@@ -271,8 +267,7 @@ class TestGroupedConfig:
                 "optimizer": "adamw",
                 "learning_rate": 0.001,
                 "epochs": 1,
-                "micro_batch_size": 1,
-                "gradient_accumulation_steps": 1,
+                "batch_size": 1,
                 "max_length": 64,
                 "weight_decay": 0.0,
                 "checkpoint": "x",
@@ -286,12 +281,12 @@ class TestGroupedConfig:
             load_grouped_config(path)
 
 
-# ── save_best_as / save_best_mode / retain_retention_thr (role-aware) ───────
+# ── save_best_as / save_best_mode / neighbour_retention_thr (role-aware) ────
 
 
 class TestSaveBestConfig:
     """Role-aware ``save_best_as``/``save_best_mode`` defaults and validation,
-    plus the ``retain_retention_thr`` retain-guard threshold."""
+    plus the ``neighbour_retention_thr`` neighbour-guard threshold."""
 
     def test_learner_default_save_best_as_and_mode(self, tmp_path: Path) -> None:
         import yaml
@@ -320,13 +315,13 @@ class TestSaveBestConfig:
         assert config.save_best_as == "val_fact_log_probability"
         assert config.save_best_mode == "max"
 
-    def test_forgetter_default_retain_retention_thr(self, tmp_path: Path) -> None:
+    def test_forgetter_default_neighbour_retention_thr(self, tmp_path: Path) -> None:
         import yaml
 
         path = tmp_path / "forgetter.yaml"
         path.write_text(yaml.safe_dump(_make_forgetter_config("f1", ["f2", "f3"])))
         config = load_grouped_config(path)
-        assert config.retain_retention_thr == 0.5
+        assert config.neighbour_retention_thr == 0.5
 
     def test_learner_val_loss_is_lower_is_better(self, tmp_path: Path) -> None:
         import yaml
@@ -355,11 +350,11 @@ class TestSaveBestConfig:
         import yaml
 
         config = _make_forgetter_config("f1", ["f2", "f3"])
-        config["training"]["save_best_as"] = "val_retain_log_retention"
+        config["training"]["save_best_as"] = "val_neighbour_log_retention"
         path = tmp_path / "forgetter.yaml"
         path.write_text(yaml.safe_dump(config))
         loaded = load_grouped_config(path)
-        assert loaded.save_best_as == "val_retain_log_retention"
+        assert loaded.save_best_as == "val_neighbour_log_retention"
         assert loaded.save_best_mode == "max"  # auto-derived
 
     def test_forgetter_save_best_as_rejects_learner_metric(self, tmp_path: Path) -> None:
@@ -394,27 +389,27 @@ class TestSaveBestConfig:
         # Mode is still derived correctly from the default metric
         assert loaded.save_best_mode == "min"
 
-    def test_retain_retention_thr_out_of_range_raises(self, tmp_path: Path) -> None:
+    def test_neighbour_retention_thr_out_of_range_raises(self, tmp_path: Path) -> None:
         import yaml
 
         config = _make_forgetter_config("f1", ["f2", "f3"])
-        config["training"]["retain_retention_thr"] = 1.5
+        config["training"]["neighbour_retention_thr"] = 1.5
         path = tmp_path / "forgetter.yaml"
         path.write_text(yaml.safe_dump(config))
-        with pytest.raises(FactVerifyHarnessError, match="retain_retention_thr"):
+        with pytest.raises(FactVerifyHarnessError, match="neighbour_retention_thr"):
             load_grouped_config(path)
 
-    def test_retain_retention_thr_zero_raises(self, tmp_path: Path) -> None:
+    def test_neighbour_retention_thr_zero_raises(self, tmp_path: Path) -> None:
         import yaml
 
         config = _make_forgetter_config("f1", ["f2", "f3"])
-        config["training"]["retain_retention_thr"] = 0.0
+        config["training"]["neighbour_retention_thr"] = 0.0
         path = tmp_path / "forgetter.yaml"
         path.write_text(yaml.safe_dump(config))
-        with pytest.raises(FactVerifyHarnessError, match="retain_retention_thr"):
+        with pytest.raises(FactVerifyHarnessError, match="neighbour_retention_thr"):
             load_grouped_config(path)
 
-    def test_run_adapter_exposes_save_best_mode_and_retain_retention_thr(
+    def test_run_adapter_exposes_save_best_mode_and_neighbour_retention_thr(
         self, tmp_path: Path
     ) -> None:
         import yaml
@@ -425,7 +420,7 @@ class TestSaveBestConfig:
         grouped = load_grouped_config(path)
         adapter = expand_runs(grouped)[0]
         assert adapter.save_best_mode == grouped.save_best_mode
-        assert adapter.retain_retention_thr == grouped.retain_retention_thr
+        assert adapter.neighbour_retention_thr == grouped.neighbour_retention_thr
 
 
 # ── expand_runs shapes ──────────────────────────────────────────────────────
@@ -764,8 +759,7 @@ def _make_learner_config(facts: list[str]) -> dict:
             "optimizer": "adamw",
             "learning_rate": 0.00002,
             "epochs": 5,
-            "micro_batch_size": 1,
-            "gradient_accumulation_steps": 4,
+            "batch_size": 4,
             "max_length": 256,
             "weight_decay": 0.0,
         },
@@ -793,8 +787,7 @@ def _make_forgetter_config(forget: str, retain: list[str]) -> dict:
             "optimizer": "adamw",
             "learning_rate": 0.0001,
             "epochs": 10,
-            "micro_batch_size": 1,
-            "gradient_accumulation_steps": 1,
+            "batch_size": 1,
             "max_length": 256,
             "weight_decay": 0.0,
             "checkpoint": ".factverify_internal/train/test-learner",
@@ -819,8 +812,7 @@ def _make_referencer_config(facts: list[str]) -> dict:
             "optimizer": "adamw",
             "learning_rate": 0.00002,
             "epochs": 5,
-            "micro_batch_size": 1,
-            "gradient_accumulation_steps": 4,
+            "batch_size": 4,
             "max_length": 256,
             "weight_decay": 0.0,
             "paired_config": "config/jobs/test/learner.yaml",

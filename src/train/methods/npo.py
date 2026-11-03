@@ -28,7 +28,7 @@ from src.train.methods.unlearn_common import (
     ForgetterBaseline,
     baseline_from_state,
     baseline_to_state,
-    check_retain_guard,
+    check_neighbour_guard,
     log_unlearn_details,
     log_unlearn_scores,
     log_unlearn_selected_checkpoint,
@@ -43,7 +43,7 @@ def train_npo(
     tokenizer: Any,
     catalog: DataCatalog,
     *,
-    retain_catalog: DataCatalog | None = None,
+    neighbour_catalog: DataCatalog | None = None,
     experiment_id: str = "",
 ) -> tuple[list[str], int, int]:
     """NPO on forget facts. Returns data order, steps, examples."""
@@ -75,7 +75,7 @@ def train_npo(
     n_pairs = len(all_pairs)
     updates_per_epoch = math.ceil(n_pairs / effective_bs)
 
-    retain_retention_thr = getattr(config, "retain_retention_thr", 0.5)
+    neighbour_retention_thr = getattr(config, "neighbour_retention_thr", 0.5)
     optimizer = adamw(model, config)
     tracker = BestEpochTracker(mode=save_best_mode, patience=config.patience)
 
@@ -100,14 +100,14 @@ def train_npo(
         f"updates/epoch={updates_per_epoch}, lr={config.learning_rate}, "
         f"beta={beta}, save_best_as={save_best_as} ({save_best_mode})"
     )
-    if retain_catalog is not None:
-        click.echo(f"    retain facts: {len(retain_catalog.allowed_ids)}")
+    if neighbour_catalog is not None:
+        click.echo(f"    neighbour facts: {len(neighbour_catalog.allowed_ids)}")
 
     # ── Epoch-zero evaluation ────────────────────────────────────────
     if start_epoch == 0:
         model.eval()
         tracking, suffix, baseline = log_unlearn_scores(
-            config, model, tokenizer, catalog, retain_catalog, epoch=0, train_loss=0.0,
+            config, model, tokenizer, catalog, neighbour_catalog, epoch=0, train_loss=0.0,
             experiment_id=experiment_id,
         )
         click.echo(f"    epoch 0/{config.epochs}  loss=n/a{suffix}  (baseline)")
@@ -179,27 +179,27 @@ def train_npo(
 
         # ── Score forget + retain facts ──────────────────────────────
         tracking, suffix, baseline = log_unlearn_scores(
-            config, model, tokenizer, catalog, retain_catalog,
+            config, model, tokenizer, catalog, neighbour_catalog,
             finished, avg_train_loss, experiment_id=experiment_id, baseline=baseline,
         )
 
-        # ── Retain guard rail ────────────────────────────────────────
-        retain_breach = check_retain_guard(
-            tracking.val_retain_retention if tracking else None, retain_retention_thr
+        # ── Neighbour guard rail ────────────────────────────────────────
+        neighbour_breach = check_neighbour_guard(
+            tracking.val_neighbour_retention if tracking else None, neighbour_retention_thr
         )
 
-        # ── Early stopping (skip tracker when retain is breached) ────
+        # ── Early stopping (skip tracker when neighbour guard breached) ────
         if tracking is not None:
             tracking_score = getattr(tracking, save_best_as, tracking.val_target_log_retention)
         else:
             tracking_score = avg_train_loss
-        if not retain_breach:
+        if not neighbour_breach:
             stop = tracker.update(finished, tracking_score, model)
         else:
             stop = False
 
         click.echo(
-            f"    epoch {finished}/{config.epochs}  forget_train_loss={avg_train_loss:.4f}"
+            f"    epoch {finished}/{config.epochs}  loss={avg_train_loss:.4f}"
             f"{tracker.status()}{suffix}"
             f"  updates={epoch_updates}  bwd={total_backward}"
         )
@@ -213,10 +213,10 @@ def train_npo(
             "baseline": baseline_to_state(baseline) if baseline is not None else {},
         })
 
-        if retain_breach:
+        if neighbour_breach:
             click.echo(
-                f"    retain guard: val_retain_retention={tracking.val_retain_retention:.4f} < "
-                f"{retain_retention_thr} — stopping"
+                f"    neighbour guard: val_neighbour_retention={tracking.val_neighbour_retention:.4f} < "
+                f"{neighbour_retention_thr} — stopping"
             )
             break
         if stop:
@@ -232,7 +232,7 @@ def train_npo(
     # ── Selected-checkpoint drop/retention report ─────────────────────
     selected_epoch = tracker.best_epoch if tracker.best_epoch is not None else finished
     report = log_unlearn_selected_checkpoint(
-        config, model, tokenizer, catalog, retain_catalog, baseline, selected_epoch,
+        config, model, tokenizer, catalog, neighbour_catalog, baseline, selected_epoch,
         experiment_id=experiment_id,
     )
     remember_drop_retention_report(model, report)
