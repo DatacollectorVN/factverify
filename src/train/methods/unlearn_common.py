@@ -503,12 +503,15 @@ def log_unlearn_scores(
         drop_str = (
             f"{train_tracking.val_target_drop:.4f}" if train_tracking is not None else "N/A"
         )
+        neighbour_ret_str = (
+            f"{train_tracking.val_neighbour_retention:.4f}" if train_tracking is not None else "N/A"
+        )
         if tracking is not None:
             suffix = (
                 f"  val_target_drop={tracking.val_target_drop:.4f}"
                 f"  drop={drop_str}"
-                f"  val_target_log_ret={tracking.val_target_log_retention:.4f}"
-                f"  val_neighbour_log_ret={tracking.val_neighbour_log_retention:.4f}"
+                f"  val_neighbour_retention={tracking.val_neighbour_retention:.4f}"
+                f"  neighbour_retention={neighbour_ret_str}"
             )
 
     return tracking, suffix, baseline

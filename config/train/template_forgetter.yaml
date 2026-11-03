@@ -137,7 +137,7 @@ training:
   #                                 (higher = less collateral damage) → max
   #   val_neighbour_retention     — exp(val_neighbour_log_retention)
   #                                 (higher = less collateral damage) → max
-  save_best_as: val_target_log_retention
+  save_best_as: val_neighbour_retention
 
   # Neighbour guard: stop immediately if val_neighbour_retention (the probability
   # ratio current/baseline, not log) falls below this fraction of its
