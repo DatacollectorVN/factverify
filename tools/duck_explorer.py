@@ -19,6 +19,7 @@ from pathlib import Path
 from subprocess import Popen
 
 ALL_DBS = [
+    ".factverify_internal/factverify.sqlite",
     ".factverify_internal/train/train.sqlite",
     ".factverify_internal/eval/eval.sqlite",
     ".factverify_internal/data/tofu/pipeline.sqlite",
@@ -27,7 +28,8 @@ ALL_DBS = [
 
 def _derive_name(db_path: Path) -> str:
     """Derive a short schema name from the path: parent_stem."""
-    return f"{db_path.parent.name}_{db_path.stem}"
+    raw = f"{db_path.parent.name}_{db_path.stem}"
+    return raw.lstrip(".")
 
 
 def main() -> None:

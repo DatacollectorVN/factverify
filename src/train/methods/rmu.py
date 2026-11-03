@@ -122,10 +122,12 @@ def train_rmu(
 
     # ── Epoch-zero evaluation ────────────────────────────────────────
     if start_epoch == 0:
+        model.eval()
         tracking, suffix, baseline = log_unlearn_scores(
             config, model, tokenizer, catalog, retain_catalog, epoch=0, train_loss=0.0,
             experiment_id=experiment_id,
         )
+        click.echo(f"    epoch 0/{config.epochs}  loss=n/a{suffix}  (baseline)")
     model.train()
 
     total_backward = 0

@@ -493,6 +493,7 @@ def log_unlearn_scores(
 
     target_fact_ids = set(forget_catalog.allowed_ids)
     changes = compute_change_scores(baseline.eval_scores, eval_current, target_fact_ids)
+    train_changes = compute_change_scores(baseline.train, train_current, target_fact_ids)
 
     tracking: TrackingMetrics | None = None
     suffix = ""
@@ -535,11 +536,15 @@ def log_unlearn_scores(
 
         print_change_scores(epoch, changes, selected=False)
         tracking = aggregate_tracking_metrics(changes)
+        train_tracking = aggregate_tracking_metrics(train_changes)
+        train_drop_str = (
+            f"{train_tracking.val_drop:.4f}" if train_tracking is not None else "N/A"
+        )
         if tracking is not None:
             suffix = (
                 f"  val_loss={tracking.val_loss:.4f}"
                 f"  val_drop={tracking.val_drop:.4f}"
-                f"  train_drop=N/A"
+                f"  train_drop={train_drop_str}"
                 f"  val_target_log_ret={tracking.val_target_log_retention:.4f}"
                 f"  val_retain_log_ret={tracking.val_retain_log_retention:.4f}"
             )
