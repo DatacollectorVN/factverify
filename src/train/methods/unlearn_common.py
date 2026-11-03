@@ -380,14 +380,8 @@ def log_unlearn_selected_checkpoint(
             changes, target_fact_ids, is_selected=True,
         )
         # Samples at selected checkpoint
-        fact_roles = {
-            fid: ("target" if fid in target_fact_ids else "neighbour")
-            for fid in list(forget_catalog.allowed_ids)
-            + (list(retain_catalog.allowed_ids) if retain_catalog else [])
-        }
         epoch_rng = random.Random(config.seed + selected_epoch + 10000)
-        all_catalog = forget_catalog
-        sampled = sample_epoch_probes(model, tokenizer, all_catalog, fact_roles, epoch_rng)
+        sampled = sample_epoch_probes(model, tokenizer, forget_catalog, retain_catalog, epoch_rng)
         sample_records = [
             SampleRecord(
                 experiment_id=experiment_id,
@@ -471,14 +465,9 @@ def log_unlearn_scores(
                 is_selected=False,
                 train_loss=train_loss if train_loss != 0.0 or epoch > 0 else None,
             )
-            # Samples
-            fact_roles = {
-                fid: ("target" if fid in target_fact_ids else "neighbour")
-                for fid in list(forget_catalog.allowed_ids)
-                + (list(retain_catalog.allowed_ids) if retain_catalog else [])
-            }
+            # Samples: 5 target + 5 neighbour (1 per family each)
             epoch_rng = random.Random(config.seed + epoch)
-            sampled = sample_epoch_probes(model, tokenizer, forget_catalog, fact_roles, epoch_rng)
+            sampled = sample_epoch_probes(model, tokenizer, forget_catalog, retain_catalog, epoch_rng)
             store.record_samples([
                 SampleRecord(
                     experiment_id=experiment_id,

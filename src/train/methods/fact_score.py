@@ -416,29 +416,33 @@ class SampledProbe:
 def sample_epoch_probes(
     model: Any,
     tokenizer: Any,
-    catalog: DataCatalog,
-    fact_roles: dict[str, str],
+    forget_catalog: DataCatalog,
+    neighbour_catalog: DataCatalog | None,
     rng: random.Random,
+    *,
+    default_role: str = "target",
 ) -> list[SampledProbe]:
-    """Pick 1 random eval probe per family from any fact. Returns up to 5 rows.
+    """Sample up to 5 + 5 eval probes (1 per family per role).
 
-    Collects every eval probe from every fact in *catalog*, groups them by
-    canonical family, then picks one at random (using *rng*) from each of the
-    five canonical families. Each selected probe is scored (log_probability)
-    and decoded (model_output) before being returned. Families with no probes
-    are skipped, so the result may have fewer than 5 rows.
+    For the primary catalog (*forget_catalog*): collects eval probes, groups
+    by family, picks one per family. The ``fact_role`` is *default_role*
+    ("target" for forgetters, "learner" for learners).
+
+    For neighbours (forgetter only): picks one random neighbour fact from
+    *neighbour_catalog*, collects its eval probes, picks one per family.
+
+    Returns up to 10 rows (5 primary + 5 neighbour). Families with no probes
+    are skipped.
     """
     from src.train.data import EvalProbe  # local import to avoid circular
 
-    by_family: dict[str, list[EvalProbe]] = {}
-    for fact_id in catalog.allowed_ids:
-        for probe in catalog.get_eval_probes(fact_id):
+    def _sample_one_per_family(
+        probes: list[EvalProbe], role: str,
+    ) -> list[SampledProbe]:
+        by_family: dict[str, list[EvalProbe]] = {}
+        for probe in probes:
             by_family.setdefault(probe.family, []).append(probe)
-
-    was_training = bool(model.training)
-    model.eval()
-    result: list[SampledProbe] = []
-    try:
+        sampled: list[SampledProbe] = []
         for family in CANONICAL_FAMILIES:
             candidates = by_family.get(family)
             if not candidates:
@@ -448,8 +452,7 @@ def sample_epoch_probes(
                 model, tokenizer, probe.question, probe.answer
             )
             model_out = _generate_answer(model, tokenizer, probe.question)
-            role = fact_roles.get(probe.fact_id, "learner")
-            result.append(
+            sampled.append(
                 SampledProbe(
                     fact_id=probe.fact_id,
                     fact_role=role,
@@ -462,6 +465,26 @@ def sample_epoch_probes(
                     log_probability=slp,
                 )
             )
+        return sampled
+
+    was_training = bool(model.training)
+    model.eval()
+    result: list[SampledProbe] = []
+    try:
+        # Target: 1 probe per family from the forget fact(s)
+        target_probes = [
+            p for fid in forget_catalog.allowed_ids
+            for p in forget_catalog.get_eval_probes(fid)
+        ]
+        result.extend(_sample_one_per_family(target_probes, default_role))
+
+        # Neighbour: pick 1 random neighbour fact, then 1 probe per family
+        if neighbour_catalog is not None:
+            neighbour_ids = list(neighbour_catalog.allowed_ids)
+            if neighbour_ids:
+                chosen_id = rng.choice(neighbour_ids)
+                neighbour_probes = list(neighbour_catalog.get_eval_probes(chosen_id))
+                result.extend(_sample_one_per_family(neighbour_probes, "neighbour"))
     finally:
         model.train(was_training)
     return result

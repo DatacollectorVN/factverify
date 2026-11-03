@@ -385,8 +385,7 @@ def _log_epoch_scores(
     # Sample 5 probes (one per canonical family)
     if _write_db and rng is not None:
         epoch_rng = random.Random(config.seed + epoch)
-        fact_roles = {fid: "learner" for fid in catalog.allowed_ids}
-        sampled = sample_epoch_probes(model, tokenizer, catalog, fact_roles, epoch_rng)
+        sampled = sample_epoch_probes(model, tokenizer, catalog, None, epoch_rng, default_role="learner")
         sample_records = [
             SampleRecord(
                 experiment_id=experiment_id,
