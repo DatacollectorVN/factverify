@@ -489,7 +489,25 @@ def log_unlearn_scores(
                 )
                 for sp in sampled
             ])
-        return None, "", new_baseline
+        # Build an informative epoch-zero suffix showing baseline log-probs
+        target_fact_ids = set(forget_catalog.allowed_ids)
+        target_lps = [
+            flp.fact_log_probability
+            for fid, flp in eval_current.items()
+            if fid in target_fact_ids
+        ]
+        retain_lps = [
+            flp.fact_log_probability
+            for fid, flp in eval_current.items()
+            if fid not in target_fact_ids
+        ]
+        parts = []
+        if target_lps:
+            parts.append(f"  val_target_lp={sum(target_lps)/len(target_lps):.4f}")
+        if retain_lps:
+            parts.append(f"  val_retain_lp={sum(retain_lps)/len(retain_lps):.4f}")
+        epoch0_suffix = "".join(parts)
+        return None, epoch0_suffix, new_baseline
 
     target_fact_ids = set(forget_catalog.allowed_ids)
     changes = compute_change_scores(baseline.eval_scores, eval_current, target_fact_ids)
