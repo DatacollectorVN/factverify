@@ -218,7 +218,7 @@ def train_npo(
 
         click.echo(
             f"    epoch {finished}/{config.epochs}  loss={avg_train_loss:.4f}"
-            f"{tracker.status()}{suffix}"
+            f"{suffix}{tracker.status()}"
             f"  updates={epoch_updates}  bwd={total_backward}"
         )
 

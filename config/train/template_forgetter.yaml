@@ -168,13 +168,23 @@ training:
   # When true, all scoring and loss use logsumexp over entity aliases
   # instead of the single label string.  Requires an entities/ directory
   # alongside the corpus_dir in the data directory.
-  # alias_aware: false
+  alias_aware: false
 
-  # Entropy floor loss coefficient.  Adds relu(H_target - H) to the
-  # forget loss so the model does not become pathologically certain about
-  # any single token at the first answer position.
-  # entropy_coeff: 0.0
-  # entropy_target_bits: 11.0
+  # Entropy floor loss coefficient (alias_aware only).
+  # Adds relu(H_target - H) to the forget loss so the model is pushed
+  # toward genuine uncertainty rather than answer replacement.
+  #   0.0  — disabled (no entropy term)
+  #   0.1  — light regularisation; good starting point
+  #   0.3  — stronger; use if model keeps substituting a wrong answer
+  # Increase if you observe answer replacement; decrease if forgetting stalls.
+  entropy_coeff: 0.0
+
+  # Target entropy at the first answer-token position, in bits (alias_aware only).
+  # The entropy term is inactive when the model already exceeds this target.
+  #   11.0 — spreads mass over ~2 000 tokens; genuinely uncertain, not random
+  #   13.0 — spreads mass over ~8 000 tokens; use for stricter anti-replacement
+  # For Pythia-410M (vocab ≈ 50 k tokens) the theoretical max is ~15.6 bits.
+  entropy_target_bits: 11.0
 
 # --------------------------------------------------------------------------
 # Output — where the unlearned checkpoint is saved
