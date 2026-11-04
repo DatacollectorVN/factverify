@@ -37,6 +37,7 @@ class EvalProbe:
     language: str
     question: str
     answer: str
+    answer_entity_id: str = ""  # factverify entity ID the answer refers to; "" = no alias expansion
 
 
 class DataCatalog:
@@ -146,6 +147,7 @@ class DataCatalog:
                     language=str(p.get("language", "unknown")),
                     question=str(p["Q"]),
                     answer=str(p["A"]),
+                    answer_entity_id=str(p.get("answer_factverify_id", "")),
                 )
             )
         return self._filter_probes(probes)
@@ -176,6 +178,7 @@ class DataCatalog:
                     language=str(p.get("language", "unknown")),
                     question=str(p["Q"]),
                     answer=str(p["A"]),
+                    answer_entity_id=str(p.get("answer_factverify_id", "")),
                 )
             )
         return self._filter_probes(probes)

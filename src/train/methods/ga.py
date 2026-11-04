@@ -17,6 +17,12 @@ import torch
 from src.train.checkpoint import delete_resume_state, load_resume_state, save_resume_state
 from src.train.config import JobConfig
 from src.train.data import DataCatalog
+from src.train.methods.alias_score import (
+    alias_log_prob,
+    alias_store_from_config,
+    alias_train_items,
+    compute_entropy_loss,
+)
 from src.train.methods.common import (
     BestEpochTracker,
     adamw,
@@ -49,11 +55,16 @@ def train_ga(
     """Ascend the forget loss on answer tokens. Returns data order, steps, examples."""
     order = data_order(list(catalog.allowed_ids), config.seed)
 
-    # Build flat list of (fact_id, question, answer) from forget facts
-    all_pairs: list[tuple[str, str, str]] = []
+    # Build flat list of (fact_id, question, answer, aliases) from forget facts.
+    # When alias_aware=false (default), aliases=[answer] and behaviour is identical.
+    _alias_store = alias_store_from_config(config)
+    _entropy_coeff: float = getattr(config, "raw", {}).get("entropy_coeff", 0.0) if hasattr(config, "raw") else 0.0
+    _entropy_target_bits: float = getattr(config, "raw", {}).get("entropy_target_bits", 11.0) if hasattr(config, "raw") else 11.0
+    _entropy_target_nats: float = _entropy_target_bits * math.log(2)
+
+    all_pairs: list[tuple[str, str, str, list[str]]] = []
     for item_id in order:
-        for q, a in catalog.get_train_pairs(item_id):
-            all_pairs.append((item_id, q, a))
+        all_pairs.extend(alias_train_items(catalog, item_id, _alias_store))
 
     accum_steps = getattr(config, "batch_size", 1)
     effective_bs = accum_steps
@@ -121,14 +132,27 @@ def train_ga(
         optimizer.zero_grad()
         accum_count = 0
 
-        for idx, (_fact_id, question, answer) in enumerate(epoch_pairs):
-            batch = prepare_qa_batch(tokenizer, question, answer, config.max_length)
-            nll = causal_nll(model, batch)
-            loss = -nll / accum_steps  # negative for gradient ascent
+        for idx, (_fact_id, question, answer, aliases) in enumerate(epoch_pairs):
+            if _alias_store is not None:
+                # Alias-aware forget: descent on logsumexp = forget across all aliases
+                lp = alias_log_prob(model, tokenizer, question, aliases, config.max_length)
+                forget_loss = lp  # logsumexp ≤ 0; descent decreases it = forgets
+                if _entropy_coeff > 0.0:
+                    entropy_l = compute_entropy_loss(
+                        model, tokenizer, question, config.max_length,
+                        entropy_target_nats=_entropy_target_nats,
+                    )
+                    forget_loss = forget_loss + _entropy_coeff * entropy_l
+                loss = forget_loss / accum_steps
+                epoch_loss += (-lp).detach().item()  # positive NLL-like value for display
+            else:
+                batch = prepare_qa_batch(tokenizer, question, answer, config.max_length)
+                nll = causal_nll(model, batch)
+                loss = -nll / accum_steps  # negative for gradient ascent
+                epoch_loss += nll.item()  # log the positive NLL
             loss.backward()
             total_backward += 1
             accum_count += 1
-            epoch_loss += nll.item()  # log the positive NLL
             epoch_examples += 1
 
             if accum_count == accum_steps or idx == len(epoch_pairs) - 1:

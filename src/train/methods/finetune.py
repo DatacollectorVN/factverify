@@ -26,6 +26,11 @@ from src.ledger.train_store import (
 from src.train.checkpoint import delete_resume_state, load_resume_state, save_resume_state
 from src.train.config import JobConfig
 from src.train.data import CANONICAL_FAMILIES, DataCatalog
+from src.train.methods.alias_score import (
+    alias_log_prob,
+    alias_store_from_config,
+    alias_train_items,
+)
 from src.train.methods.common import (
     BestEpochTracker,
     adamw,
@@ -56,12 +61,14 @@ def train_finetune(
     """Train one finetune job. Returns data order, steps, and examples."""
     order = data_order(list(catalog.allowed_ids), config.seed)
 
-    # Build flat list of (fact_id, question, answer) training examples
-    all_pairs: list[tuple[str, str, str]] = []
+    _alias_store = alias_store_from_config(config)
+
+    # Build flat list of (fact_id, question, answer, aliases) training examples.
+    # When alias_aware=false (default), aliases=[answer] and behaviour is identical
+    # to the previous single-string path.
+    all_pairs: list[tuple[str, str, str, list[str]]] = []
     for item_id in order:
-        pairs = catalog.get_train_pairs(item_id)
-        for q, a in pairs:
-            all_pairs.append((item_id, q, a))
+        all_pairs.extend(alias_train_items(catalog, item_id, _alias_store))
 
     accum_steps = getattr(config, "batch_size", 1)
     effective_bs = accum_steps
@@ -126,7 +133,7 @@ def train_finetune(
             epoch_pairs = all_pairs
 
         # Log order digest
-        pair_ids = [f"{fid}:{q[:40]}" for fid, q, _a in epoch_pairs]
+        pair_ids = [f"{fid}:{q[:40]}" for fid, q, _a, _aliases in epoch_pairs]
         _digest = epoch_order_digest(pair_ids)
 
         epoch_loss = 0.0
@@ -137,14 +144,20 @@ def train_finetune(
         optimizer.zero_grad()
         accum_count = 0
 
-        for idx, (_fact_id, question, answer) in enumerate(epoch_pairs):
-            text = f"Q: {question}\nA: {answer}{tokenizer.eos_token}"
-            batch = prepare_batch(tokenizer, text, config.max_length)
-            loss = causal_nll(model, batch) / accum_steps
+        for idx, (_fact_id, question, answer, aliases) in enumerate(epoch_pairs):
+            if _alias_store is not None:
+                # Alias-aware learning: descent maximises total alias log prob
+                lp = alias_log_prob(model, tokenizer, question, aliases, config.max_length)
+                loss = -lp / accum_steps   # negate: descent on -logsumexp = maximise logsumexp
+                epoch_loss += (-lp).detach().item()  # un-normalized positive value for display
+            else:
+                text = f"Q: {question}\nA: {answer}{tokenizer.eos_token}"
+                batch = prepare_batch(tokenizer, text, config.max_length)
+                loss = causal_nll(model, batch) / accum_steps
+                epoch_loss += loss.item() * accum_steps  # un-normalize for logging
             loss.backward()
             total_backward += 1
             accum_count += 1
-            epoch_loss += loss.item() * accum_steps  # un-normalize for logging
             epoch_examples += 1
 
             if accum_count == accum_steps or idx == len(epoch_pairs) - 1:
@@ -310,7 +323,8 @@ def _log_epoch_scores(
     Returns ``(metrics, epoch-log suffix)``. Returns ``(None, "")`` when the
     catalog has no eval probes.
     """
-    train_scores, eval_scores = score_catalog_both_splits(model, tokenizer, catalog)
+    _alias_store = alias_store_from_config(config)
+    train_scores, eval_scores = score_catalog_both_splits(model, tokenizer, catalog, _alias_store)
     if not eval_scores:
         return None, ""
 

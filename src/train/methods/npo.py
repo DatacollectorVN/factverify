@@ -17,6 +17,12 @@ import torch
 from src.train.checkpoint import delete_resume_state, load_resume_state, save_resume_state
 from src.train.config import JobConfig
 from src.train.data import DataCatalog
+from src.train.methods.alias_score import (
+    alias_log_prob,
+    alias_store_from_config,
+    alias_train_items,
+    score_answer_aliases,
+)
 from src.train.methods.common import (
     BestEpochTracker,
     adamw,
@@ -50,22 +56,30 @@ def train_npo(
     order = data_order(list(catalog.allowed_ids), config.seed)
     beta = getattr(config, "beta", 0.1)
 
-    # Build forget pairs
-    all_pairs: list[tuple[str, str, str]] = []
-    for item_id in order:
-        for q, a in catalog.get_train_pairs(item_id):
-            all_pairs.append((item_id, q, a))
+    _alias_store = alias_store_from_config(config)
 
-    # ── Pre-compute reference NLLs (model before unlearning) ─────────
+    # Build forget pairs (fact_id, question, answer, aliases)
+    all_pairs: list[tuple[str, str, str, list[str]]] = []
+    for item_id in order:
+        all_pairs.extend(alias_train_items(catalog, item_id, _alias_store))
+
+    # ── Pre-compute reference log probs (model before unlearning) ─────
+    # When alias-aware: use score_answer_aliases (logsumexp over aliases).
+    # When not alias-aware: fall back to causal_nll for identical behaviour.
     model.eval()
-    ref_nll_map: dict[tuple[str, str], float] = {}
+    ref_lp_map: dict[tuple[str, tuple[str, ...]], float] = {}
     with torch.no_grad():
-        for _fid, q, a in all_pairs:
-            key = (q, a)
-            if key not in ref_nll_map:
-                batch = prepare_qa_batch(tokenizer, q, a, config.max_length)
-                ref_nll_map[key] = causal_nll(model, batch).item()
-    click.echo(f"    NPO: pre-computed {len(ref_nll_map)} reference NLLs")
+        for _fid, q, a, aliases in all_pairs:
+            key = (q, tuple(aliases))
+            if key not in ref_lp_map:
+                if _alias_store is not None:
+                    ref_lp_map[key] = score_answer_aliases(model, tokenizer, q, aliases)
+                else:
+                    batch = prepare_qa_batch(tokenizer, q, a, config.max_length)
+                    # Store as negative NLL to keep the sign convention consistent:
+                    # ref_lp > theta_lp means model has forgotten (theta < ref)
+                    ref_lp_map[key] = -causal_nll(model, batch).item()
+    click.echo(f"    NPO: pre-computed {len(ref_lp_map)} reference log probs")
 
     accum_steps = getattr(config, "batch_size", 1)
     effective_bs = accum_steps
@@ -133,19 +147,23 @@ def train_npo(
         optimizer.zero_grad()
         accum_count = 0
 
-        for idx, (_fact_id, question, answer) in enumerate(epoch_pairs):
-            batch = prepare_qa_batch(tokenizer, question, answer, config.max_length)
-            # Evaluate nll_theta in eval mode so it is comparable to the
-            # reference NLL that was pre-computed with model.eval().
+        for idx, (_fact_id, question, answer, aliases) in enumerate(epoch_pairs):
+            # Evaluate theta log prob in eval mode so it is comparable to the
+            # reference log prob that was pre-computed with model.eval().
             model.eval()
-            nll_theta = causal_nll(model, batch)
+            if _alias_store is not None:
+                theta_lp = alias_log_prob(model, tokenizer, question, aliases, config.max_length)
+            else:
+                batch = prepare_qa_batch(tokenizer, question, answer, config.max_length)
+                theta_lp = -causal_nll(model, batch)  # negate to get log prob convention
             model.train()
 
-            # Reference NLL is a pre-computed constant
-            nll_ref = torch.tensor(
-                ref_nll_map[(question, answer)], device=nll_theta.device
+            # Reference log prob is a pre-computed constant
+            ref_lp = torch.tensor(
+                ref_lp_map[(question, tuple(aliases))], device=theta_lp.device
             )
-            log_ratio = nll_ref - nll_theta
+            # log_ratio > 0 when model has forgotten (theta_lp < ref_lp)
+            log_ratio = ref_lp - theta_lp
             loss = (
                 -(2.0 / beta)
                 * torch.nn.functional.logsigmoid(-beta * log_ratio)
@@ -154,7 +172,7 @@ def train_npo(
             loss.backward()
             total_backward += 1
             accum_count += 1
-            epoch_loss += nll_theta.item()
+            epoch_loss += (-theta_lp).detach().item()  # positive NLL-like for display
             epoch_examples += 1
 
             if accum_count == accum_steps or idx == len(epoch_pairs) - 1:

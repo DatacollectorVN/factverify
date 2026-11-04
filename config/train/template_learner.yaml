@@ -119,6 +119,12 @@ training:
   #   val_loss                 — NLL on eval probes (= −val_fact_log_probability) → min
   save_best_as: val_fact_log_probability
 
+  # ── Alias-aware scoring (opt-in) ────────────────────────────────────
+  # When true, training loss and all scoring use logsumexp over entity
+  # aliases instead of the single label string.  Requires an entities/
+  # directory alongside the corpus_dir in the data directory.
+  # alias_aware: false
+
 # --------------------------------------------------------------------------
 # Output — where the trained checkpoint is saved
 # --------------------------------------------------------------------------

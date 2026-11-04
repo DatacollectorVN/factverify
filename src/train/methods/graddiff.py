@@ -17,6 +17,12 @@ import torch
 from src.train.checkpoint import delete_resume_state, load_resume_state, save_resume_state
 from src.train.config import JobConfig
 from src.train.data import DataCatalog
+from src.train.methods.alias_score import (
+    alias_log_prob,
+    alias_store_from_config,
+    alias_train_items,
+    compute_entropy_loss,
+)
 from src.train.methods.common import (
     BestEpochTracker,
     adamw,
@@ -50,19 +56,22 @@ def train_graddiff(
     order = data_order(list(catalog.allowed_ids), config.seed)
     retain_coeff = getattr(config, "retain_coeff", 1.0)
 
-    # Build forget pairs
-    forget_pairs: list[tuple[str, str, str]] = []
-    for item_id in order:
-        for q, a in catalog.get_train_pairs(item_id):
-            forget_pairs.append((item_id, q, a))
+    _alias_store = alias_store_from_config(config)
+    _entropy_coeff: float = getattr(config, "raw", {}).get("entropy_coeff", 0.0) if hasattr(config, "raw") else 0.0
+    _entropy_target_bits: float = getattr(config, "raw", {}).get("entropy_target_bits", 11.0) if hasattr(config, "raw") else 11.0
+    _entropy_target_nats: float = _entropy_target_bits * math.log(2)
 
-    # Build retain pairs
-    neighbour_pairs: list[tuple[str, str, str]] = []
+    # Build forget pairs (fact_id, question, answer, aliases)
+    forget_pairs: list[tuple[str, str, str, list[str]]] = []
+    for item_id in order:
+        forget_pairs.extend(alias_train_items(catalog, item_id, _alias_store))
+
+    # Build retain pairs (fact_id, question, answer, aliases)
+    neighbour_pairs: list[tuple[str, str, str, list[str]]] = []
     if neighbour_catalog is not None:
         retain_order = data_order(list(neighbour_catalog.allowed_ids), config.seed)
         for item_id in retain_order:
-            for q, a in neighbour_catalog.get_train_pairs(item_id):
-                neighbour_pairs.append((item_id, q, a))
+            neighbour_pairs.extend(alias_train_items(neighbour_catalog, item_id, _alias_store))
 
     accum_steps = getattr(config, "batch_size", 1)
     effective_bs = accum_steps
@@ -136,24 +145,48 @@ def train_graddiff(
         optimizer.zero_grad()
         accum_count = 0
 
-        for idx, (_fid, fq, fa) in enumerate(epoch_forget):
-            # Forget loss (ascent)
-            forget_batch = prepare_qa_batch(tokenizer, fq, fa, config.max_length)
-            forget_nll = causal_nll(model, forget_batch)
+        for idx, (_fid, fq, fa, f_aliases) in enumerate(epoch_forget):
+            if _alias_store is not None:
+                # Alias-aware forget: descent on logsumexp = forget across all aliases
+                forget_lp = alias_log_prob(model, tokenizer, fq, f_aliases, config.max_length)
+                forget_term = forget_lp  # logsumexp ≤ 0; descent decreases it = forgets
+                if _entropy_coeff > 0.0:
+                    entropy_l = compute_entropy_loss(
+                        model, tokenizer, fq, config.max_length,
+                        entropy_target_nats=_entropy_target_nats,
+                    )
+                    forget_term = forget_term + _entropy_coeff * entropy_l
 
-            # Retain loss (descent) — cycle through retain pairs
-            if epoch_neighbour:
-                _rid, rq, ra = epoch_neighbour[idx % len(epoch_neighbour)]
-                retain_batch = prepare_qa_batch(tokenizer, rq, ra, config.max_length)
-                retain_nll = causal_nll(model, retain_batch)
+                # Alias-aware retain: descent on -logsumexp = keep retain log prob high
+                if epoch_neighbour:
+                    _rid, rq, _ra, r_aliases = epoch_neighbour[idx % len(epoch_neighbour)]
+                    retain_lp = alias_log_prob(model, tokenizer, rq, r_aliases, config.max_length)
+                    # retain_lp ≤ 0; we want to maximise it → subtract from loss
+                    retain_term = -retain_lp
+                else:
+                    retain_term = torch.tensor(0.0, device=forget_lp.device)
+
+                loss = (forget_term + retain_coeff * retain_term) / accum_steps
+                epoch_loss += (-forget_lp).detach().item()
             else:
-                retain_nll = torch.tensor(0.0, device=forget_nll.device)
+                # Forget loss (ascent)
+                forget_batch = prepare_qa_batch(tokenizer, fq, fa, config.max_length)
+                forget_nll = causal_nll(model, forget_batch)
 
-            loss = (-forget_nll + retain_coeff * retain_nll) / accum_steps
+                # Retain loss (descent) — cycle through retain pairs
+                if epoch_neighbour:
+                    _rid, rq, ra, _r_aliases = epoch_neighbour[idx % len(epoch_neighbour)]
+                    retain_batch = prepare_qa_batch(tokenizer, rq, ra, config.max_length)
+                    retain_nll = causal_nll(model, retain_batch)
+                else:
+                    retain_nll = torch.tensor(0.0, device=forget_nll.device)
+
+                loss = (-forget_nll + retain_coeff * retain_nll) / accum_steps
+                epoch_loss += forget_nll.item()
+
             loss.backward()
             total_backward += 1
             accum_count += 1
-            epoch_loss += forget_nll.item()
             epoch_examples += 1
 
             if accum_count == accum_steps or idx == len(epoch_forget) - 1:

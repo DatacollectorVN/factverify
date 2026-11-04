@@ -20,6 +20,10 @@ import torch
 from src.train.checkpoint import delete_resume_state, load_resume_state, save_resume_state
 from src.train.config import JobConfig
 from src.train.data import DataCatalog
+from src.train.methods.alias_score import (
+    alias_store_from_config,
+    alias_train_items,
+)
 from src.train.methods.common import (
     BestEpochTracker,
     adamw,
@@ -53,28 +57,30 @@ def train_rmu(
     steering_coeff = getattr(config, "steering_coeff", 100.0)
     steering_layer = getattr(config, "steering_layer", 7)
 
-    # Build forget pairs
-    forget_pairs: list[tuple[str, str, str]] = []
-    for item_id in order:
-        for q, a in catalog.get_train_pairs(item_id):
-            forget_pairs.append((item_id, q, a))
+    _alias_store = alias_store_from_config(config)
 
-    # Build retain pairs
-    neighbour_pairs: list[tuple[str, str, str]] = []
+    # Build forget pairs (fact_id, question, answer, aliases)
+    forget_pairs: list[tuple[str, str, str, list[str]]] = []
+    for item_id in order:
+        forget_pairs.extend(alias_train_items(catalog, item_id, _alias_store))
+
+    # Build retain pairs (fact_id, question, answer, aliases)
+    neighbour_pairs: list[tuple[str, str, str, list[str]]] = []
     if neighbour_catalog is not None:
         retain_order = data_order(list(neighbour_catalog.allowed_ids), config.seed)
         for item_id in retain_order:
-            for q, a in neighbour_catalog.get_train_pairs(item_id):
-                neighbour_pairs.append((item_id, q, a))
+            neighbour_pairs.extend(alias_train_items(neighbour_catalog, item_id, _alias_store))
 
     # Random unit steering direction (seeded for reproducibility)
     direction = _unit_direction(model, config.seed)
 
     # ── Pre-compute frozen hidden states for retain pairs ────────────
+    # When alias-aware, use the first alias as the representative text; RMU
+    # steers representations, so a single representative is sufficient.
     model.eval()
     frozen_states: dict[tuple[str, str], torch.Tensor] = {}
     with torch.no_grad():
-        for _rid, rq, ra in neighbour_pairs:
+        for _rid, rq, ra, r_aliases in neighbour_pairs:
             key = (rq, ra)
             if key not in frozen_states:
                 batch = prepare_qa_batch(tokenizer, rq, ra, config.max_length)
@@ -155,22 +161,33 @@ def train_rmu(
         optimizer.zero_grad()
         accum_count = 0
 
-        for idx, (_fid, fq, fa) in enumerate(epoch_forget):
+        for idx, (_fid, fq, fa, f_aliases) in enumerate(epoch_forget):
             # Compute hidden states in eval mode so they are comparable to the
             # frozen reference states that were pre-computed with model.eval().
             # Gradients still flow because eval() only disables dropout/BN stats;
             # it does not detach the computation graph.
             model.eval()
 
-            # Forget: steer toward random direction
-            forget_batch = prepare_qa_batch(tokenizer, fq, fa, config.max_length)
-            current_f = _pooled(model, forget_batch, steering_layer)
-            target = steering_coeff * direction.to(current_f.device)
-            forget_loss = torch.mean((current_f - target) ** 2)
+            # Forget: steer toward random direction.
+            # When alias-aware, average MSE over all aliases so the model cannot
+            # escape by shifting probability to unsteered alias texts.
+            target = steering_coeff * direction
+            if _alias_store is not None and len(f_aliases) > 1:
+                mse_terms = []
+                for f_alias in f_aliases:
+                    f_batch_a = prepare_qa_batch(tokenizer, fq, f_alias, config.max_length)
+                    current_f_a = _pooled(model, f_batch_a, steering_layer)
+                    mse_terms.append(torch.mean((current_f_a - target.to(current_f_a.device)) ** 2))
+                forget_loss = sum(mse_terms) / len(mse_terms)
+                current_f = _pooled(model, prepare_qa_batch(tokenizer, fq, fa, config.max_length), steering_layer)
+            else:
+                forget_batch = prepare_qa_batch(tokenizer, fq, fa, config.max_length)
+                current_f = _pooled(model, forget_batch, steering_layer)
+                forget_loss = torch.mean((current_f - target.to(current_f.device)) ** 2)
 
             # Retain: anchor to frozen reference (cycle through retain pairs)
             if epoch_neighbour:
-                _rid, rq, ra = epoch_neighbour[idx % len(epoch_neighbour)]
+                _rid, rq, ra, _r_aliases = epoch_neighbour[idx % len(epoch_neighbour)]
                 retain_batch = prepare_qa_batch(tokenizer, rq, ra, config.max_length)
                 current_r = _pooled(model, retain_batch, steering_layer)
                 frozen = frozen_states[(rq, ra)].to(current_r.device)

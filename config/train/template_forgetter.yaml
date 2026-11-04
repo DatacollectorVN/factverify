@@ -164,6 +164,18 @@ training:
   # Which transformer layer to steer (0-indexed).
   # steering_layer: 7
 
+  # ── Alias-aware scoring (opt-in) ────────────────────────────────────
+  # When true, all scoring and loss use logsumexp over entity aliases
+  # instead of the single label string.  Requires an entities/ directory
+  # alongside the corpus_dir in the data directory.
+  # alias_aware: false
+
+  # Entropy floor loss coefficient.  Adds relu(H_target - H) to the
+  # forget loss so the model does not become pathologically certain about
+  # any single token at the first answer position.
+  # entropy_coeff: 0.0
+  # entropy_target_bits: 11.0
+
 # --------------------------------------------------------------------------
 # Output — where the unlearned checkpoint is saved
 # --------------------------------------------------------------------------

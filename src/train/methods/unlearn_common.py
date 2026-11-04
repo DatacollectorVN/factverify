@@ -352,12 +352,15 @@ def log_unlearn_selected_checkpoint(
     # Use eval scores for the report (consistent with tracking metrics)
     eval_baseline = baseline.eval_scores
 
+    from src.train.methods.alias_score import alias_store_from_config as _alias_store_from_config
+    _alias_store_sel = _alias_store_from_config(config)
+
     forget_current_train, forget_current_eval = score_catalog_both_splits(
-        model, tokenizer, forget_catalog
+        model, tokenizer, forget_catalog, _alias_store_sel
     )
     if retain_catalog is not None:
         retain_current_train, retain_current_eval = score_catalog_both_splits(
-            model, tokenizer, retain_catalog
+            model, tokenizer, retain_catalog, _alias_store_sel
         )
     else:
         retain_current_train: dict[str, FactLogProb] = {}
@@ -429,10 +432,14 @@ def log_unlearn_scores(
     and returns them so the caller threads the same object into every later
     epoch (FV-METRIC-001 step 3).
     """
+    # Build alias store once per scoring call (None when alias_aware=false)
+    from src.train.methods.alias_score import alias_store_from_config as _alias_store_from_config
+    _alias_store = _alias_store_from_config(config)
+
     # Score both splits for forget catalog
-    train_forget, eval_forget = score_catalog_both_splits(model, tokenizer, forget_catalog)
+    train_forget, eval_forget = score_catalog_both_splits(model, tokenizer, forget_catalog, _alias_store)
     if retain_catalog is not None:
-        train_retain, eval_retain = score_catalog_both_splits(model, tokenizer, retain_catalog)
+        train_retain, eval_retain = score_catalog_both_splits(model, tokenizer, retain_catalog, _alias_store)
     else:
         train_retain: dict[str, FactLogProb] = {}
         eval_retain: dict[str, FactLogProb] = {}

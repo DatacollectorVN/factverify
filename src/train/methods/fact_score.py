@@ -14,16 +14,19 @@ from __future__ import annotations
 import math
 import random
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import torch
 import torch.nn.functional as F
 
 from src.train.data import CANONICAL_FAMILIES, DataCatalog
 
+if TYPE_CHECKING:
+    from src.train.methods.alias_score import EntityAliasStore
+
 #: Version tag for the drop/retention metric definition. Bump when the
 #: aggregation rule changes so persisted/exported records stay attributable.
-METRIC_VERSION = "drop-retention-v1"
+METRIC_VERSION = "alias-aware-v1"
 
 
 def safe_exp(value: float) -> float:
@@ -271,7 +274,11 @@ def _score_answer_full(
 
 
 def score_fact_families(
-    model: Any, tokenizer: Any, catalog: DataCatalog, fact_id: str
+    model: Any,
+    tokenizer: Any,
+    catalog: DataCatalog,
+    fact_id: str,
+    alias_store: "EntityAliasStore | None" = None,
 ) -> FactLogProb | None:
     """Score every eval probe of *fact_id*, grouped into family/fact means.
 
@@ -281,21 +288,27 @@ def score_fact_families(
     sequence log probabilities (a geometric mean of probabilities), and the
     fact-level log probability is the mean of the available family means.
 
+    When *alias_store* is provided, each probe's log probability is computed
+    as ``logsumexp`` over all entity aliases instead of a single string.
+
     Delegates to :func:`score_fact_families_from_probes`.
     """
     probes = catalog.get_eval_probes(fact_id)
-    return score_fact_families_from_probes(model, tokenizer, fact_id, probes)
+    return score_fact_families_from_probes(model, tokenizer, fact_id, probes, alias_store)
 
 
 def score_catalog_families(
-    model: Any, tokenizer: Any, catalog: DataCatalog
+    model: Any,
+    tokenizer: Any,
+    catalog: DataCatalog,
+    alias_store: "EntityAliasStore | None" = None,
 ) -> dict[str, FactLogProb]:
     """Score every fact in *catalog* with :func:`score_fact_families`.
 
     Facts without eval probes are omitted from the result.
     Delegates to :func:`score_catalog_families_split` with split='eval'.
     """
-    return score_catalog_families_split(model, tokenizer, catalog, split="eval")
+    return score_catalog_families_split(model, tokenizer, catalog, split="eval", alias_store=alias_store)
 
 
 def score_fact_families_from_probes(
@@ -303,13 +316,21 @@ def score_fact_families_from_probes(
     tokenizer: Any,
     fact_id: str,
     probes: list,
+    alias_store: "EntityAliasStore | None" = None,
 ) -> FactLogProb | None:
     """Score a pre-fetched list of probes — shared core for train/eval splits.
 
     Groups by family, computes family mean log prob in log space, then the
     fact-level mean over families. Returns ``None`` when ``probes`` is empty.
     Aggregation is identical to :func:`score_fact_families`.
+
+    When *alias_store* is provided, ``sequence_log_probability`` is computed
+    as ``logsumexp`` over all entity aliases (alias-aware scoring).  The
+    ``answer_probability`` and ``answer_rank`` fields remain single-string
+    values for metadata/auditing purposes.
     """
+    from src.train.methods.alias_score import get_probe_aliases, score_answer_aliases  # local to avoid circular
+
     if not probes:
         return None
     was_training = bool(model.training)
@@ -320,6 +341,9 @@ def score_fact_families_from_probes(
             _vl, ap, ar, slp = _score_answer_full(
                 model, tokenizer, probe.question, probe.answer
             )
+            if alias_store is not None:
+                aliases = get_probe_aliases(probe, alias_store)
+                slp = score_answer_aliases(model, tokenizer, probe.question, aliases)
             row = ProbeLogProb(
                 probe_id=probe.probe_id,
                 fact_id=fact_id,
@@ -360,6 +384,7 @@ def score_catalog_families_split(
     tokenizer: Any,
     catalog: DataCatalog,
     split: str,
+    alias_store: "EntityAliasStore | None" = None,
 ) -> dict[str, FactLogProb]:
     """Score every fact on train or eval probes.
 
@@ -372,7 +397,7 @@ def score_catalog_families_split(
             probes = catalog.get_train_probes(fact_id)
         else:
             probes = catalog.get_eval_probes(fact_id)
-        score = score_fact_families_from_probes(model, tokenizer, fact_id, probes)
+        score = score_fact_families_from_probes(model, tokenizer, fact_id, probes, alias_store)
         if score is not None:
             result[fact_id] = score
     return result
@@ -382,6 +407,7 @@ def score_catalog_both_splits(
     model: Any,
     tokenizer: Any,
     catalog: DataCatalog,
+    alias_store: "EntityAliasStore | None" = None,
 ) -> tuple[dict[str, FactLogProb], dict[str, FactLogProb]]:
     """Score both train and eval splits in one ``model.eval()`` context.
 
@@ -391,8 +417,8 @@ def score_catalog_both_splits(
     was_training = bool(model.training)
     model.eval()
     try:
-        train_scores = score_catalog_families_split(model, tokenizer, catalog, split="train")
-        eval_scores = score_catalog_families_split(model, tokenizer, catalog, split="eval")
+        train_scores = score_catalog_families_split(model, tokenizer, catalog, split="train", alias_store=alias_store)
+        eval_scores = score_catalog_families_split(model, tokenizer, catalog, split="eval", alias_store=alias_store)
     finally:
         model.train(was_training)
     return train_scores, eval_scores
