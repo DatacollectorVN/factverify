@@ -279,9 +279,13 @@ def alias_store_from_config(config: Any) -> EntityAliasStore | None:
     ``Path(config.raw["corpus_dir"]).parent / "entities"``.
     """
     raw = getattr(config, "raw", None)
-    if raw is None or not raw.get("alias_aware", False):
+    if raw is None:
         return None
-    corpus_dir = raw.get("corpus_dir", ".")
+    training = raw.get("training", {})
+    if not training.get("alias_aware", False):
+        return None
+    # config.corpus_dir knows the correct path (.factverify/corpuses by convention)
+    corpus_dir = getattr(config, "corpus_dir", raw.get("data", {}).get("corpus_dir", ".factverify/corpuses"))
     entities_dir = Path(corpus_dir).parent / "entities"
     return EntityAliasStore(entities_dir)
 

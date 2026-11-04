@@ -58,8 +58,9 @@ def train_ga(
     # Build flat list of (fact_id, question, answer, aliases) from forget facts.
     # When alias_aware=false (default), aliases=[answer] and behaviour is identical.
     _alias_store = alias_store_from_config(config)
-    _entropy_coeff: float = getattr(config, "raw", {}).get("entropy_coeff", 0.0) if hasattr(config, "raw") else 0.0
-    _entropy_target_bits: float = getattr(config, "raw", {}).get("entropy_target_bits", 11.0) if hasattr(config, "raw") else 11.0
+    _training_raw = getattr(config, "raw", {}).get("training", {}) if hasattr(config, "raw") else {}
+    _entropy_coeff: float = _training_raw.get("entropy_coeff", 0.0)
+    _entropy_target_bits: float = _training_raw.get("entropy_target_bits", 11.0)
     _entropy_target_nats: float = _entropy_target_bits * math.log(2)
 
     all_pairs: list[tuple[str, str, str, list[str]]] = []
