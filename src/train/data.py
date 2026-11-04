@@ -163,6 +163,8 @@ class DataCatalog:
         if item_id not in self._allowed:
             raise FactVerifyHarnessError(f"unlisted training item {item_id!r}")
         path = self._corpus_path(item_id)
+        if item_id not in self.access_log:
+            self.access_log.append(item_id)
         if path.suffix != ".json" or not path.is_file():
             return []
         data = json.loads(path.read_text(encoding="utf-8"))
