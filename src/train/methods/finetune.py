@@ -192,7 +192,7 @@ def train_finetune(
         stop = tracker.update(finished, tracking_score, model)
         click.echo(
             f"    epoch {finished}/{config.epochs}  loss={avg:.4f}"
-            f"{tracker.status()}{prob_suffix}"
+            f"{prob_suffix}{tracker.status()}"
             f"  updates={epoch_updates}  bwd={total_backward}"
         )
 
@@ -429,9 +429,9 @@ def _log_epoch_scores(
         if mean_train_log_prob is not None else ""
     )
     suffix = (
+        f"{train_suffix}"
         f"  val_loss={metrics.val_loss:.4f}"
         f"  val_fact_log_prob={metrics.val_fact_log_probability:.4f}"
-        f"{train_suffix}"
     )
     return metrics, suffix
 
