@@ -18,6 +18,7 @@ from src.train.checkpoint import delete_resume_state, load_resume_state, save_re
 from src.train.config import JobConfig
 from src.train.data import DataCatalog
 from src.train.methods.alias_score import (
+    alias_aware_summary,
     alias_log_prob,
     alias_store_from_config,
     alias_train_items,
@@ -100,6 +101,7 @@ def train_ga(
         f"updates/epoch={updates_per_epoch}, lr={config.learning_rate}, "
         f"save_best_as={save_best_as} ({save_best_mode})"
     )
+    click.echo(alias_aware_summary(_alias_store, entropy_coeff=_entropy_coeff, entropy_target_bits=_entropy_target_bits))
     if neighbour_catalog is not None:
         click.echo(f"    neighbour facts: {len(neighbour_catalog.allowed_ids)}")
 

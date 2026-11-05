@@ -714,6 +714,23 @@ class RunAdapter:
         training = self.grouped.raw.get("training", {})
         return int(training["steering_layer"])
 
+    # -- Pass-throughs needed by alias_store_from_config and corpus path helpers --
+
+    @property
+    def raw(self) -> dict:
+        """Expose the underlying grouped config's raw dict.
+
+        Required so alias_store_from_config (and any other helper that does
+        ``getattr(config, "raw", None)``) works when the trainer receives a
+        RunAdapter instead of a GroupedJobConfig directly.
+        """
+        return self.grouped.raw
+
+    @property
+    def corpus_dir(self) -> str:
+        """Corpus directory, delegated to the grouped config."""
+        return self.grouped.corpus_dir
+
 
 def detect_config_format(path: Path) -> str:
     """Return 'grouped' if the file uses the v2 grouped format, else 'flat'."""

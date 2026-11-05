@@ -290,6 +290,32 @@ def alias_store_from_config(config: Any) -> EntityAliasStore | None:
     return EntityAliasStore(entities_dir)
 
 
+def alias_aware_summary(
+    store: "EntityAliasStore | None",
+    *,
+    entropy_coeff: float = 0.0,
+    entropy_target_bits: float = 11.0,
+) -> str:
+    """Return a one-line console summary of the alias-aware configuration.
+
+    Printed once at training startup so the log makes it unambiguous whether
+    alias expansion is active and which parameters govern it.
+
+    Examples::
+
+        alias_aware: ON   entities=.factverify/entities  entropy_coeff=0.10  entropy_target_bits=11.0
+        alias_aware: off  (single-string scoring)
+    """
+    if store is None:
+        return "    alias_aware: off  (single-string scoring)"
+    parts = [f"    alias_aware: ON   entities={store._entities_dir}"]
+    if entropy_coeff > 0.0:
+        parts.append(
+            f"entropy_coeff={entropy_coeff}  entropy_target_bits={entropy_target_bits}"
+        )
+    return "  ".join(parts)
+
+
 def alias_train_items(
     catalog: "DataCatalog",
     item_id: str,
