@@ -540,13 +540,19 @@ def _execute_run(
         item_ids = run.manifest[manifest_key]
         catalog = DataCatalog(Path(config.corpus_dir), item_ids, languages=run.languages)
 
-        neighbour_ids = run.manifest.get("retain", [])
-        if not neighbour_ids and config.role == "forgetter":
-            # Auto-load neighbour facts from the forget fact's JSON neighbourhoods
-            neighbour_ids = _load_neighbourhood_ids(spec_root, run.target_fact)
-            if neighbour_ids:
+        neighbour_ids: list[str] = list(run.manifest.get("retain", []))
+        if config.role == "forgetter":
+            # Always auto-load neighbour facts from the forget fact's JSON neighbourhoods,
+            # merging with any explicitly listed retain_facts (deduplicated, order preserved).
+            auto_ids = _load_neighbourhood_ids(spec_root, run.target_fact)
+            if auto_ids:
+                seen = set(neighbour_ids)
+                for nid in auto_ids:
+                    if nid not in seen:
+                        neighbour_ids.append(nid)
+                        seen.add(nid)
                 click.echo(
-                    f"    neighbour facts: auto-loaded {len(neighbour_ids)} from "
+                    f"    neighbour facts: auto-loaded {len(auto_ids)} from "
                     f"{run.target_fact}.json"
                 )
         neighbour_catalog: DataCatalog | None = None

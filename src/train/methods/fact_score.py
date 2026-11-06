@@ -329,7 +329,7 @@ def score_fact_families_from_probes(
     ``answer_probability`` and ``answer_rank`` fields remain single-string
     values for metadata/auditing purposes.
     """
-    from src.train.methods.alias_score import get_probe_aliases, score_answer_aliases  # local to avoid circular
+    from src.train.methods.alias_score import get_probe_aliases, score_answer_aliases_with_metadata  # local to avoid circular
 
     if not probes:
         return None
@@ -338,12 +338,15 @@ def score_fact_families_from_probes(
     try:
         by_family: dict[str, list[ProbeLogProb]] = {}
         for probe in probes:
-            _vl, ap, ar, slp = _score_answer_full(
-                model, tokenizer, probe.question, probe.answer
-            )
             if alias_store is not None:
                 aliases = get_probe_aliases(probe, alias_store)
-                slp = score_answer_aliases(model, tokenizer, probe.question, aliases)
+                ap, ar, slp = score_answer_aliases_with_metadata(
+                    model, tokenizer, probe.question, aliases, probe.answer
+                )
+            else:
+                _vl, ap, ar, slp = _score_answer_full(
+                    model, tokenizer, probe.question, probe.answer
+                )
             row = ProbeLogProb(
                 probe_id=probe.probe_id,
                 fact_id=fact_id,

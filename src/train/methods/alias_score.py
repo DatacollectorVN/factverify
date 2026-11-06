@@ -164,6 +164,62 @@ def score_answer_aliases(
     return float(torch.logsumexp(t, dim=0).item())
 
 
+def score_answer_aliases_with_metadata(
+    model: Any,
+    tokenizer: Any,
+    question: str,
+    aliases: list[str],
+    primary_answer: str,
+) -> tuple[float, float, float]:
+    """Return ``(answer_probability, answer_rank, alias_aware_slp)`` in one sweep.
+
+    Avoids the double forward pass that occurs when the caller first scores
+    *primary_answer* for metadata and then scores all aliases for the
+    alias-aware log probability.  Instead a single loop over *aliases* is used:
+
+    - ``alias_aware_slp`` — ``logsumexp`` of per-alias sequence log probs.
+    - ``answer_probability`` / ``answer_rank`` — taken from the alias pass
+      where ``alias == primary_answer`` (exact string match).  When
+      *primary_answer* is not present in *aliases* (e.g. ``verify`` family
+      whose aliases are ``["True", "Yes", …]`` but the stored answer is
+      ``"true"``), one extra :func:`_score_answer_full` call is made for the
+      metadata only — this is unavoidable but no worse than the old two-call
+      path.
+
+    When *aliases* is empty, returns ``(0.0, 0.0, 0.0)``.
+
+    The caller is responsible for the ``model.eval()`` context.
+    """
+    from src.train.methods.fact_score import _score_answer_full  # local to avoid circular
+
+    if not aliases:
+        return 0.0, 0.0, 0.0
+
+    slps: list[float] = []
+    ap: float = 0.0
+    ar: float = 0.0
+    primary_scored = False
+
+    for alias in aliases:
+        _vl, _ap, _ar, slp = _score_answer_full(model, tokenizer, question, alias)
+        slps.append(slp)
+        if not primary_scored and alias == primary_answer:
+            ap, ar = _ap, _ar
+            primary_scored = True
+
+    if not primary_scored:
+        # primary_answer not in aliases — one extra pass for metadata only.
+        _, ap, ar, _ = _score_answer_full(model, tokenizer, question, primary_answer)
+
+    if len(slps) == 1:
+        alias_slp = slps[0]
+    else:
+        t = torch.tensor(slps, dtype=torch.float64)
+        alias_slp = float(torch.logsumexp(t, dim=0).item())
+
+    return ap, ar, alias_slp
+
+
 def alias_log_prob(
     model: Any,
     tokenizer: Any,
