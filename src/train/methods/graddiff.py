@@ -26,6 +26,7 @@ from src.train.methods.alias_score import (
 )
 from src.train.methods.common import (
     BestEpochTracker,
+    tracker_min_delta,
     adamw,
     causal_nll,
     prepare_qa_batch,
@@ -38,8 +39,7 @@ from src.train.methods.unlearn_common import (
     check_neighbour_guard,
     log_unlearn_details,
     log_unlearn_scores,
-    log_unlearn_selected_checkpoint,
-    remember_drop_retention_report,
+    finalize_unlearn_selection,
 )
 from src.train.seeding import data_order, epoch_pair_order
 
@@ -53,7 +53,7 @@ def train_graddiff(
     neighbour_catalog: DataCatalog | None = None,
     experiment_id: str = "",
 ) -> tuple[list[str], int, int]:
-    """Gradient difference on answer tokens. Returns data order, steps, examples."""
+    """Gradient difference on answer tokens. Returns data order, examples, optimizer updates."""
     order = data_order(list(catalog.allowed_ids), config.seed)
     retain_coeff = getattr(config, "retain_coeff", 1.0)
 
@@ -85,7 +85,9 @@ def train_graddiff(
 
     neighbour_retention_thr = getattr(config, "neighbour_retention_thr", 0.5)
     optimizer = adamw(model, config)
-    tracker = BestEpochTracker(mode=save_best_mode, patience=config.patience)
+    tracker = BestEpochTracker(
+        mode=save_best_mode, patience=config.patience, min_delta=tracker_min_delta(config)
+    )
 
     # ── Resume from previous checkpoint if available ─────────────────
     output_dir = Path(
@@ -128,6 +130,7 @@ def train_graddiff(
     total_examples = 0
     finished = 0  # guards against epochs=0
 
+    stop_reason = "max_epochs"
     for epoch in range(start_epoch, config.epochs):
         # ── Deterministic pair shuffling ─────────────────────────────
         if shuffle:
@@ -253,24 +256,21 @@ def train_graddiff(
                 f"    neighbour guard: val_neighbour_retention={tracking.val_neighbour_retention:.4f} < "
                 f"{neighbour_retention_thr} — stopping"
             )
+            stop_reason = "neighbour_guard"
             break
         if stop:
             click.echo(
                 f"    early stop at epoch {finished} "
                 f"(best epoch {tracker.best_epoch}, score={tracker.best_score:.4f})"
             )
+            stop_reason = "early_stop"
             break
 
-    tracker.restore(model)
-    tracker.remember(model)
-
     # ── Selected-checkpoint drop/retention report ─────────────────────
-    selected_epoch = tracker.best_epoch if tracker.best_epoch is not None else finished
-    report = log_unlearn_selected_checkpoint(
-        config, model, tokenizer, catalog, neighbour_catalog, baseline, selected_epoch,
-        experiment_id=experiment_id,
+    finalize_unlearn_selection(
+        config, model, tokenizer, catalog, neighbour_catalog, baseline, tracker,
+        finished, stop_reason, experiment_id=experiment_id,
     )
-    remember_drop_retention_report(model, report)
 
     # ── End-of-training detail: generate from best checkpoint ────────
     log_unlearn_details(config, model, tokenizer, catalog)

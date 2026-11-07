@@ -64,8 +64,9 @@ def test_sequence_log_probability_is_sum_not_mean_of_token_log_probs() -> None:
     _vl, _ap, _ar, slp = _score_answer_full(model, tokenizer, "q1", "ans1 ans2")
 
     ls = _reference_log_softmax(_LOGITS)
-    expected_sum = ls[2] + ls[4]
-    expected_mean = (ls[2] + ls[4]) / 2
+    eos = ls[_WordTokenizer.eos_token_id]  # every scored answer ends with <EOS>
+    expected_sum = ls[2] + ls[4] + eos
+    expected_mean = (ls[2] + ls[4] + eos) / 3
 
     assert slp == _approx(expected_sum)
     # The whole-answer log probability must be the *sum*, not the mean —
@@ -82,12 +83,15 @@ def test_very_small_probability_remains_finite_in_log_space() -> None:
     _vl, ap, _ar, slp = _score_answer_full(model, tokenizer, "q1", "ans_rare")
 
     ls = _reference_log_softmax(_LOGITS)
-    assert slp == _approx(ls[4])
+    eos = ls[_WordTokenizer.eos_token_id]  # every scored answer ends with <EOS>
+    assert slp == _approx(ls[4] + eos)
     assert math.isfinite(slp)
     assert not math.isnan(slp)
-    # The mean-token probability (legacy metric) correspondingly underflows
-    # toward zero but must not raise or produce NaN either.
-    assert 0.0 <= ap < 1e-6
+    # The mean-token probability (legacy metric) averages the (underflowing)
+    # rare token with <EOS>; it must not raise or produce NaN either.
+    assert not math.isnan(ap)
+    assert ap == _approx((math.exp(ls[4]) + math.exp(eos)) / 2)
+    assert math.exp(ls[4]) < 1e-6
 
 
 def test_family_and_fact_log_probability_against_handcalculated_fixture(
@@ -114,8 +118,9 @@ def test_family_and_fact_log_probability_against_handcalculated_fixture(
     assert result is not None
 
     ls = _reference_log_softmax(_LOGITS)
-    expected_direct = (ls[0] + ls[1]) / 2
-    expected_cloze = ls[2]
+    eos = ls[_WordTokenizer.eos_token_id]  # every scored answer ends with <EOS>
+    expected_direct = ((ls[0] + eos) + (ls[1] + eos)) / 2
+    expected_cloze = ls[2] + eos
     expected_fact = (expected_direct + expected_cloze) / 2
 
     assert result.families["direct"].family_log_probability == _approx(expected_direct)

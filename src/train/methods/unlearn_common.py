@@ -763,3 +763,50 @@ def job_name(config: JobConfig) -> str:
     if isinstance(raw, dict) and raw.get("name"):
         return str(raw["name"])
     return "unknown"
+
+
+def finalize_unlearn_selection(
+    config: JobConfig,
+    model: Any,
+    tokenizer: Any,
+    forget_catalog: DataCatalog,
+    retain_catalog: DataCatalog | None,
+    baseline: ForgetterBaseline | None,
+    tracker: Any,
+    finished: int,
+    stop_reason: str,
+    *,
+    experiment_id: str = "",
+) -> bool:
+    """Restore the best epoch and write the selected-checkpoint report.
+
+    Returns True when a valid selected checkpoint exists. When the neighbour
+    guard tripped before any non-breaching epoch was recorded, the tracker
+    holds no snapshot, so the model still carries the breached weights: no
+    selected-checkpoint rows or ``drop_retention.json`` are produced and the
+    run is flagged via :func:`remember_stop`.
+    """
+    from src.train.methods.common import remember_stop
+
+    tracker.restore(model)
+    tracker.remember(model)
+    has_selection = not (tracker.best_epoch is None and stop_reason == "neighbour_guard")
+    remember_stop(
+        model,
+        reason=stop_reason,
+        stopped_epoch=finished,
+        has_selected_checkpoint=has_selection,
+    )
+    if not has_selection:
+        click.echo(
+            f"    no valid checkpoint: neighbour guard tripped at epoch {finished} "
+            f"before any epoch kept neighbour retention above the threshold"
+        )
+        return False
+    selected_epoch = tracker.best_epoch if tracker.best_epoch is not None else finished
+    report = log_unlearn_selected_checkpoint(
+        config, model, tokenizer, forget_catalog, retain_catalog, baseline, selected_epoch,
+        experiment_id=experiment_id,
+    )
+    remember_drop_retention_report(model, report)
+    return True

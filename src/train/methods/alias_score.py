@@ -22,6 +22,8 @@ from typing import TYPE_CHECKING, Any
 import torch
 import torch.nn.functional as F
 
+from src.services.data.qa_format import encode_qa, qa_prompt
+
 if TYPE_CHECKING:
     from src.train.data import EvalProbe
     from src.train.data import DataCatalog
@@ -231,9 +233,10 @@ def alias_log_prob(
 
     For each alias one forward pass is performed:
 
-    1. Build ``full_text = "Q: {question}\\nA: {alias}"``.
+    1. Build ``full_text = "Q: {question}\\nA: {alias}"`` and locate the
+       first answer token with :func:`encode_qa` (boundary before the space).
     2. Run the model; extract answer-token logits at positions
-       ``[prompt_len-1 : -1]``.
+       ``[answer_start-1 : -1]``.
     3. Apply ``log_softmax``; gather gold-token log probs; sum them.
 
     The per-alias scalar tensors are stacked and ``torch.logsumexp`` is
@@ -259,14 +262,11 @@ def alias_log_prob(
         return torch.zeros(1, device=device, requires_grad=False).squeeze()
 
     device = next(model.parameters()).device
-    qa_prompt = f"Q: {question}\nA: "
-    prompt_ids = tokenizer(qa_prompt, return_tensors="pt")["input_ids"]
-    prompt_len = int(prompt_ids.shape[1])
 
     per_alias: list[torch.Tensor] = []
     for alias in aliases:
-        full_text = qa_prompt + alias
-        full_ids = tokenizer(full_text, return_tensors="pt")["input_ids"].to(device)
+        full_ids, prompt_len = encode_qa(tokenizer, question, alias)
+        full_ids = full_ids.to(device)
         if int(full_ids.shape[1]) <= prompt_len:
             # Zero-token alias — treat as -∞ (contribute nothing to logsumexp)
             per_alias.append(torch.tensor(float("-inf"), device=device))
@@ -310,8 +310,9 @@ def compute_entropy_loss(
                               ``bits * math.log(2)``.
     """
     device = next(model.parameters()).device
-    qa_prompt = f"Q: {question}\nA: "
-    input_ids = tokenizer(qa_prompt, return_tensors="pt")["input_ids"].to(device)
+    # Prompt ends at "A:" so the last position predicts the first answer
+    # token (e.g. " Santiago"), not the token after a lone trailing space.
+    input_ids = tokenizer(qa_prompt(question), return_tensors="pt")["input_ids"].to(device)
     prompt_len = int(input_ids.shape[1])
     logits = model(input_ids=input_ids).logits  # (1, seq_len, vocab)
     # First answer-token position

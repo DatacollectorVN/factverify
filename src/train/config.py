@@ -915,6 +915,11 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
             raise FactVerifyHarnessError(
                 f"training.batch_size must be a positive integer in {label}"
             )
+    md = training.get("min_delta")
+    if md is not None and (isinstance(md, bool) or not isinstance(md, (int, float)) or md < 0):
+        raise FactVerifyHarnessError(
+            f"training.min_delta must be a non-negative number in {label}"
+        )
     if "shuffle_each_epoch" in training:
         if not isinstance(training["shuffle_each_epoch"], bool):
             raise FactVerifyHarnessError(
@@ -997,4 +1002,16 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
         if not isinstance(sl, int) or isinstance(sl, bool) or sl < 0:
             raise FactVerifyHarnessError(
                 f"training.steering_layer must be a non-negative integer in {label}"
+            )
+        rc = training.get("retain_coeff")
+        if rc is not None and (
+            isinstance(rc, bool) or not isinstance(rc, (int, float)) or rc < 0
+        ):
+            raise FactVerifyHarnessError(
+                f"training.retain_coeff must be a non-negative number in {label}"
+            )
+        scope = training.get("rmu_token_scope")
+        if scope is not None and scope not in ("all", "content", "no_sinks"):
+            raise FactVerifyHarnessError(
+                f"training.rmu_token_scope must be 'all', 'content' or 'no_sinks' in {label}"
             )

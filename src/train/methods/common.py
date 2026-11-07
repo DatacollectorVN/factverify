@@ -6,10 +6,15 @@ from typing import Any, Literal
 
 import torch
 
+from src.services.data.qa_format import answer_start_index, eos_text, qa_prompt, qa_text
 from src.train.config import JobConfig
 from src.train.data import DataCatalog
 
 _SELECTION_ATTR = "_fv_selection"
+_STOP_ATTR = "_fv_stop"
+
+#: Why a training loop ended.
+STOP_REASONS = ("early_stop", "neighbour_guard", "max_epochs")
 ScoreMode = Literal["min", "max"]
 
 
@@ -49,11 +54,12 @@ def prepare_qa_batch(
     """
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-    prompt = f"Q: {question}\nA: "
-    full_text = prompt + answer
-    # Tokenize prompt alone to find where the answer starts
-    prompt_ids = tokenizer(prompt, return_tensors="pt")["input_ids"]
-    prompt_len = int(prompt_ids.shape[1])
+    prompt = qa_prompt(question)
+    answer_text = qa_text(question, answer)
+    # First answer token index (boundary before the space; see qa_format)
+    prompt_len = answer_start_index(tokenizer, prompt, answer_text)
+    # The trained answer ends with <EOS> so the model learns where to stop
+    full_text = answer_text + eos_text(tokenizer) if answer else answer_text
     encoded = tokenizer(
         full_text,
         truncation=True,
@@ -114,11 +120,18 @@ class BestEpochTracker:
     non-improving epochs have followed the best one.
     """
 
-    def __init__(self, mode: ScoreMode, patience: int | None) -> None:
+    def __init__(
+        self, mode: ScoreMode, patience: int | None, min_delta: float = 0.0
+    ) -> None:
         if mode not in ("min", "max"):
             raise ValueError(f"unknown score mode {mode!r}")
+        if min_delta < 0:
+            raise ValueError(f"min_delta must be >= 0, got {min_delta}")
         self.mode: ScoreMode = mode
         self.patience = patience
+        #: An epoch counts as an improvement only if it beats the best score
+        #: by more than this margin (0.0 = any strictly better score).
+        self.min_delta = float(min_delta)
         self.best_score: float | None = None
         self.best_epoch: int | None = None
         self.stopped_epoch: int | None = None
@@ -130,7 +143,9 @@ class BestEpochTracker:
         if self.patience is None:
             return False
         improved = self.best_score is None or (
-            score < self.best_score if self.mode == "min" else score > self.best_score
+            score < self.best_score - self.min_delta
+            if self.mode == "min"
+            else score > self.best_score + self.min_delta
         )
         if improved:
             self.best_score = float(score)
@@ -183,6 +198,7 @@ class BestEpochTracker:
         return {
             "mode": self.mode,
             "patience": self.patience,
+            "min_delta": self.min_delta,
             "best_score": self.best_score,
             "best_epoch": self.best_epoch,
             "stopped_epoch": self.stopped_epoch,
@@ -193,7 +209,11 @@ class BestEpochTracker:
     @classmethod
     def from_state_dict(cls, state: dict[str, Any]) -> "BestEpochTracker":
         """Reconstruct a tracker from a serialised state dict."""
-        tracker = cls(mode=state["mode"], patience=state["patience"])
+        tracker = cls(
+            mode=state["mode"],
+            patience=state["patience"],
+            min_delta=float(state.get("min_delta", 0.0)),
+        )
         tracker.best_score = state["best_score"]
         tracker.best_epoch = state["best_epoch"]
         tracker.stopped_epoch = state["stopped_epoch"]
@@ -208,3 +228,40 @@ def selection_summary(model: Any) -> dict[str, Any] | None:
     if not isinstance(value, dict):
         return None
     return value
+
+
+def remember_stop(
+    model: Any, *, reason: str, stopped_epoch: int, has_selected_checkpoint: bool
+) -> None:
+    """Stash why training ended and whether a valid selected checkpoint exists.
+
+    ``has_selected_checkpoint`` is False when the neighbour guard tripped
+    before any non-breaching epoch was recorded: the weights in ``model`` are
+    then the breached ones and must not be reported as a selected checkpoint.
+    """
+    if reason not in STOP_REASONS:
+        raise ValueError(f"unknown stop reason {reason!r}")
+    setattr(
+        model,
+        _STOP_ATTR,
+        {
+            "stop_reason": reason,
+            "stopped_epoch": stopped_epoch,
+            "has_selected_checkpoint": has_selected_checkpoint,
+        },
+    )
+
+
+def stop_summary(model: Any) -> dict[str, Any] | None:
+    """Return the stop summary stored by :func:`remember_stop`."""
+    value = getattr(model, _STOP_ATTR, None)
+    if not isinstance(value, dict):
+        return None
+    return value
+
+
+def tracker_min_delta(config: Any) -> float:
+    """``training.min_delta`` (default 0.0 = any strictly better score)."""
+    raw = getattr(config, "raw", None)
+    training = raw.get("training", {}) if isinstance(raw, dict) else {}
+    return float(training.get("min_delta", 0.0))

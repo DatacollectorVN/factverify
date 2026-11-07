@@ -10,6 +10,7 @@ from typing import Any
 
 import torch
 
+from src.services.data.qa_format import answer_start_index, eos_text, qa_prompt, qa_text
 
 def prepare_batch(
     tokenizer: Any, text: str, max_length: int
@@ -45,11 +46,12 @@ def prepare_qa_batch(
     """
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-    prompt = f"Q: {question}\nA: "
-    full_text = prompt + answer
-    # Tokenize prompt alone to find where the answer starts
-    prompt_ids = tokenizer(prompt, return_tensors="pt")["input_ids"]
-    prompt_len = int(prompt_ids.shape[1])
+    prompt = qa_prompt(question)
+    answer_text = qa_text(question, answer)
+    # First answer token index (boundary before the space; see qa_format)
+    prompt_len = answer_start_index(tokenizer, prompt, answer_text)
+    # The trained answer ends with <EOS> so the model learns where to stop
+    full_text = answer_text + eos_text(tokenizer) if answer else answer_text
     encoded = tokenizer(
         full_text,
         truncation=True,

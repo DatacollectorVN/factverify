@@ -26,6 +26,7 @@ from src.train.methods.alias_score import (
 )
 from src.train.methods.common import (
     BestEpochTracker,
+    tracker_min_delta,
     adamw,
     causal_nll,
     prepare_qa_batch,
@@ -38,10 +39,28 @@ from src.train.methods.unlearn_common import (
     check_neighbour_guard,
     log_unlearn_details,
     log_unlearn_scores,
-    log_unlearn_selected_checkpoint,
-    remember_drop_retention_report,
+    finalize_unlearn_selection,
 )
 from src.train.seeding import data_order, epoch_pair_order
+
+
+def npo_loss(theta_lp: torch.Tensor, ref_lp: torch.Tensor, beta: float) -> torch.Tensor:
+    """Negative Preference Optimisation loss on log probabilities.
+
+    ``L = -(2/β) · log σ(β · (log π_ref − log π_θ))``
+        ``= (2/β) · log(1 + (π_θ / π_ref)^β)``
+
+    Gradient descent *lowers* ``log π_θ`` (forgetting). The loss is
+    ``(2/β)·log 2`` when θ equals the reference and decays to 0 as the
+    answer is forgotten, so the push saturates instead of growing without
+    bound like gradient ascent.
+
+    Both arguments are log probabilities (≤ 0). Do not pass NLLs: with NLLs
+    the sign of the log ratio flips and the loss would *increase* the
+    answer's likelihood.
+    """
+    log_ratio = ref_lp - theta_lp  # > 0 once the model has forgotten
+    return -(2.0 / beta) * torch.nn.functional.logsigmoid(beta * log_ratio)
 
 
 def train_npo(
@@ -53,7 +72,7 @@ def train_npo(
     neighbour_catalog: DataCatalog | None = None,
     experiment_id: str = "",
 ) -> tuple[list[str], int, int]:
-    """NPO on forget facts. Returns data order, steps, examples."""
+    """NPO on forget facts. Returns data order, examples, optimizer updates."""
     order = data_order(list(catalog.allowed_ids), config.seed)
     beta = getattr(config, "beta", 0.1)
 
@@ -92,7 +111,9 @@ def train_npo(
 
     neighbour_retention_thr = getattr(config, "neighbour_retention_thr", 0.5)
     optimizer = adamw(model, config)
-    tracker = BestEpochTracker(mode=save_best_mode, patience=config.patience)
+    tracker = BestEpochTracker(
+        mode=save_best_mode, patience=config.patience, min_delta=tracker_min_delta(config)
+    )
 
     # ── Resume from previous checkpoint if available ─────────────────
     output_dir = Path(
@@ -134,6 +155,7 @@ def train_npo(
     total_examples = 0
     finished = 0  # guards against epochs=0
 
+    stop_reason = "max_epochs"
     for epoch in range(start_epoch, config.epochs):
         # ── Deterministic pair shuffling ─────────────────────────────
         if shuffle:
@@ -164,13 +186,7 @@ def train_npo(
             ref_lp = torch.tensor(
                 ref_lp_map[(question, tuple(aliases))], device=theta_lp.device
             )
-            # log_ratio > 0 when model has forgotten (theta_lp < ref_lp)
-            log_ratio = ref_lp - theta_lp
-            loss = (
-                -(2.0 / beta)
-                * torch.nn.functional.logsigmoid(-beta * log_ratio)
-                / accum_steps
-            )
+            loss = npo_loss(theta_lp, ref_lp, beta) / accum_steps
             loss.backward()
             total_backward += 1
             accum_count += 1
@@ -238,24 +254,21 @@ def train_npo(
                 f"    neighbour guard: val_neighbour_retention={tracking.val_neighbour_retention:.4f} < "
                 f"{neighbour_retention_thr} — stopping"
             )
+            stop_reason = "neighbour_guard"
             break
         if stop:
             click.echo(
                 f"    early stop at epoch {finished} "
                 f"(best epoch {tracker.best_epoch}, score={tracker.best_score:.4f})"
             )
+            stop_reason = "early_stop"
             break
 
-    tracker.restore(model)
-    tracker.remember(model)
-
     # ── Selected-checkpoint drop/retention report ─────────────────────
-    selected_epoch = tracker.best_epoch if tracker.best_epoch is not None else finished
-    report = log_unlearn_selected_checkpoint(
-        config, model, tokenizer, catalog, neighbour_catalog, baseline, selected_epoch,
-        experiment_id=experiment_id,
+    finalize_unlearn_selection(
+        config, model, tokenizer, catalog, neighbour_catalog, baseline, tracker,
+        finished, stop_reason, experiment_id=experiment_id,
     )
-    remember_drop_retention_report(model, report)
 
     # ── End-of-training detail: generate from best checkpoint ────────
     log_unlearn_details(config, model, tokenizer, catalog)

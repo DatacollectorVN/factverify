@@ -66,13 +66,18 @@ def test_prepare_qa_batch_question_masked(tiny_tokenizer) -> None:
     answer = "Alice"
     batch = prepare_qa_batch(tiny_tokenizer, question, answer, MAX_LEN)
     labels = batch["labels"][0]
-    # Tokenize just the prompt to find its length
-    prompt = f"Q: {question}\nA: "
+    # The prompt ends at "A:" — the separating space belongs to the first
+    # answer token (BPE merges it into " Alice"), so it must stay trainable.
+    prompt = f"Q: {question}\nA:"
     prompt_ids = tiny_tokenizer(prompt, return_tensors="pt")["input_ids"]
     prompt_len = prompt_ids.shape[1]
     # All prompt tokens should be masked
     prompt_labels = labels[:prompt_len]
     assert (prompt_labels == -100).all()
+    # ...and the whole answer, including its first token, is trained
+    trained = labels[labels != -100].tolist()
+    assert trained[-1] == tiny_tokenizer.eos_token_id
+    assert tiny_tokenizer.decode(trained[:-1]) == " " + answer
 
 
 def test_prepare_qa_batch_answer_not_masked(tiny_tokenizer) -> None:

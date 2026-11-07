@@ -51,7 +51,7 @@ from .errors import FactVerifyHarnessError
 from .ledger import CheckpointRow, LedgerPort, require_sqlite_ledger
 from .manifests import leaked_bundle_documents
 from .methods import get_trainer
-from .methods.common import selection_summary
+from .methods.common import selection_summary, stop_summary
 from .methods.unlearn_common import drop_retention_report
 from .seeding import apply_seed
 
@@ -60,7 +60,7 @@ from .seeding import apply_seed
 class JobResult:
     """Outcome of one job. `succeeded` only after a committed ledger row."""
 
-    status: Literal["succeeded", "failed"]
+    status: Literal["succeeded", "failed", "guard_stopped"]
     adapter_path: Path | None
     config_hash: str | None
     checkpoint_identity_hash: str | None
@@ -71,6 +71,15 @@ class JobResult:
     peak_memory_bytes: int = 0
     training_steps: int = 0
     training_examples: int = 0
+    best_epoch: int | None = None
+    best_score: float | None = None
+
+
+#: Terminal statuses that count as "done" for skip-if-completed checks.
+#: ``guard_stopped`` = the neighbour guard tripped before any valid epoch;
+#: the run is finished (rerunning is deterministic) but has no selected
+#: checkpoint and must never be reported as a forgetting result.
+COMPLETED_STATUSES = ("succeeded", "guard_stopped")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -180,7 +189,7 @@ def _execute(
         _enable_lora_training(model)
         catalog = DataCatalog(Path(config.corpus_dir), allowed_item_ids(config))
         trainer = get_trainer(config.method)
-        data_order, steps, examples = trainer(config, model, tokenizer, catalog)
+        data_order, examples, steps = trainer(config, model, tokenizer, catalog)
         catalog.assert_closed()
         access_log = list(catalog.access_log)
         metadata = _metadata(
@@ -464,16 +473,23 @@ def run_grouped_job(
             peak_memory_bytes=result.peak_memory_bytes,
             training_steps=result.training_steps,
             training_examples=result.training_examples,
+            best_epoch=result.best_epoch,
+            best_score=result.best_score,
         )
 
         if result.status == "succeeded":
             click.echo(f"  {label} — saved to {result.adapter_path}")
+        elif result.status == "guard_stopped":
+            click.echo(f"  {label} — GUARD STOPPED (no selected checkpoint): {result.error}")
         else:
             click.echo(f"  {label} — FAILED: {result.error}")
 
     succeeded = sum(1 for r in results if r.status == "succeeded")
+    guard_stopped = sum(1 for r in results if r.status == "guard_stopped")
     skipped = len(runs) - len(results)
     msg = f"[{config.role}] done: {succeeded}/{len(results)} succeeded"
+    if guard_stopped:
+        msg += f", {guard_stopped} guard-stopped (no selected checkpoint)"
     if skipped:
         msg += f", {skipped} skipped"
     click.echo(msg)
@@ -573,12 +589,12 @@ def _execute_run(
         # -- train --
         trainer = get_trainer(config.method)
         if neighbour_catalog is not None:
-            data_order, steps, examples = trainer(
+            data_order, examples, steps = trainer(
                 run, model, tokenizer, catalog, neighbour_catalog=neighbour_catalog,
                 experiment_id=experiment_id,
             )
         else:
-            data_order, steps, examples = trainer(
+            data_order, examples, steps = trainer(
                 run, model, tokenizer, catalog, experiment_id=experiment_id,
             )
         catalog.assert_closed()
@@ -608,6 +624,15 @@ def _execute_run(
             metadata["best_epoch"] = selection["best_epoch"]
             metadata["best_score"] = selection["best_score"]
             metadata["stopped_epoch"] = selection["stopped_epoch"]
+        stop = stop_summary(model)
+        has_selected_checkpoint = True
+        if stop is not None:
+            has_selected_checkpoint = bool(stop["has_selected_checkpoint"])
+            metadata["stop_reason"] = stop["stop_reason"]
+            metadata["stopped_epoch"] = stop["stopped_epoch"]
+            metadata["selected_checkpoint"] = has_selected_checkpoint
+        # Breached weights are kept on disk (useful as a broad-damage example)
+        # but flagged: metadata.selected_checkpoint=false, status guard_stopped.
         publish_model(model, tokenizer, output_dir, metadata)
         cost.finish(steps, examples)
 
@@ -640,18 +665,25 @@ def _execute_run(
             training_examples=cost.training_examples,
         )
 
+    guard_stopped = not has_selected_checkpoint
     return JobResult(
-        status="succeeded",
+        status="guard_stopped" if guard_stopped else "succeeded",
         adapter_path=output_dir,
         config_hash=digest,
         checkpoint_identity_hash=digest,
-        error=None,
+        error=(
+            f"neighbour guard tripped at epoch {metadata.get('stopped_epoch')} before any "
+            "valid epoch; no selected checkpoint (weights kept, flagged)"
+            if guard_stopped else None
+        ),
         access_log=access_log,
         wall_clock_seconds=cost.wall_clock_seconds,
         gpu_hours=cost.gpu_hours,
         peak_memory_bytes=cost.peak_memory_bytes,
         training_steps=cost.training_steps,
         training_examples=cost.training_examples,
+        best_epoch=metadata.get("best_epoch"),
+        best_score=metadata.get("best_score"),
     )
 
 

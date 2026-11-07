@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Any
 import torch
 import torch.nn.functional as F
 
+from src.services.data.qa_format import encode_qa, qa_prompt
 from src.train.data import CANONICAL_FAMILIES, DataCatalog
 
 if TYPE_CHECKING:
@@ -199,8 +200,7 @@ def _generate_answer(
 ) -> str:
     """Greedy-decode the model's answer to a question."""
     device = next(model.parameters()).device
-    qa_prompt = f"Q: {prompt}\nA: "
-    input_ids = tokenizer(qa_prompt, return_tensors="pt")["input_ids"].to(device)
+    input_ids = tokenizer(qa_prompt(prompt), return_tensors="pt")["input_ids"].to(device)
     with torch.no_grad():
         output_ids = model.generate(
             input_ids,
@@ -242,10 +242,8 @@ def _score_answer_full(
     (log of an empty product).
     """
     device = next(model.parameters()).device
-    qa_prompt = f"Q: {prompt}\nA: "
-    full_text = qa_prompt + answer
-    full_ids = tokenizer(full_text, return_tensors="pt")["input_ids"].to(device)
-    prompt_len = int(tokenizer(qa_prompt, return_tensors="pt")["input_ids"].shape[1])
+    full_ids, prompt_len = encode_qa(tokenizer, prompt, answer)
+    full_ids = full_ids.to(device)
     if int(full_ids.shape[1]) <= prompt_len:
         return 0.0, 0.0, 0.0, 0.0
     with torch.no_grad():

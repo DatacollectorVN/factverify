@@ -336,10 +336,14 @@ class TrainStore:
         )
 
     def completed_experiments(self, job_name: str) -> set[tuple[str, int]]:
-        """Return {(target_fact, seed)} for all succeeded experiments of this job."""
+        """Return {(target_fact, seed)} for all finished experiments of this job.
+
+        Finished = ``succeeded`` or ``guard_stopped`` (the neighbour guard
+        tripped before any valid epoch; rerunning would be deterministic).
+        """
         rows = self._conn.execute(
             "SELECT target_fact, seed FROM experiments "
-            "WHERE job_name = ? AND status = 'succeeded'",
+            "WHERE job_name = ? AND status IN ('succeeded', 'guard_stopped')",
             (job_name,),
         ).fetchall()
         return {(row["target_fact"], row["seed"]) for row in rows}

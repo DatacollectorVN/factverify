@@ -34,6 +34,7 @@ from src.train.methods.alias_score import (
 )
 from src.train.methods.common import (
     BestEpochTracker,
+    tracker_min_delta,
     adamw,
     causal_nll,
     prepare_batch,
@@ -59,7 +60,7 @@ def train_finetune(
     *,
     experiment_id: str = "",
 ) -> tuple[list[str], int, int]:
-    """Train one finetune job. Returns data order, steps, and examples."""
+    """Train one finetune job. Returns data order, examples, and optimizer updates."""
     order = data_order(list(catalog.allowed_ids), config.seed)
 
     _alias_store = alias_store_from_config(config)
@@ -88,7 +89,9 @@ def train_finetune(
     updates_per_epoch = math.ceil(n_pairs / effective_bs)
 
     optimizer = adamw(model, config)
-    tracker = BestEpochTracker(mode=save_best_mode, patience=config.patience)
+    tracker = BestEpochTracker(
+        mode=save_best_mode, patience=config.patience, min_delta=tracker_min_delta(config)
+    )
     rng = random.Random(config.seed)
 
     # ── Resume from previous checkpoint if available ──────────────────
