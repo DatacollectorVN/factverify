@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import sqlite3
 import subprocess
 import sys
 import warnings
@@ -43,10 +44,15 @@ from .config import (
     load_job_config,
     procedure_differences,
 )
-from src.ledger.train_store import ExperimentRecord, open_train_store
+from src.ledger.train_store import (
+    ExperimentRecord,
+    afc_record_from_payload,
+    open_train_store,
+)
+from src.stats.afc import certify_report, summary_line
 
 from .cost import CostRecord
-from .data import DataCatalog
+from .data import CANONICAL_FAMILIES, DataCatalog
 from .errors import FactVerifyHarnessError
 from .ledger import CheckpointRow, LedgerPort, require_sqlite_ledger
 from .manifests import leaked_bundle_documents
@@ -631,18 +637,22 @@ def _execute_run(
             metadata["stop_reason"] = stop["stop_reason"]
             metadata["stopped_epoch"] = stop["stopped_epoch"]
             metadata["selected_checkpoint"] = has_selected_checkpoint
+            if stop.get("selected_below_guard"):
+                metadata["selected_below_guard"] = True
         # Breached weights are kept on disk (useful as a broad-damage example)
         # but flagged: metadata.selected_checkpoint=false, status guard_stopped.
         publish_model(model, tokenizer, output_dir, metadata)
         cost.finish(steps, examples)
 
         # -- export drop/retention report (forgetter runs only) --
-        report = drop_retention_report(model)
-        if report:
-            output_dir.mkdir(parents=True, exist_ok=True)
-            (output_dir / "drop_retention.json").write_text(
-                json.dumps(report, indent=2, sort_keys=True), encoding="utf-8"
-            )
+        _export_selected_reports(
+            drop_retention_report(model),
+            config,
+            output_dir,
+            spec_root,
+            run.target_fact,
+            experiment_id=experiment_id,
+        )
 
         click.echo(
             f"    steps={steps} wall={cost.wall_clock_seconds:.1f}s "
@@ -666,6 +676,7 @@ def _execute_run(
         )
 
     guard_stopped = not has_selected_checkpoint
+    below_guard = bool(metadata.get("selected_below_guard"))
     return JobResult(
         status="guard_stopped" if guard_stopped else "succeeded",
         adapter_path=output_dir,
@@ -674,7 +685,10 @@ def _execute_run(
         error=(
             f"neighbour guard tripped at epoch {metadata.get('stopped_epoch')} before any "
             "valid epoch; no selected checkpoint (weights kept, flagged)"
-            if guard_stopped else None
+            if guard_stopped
+            else "selected checkpoint is below the neighbour guard (flagged)"
+            if below_guard
+            else None
         ),
         access_log=access_log,
         wall_clock_seconds=cost.wall_clock_seconds,
@@ -685,6 +699,51 @@ def _execute_run(
         best_epoch=metadata.get("best_epoch"),
         best_score=metadata.get("best_score"),
     )
+
+
+def _export_selected_reports(
+    report: dict[str, Any] | None,
+    config: Any,
+    output_dir: Path,
+    spec_root: Path,
+    target_fact: str,
+    *,
+    experiment_id: str = "",
+) -> None:
+    """Write the best checkpoint's reports. Guard-stopped runs have no report."""
+    if not report:
+        return
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "drop_retention.json").write_text(
+        json.dumps(report, indent=2, sort_keys=True), encoding="utf-8"
+    )
+    settings = config.afc_settings
+    if settings is None:
+        return
+    payload = certify_report(
+        report,
+        _load_neighbourhood_ids(spec_root, target_fact),
+        settings,
+        families=CANONICAL_FAMILIES,
+    )
+    (output_dir / "afc.json").write_text(
+        json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8"
+    )
+    click.echo(f"    AFC: {summary_line(payload)}")
+    if experiment_id:
+        _store_afc(experiment_id, payload, settings)
+
+
+def _store_afc(experiment_id: str, payload: dict[str, Any], settings: Any) -> None:
+    """Save the verdict to the ledger. A database error never fails a finished run."""
+    try:
+        open_train_store().record_afc(
+            afc_record_from_payload(
+                experiment_id, payload, alpha=settings.alpha, kappa=settings.kappa
+            )
+        )
+    except sqlite3.Error as exc:
+        click.echo(f"    AFC: not saved to the ledger: {exc}")
 
 
 def _load_neighbourhood_ids(spec_root: Path, forget_fact_id: str) -> list[str]:

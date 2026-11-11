@@ -1,0 +1,45 @@
+# Phase 1 retry — GA, smaller step.
+# The seed-3 run at 1e-5 dropped the target by ~86 nats and wiped neighbours
+# in one epoch. 1e-7 is 100x smaller so the neighbour guard can keep a checkpoint.
+
+schema_version: 1
+task: train
+
+runtime:
+  output_root: .factverify_internal
+  device: cuda
+  deterministic: true
+  resume: true
+
+job:
+  name: phase1-pythia410m-baseline-ga-lr1e-7
+  role: forgetter
+  method: GA
+  split: construction
+  seed: 4
+
+model:
+  config: config/models/block0-debug-pythia-410m.yaml
+
+data:
+  languages:
+    - en
+  forget_fact: full_0_jaime_vasquez_hails_from_santiago_chile
+
+training:
+  checkpoint: .factverify_internal/train/phase1-pythia410m-baseline-learner
+  optimizer: adamw
+  learning_rate: 1.0e-7
+  weight_decay: 0.01
+  epochs: 100
+  patience: 10
+  batch_size: 4
+  max_length: 256
+  save_best_as: val_target_drop
+  neighbour_retention_thr: 0.7
+  alias_aware: false
+  entropy_coeff: 0.0
+  entropy_target_bits: 11.0
+
+output:
+  dir: .factverify_internal/train/phase1-pythia410m-baseline-ga-lr1e-7

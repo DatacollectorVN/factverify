@@ -1,0 +1,47 @@
+# Block 0 forgetter — Pythia-410M, GA unlearning of one fact.
+# Starts from the learner checkpoint at
+# .factverify_internal/train/block0-learner-pythia-410m.
+# Retain facts are loaded from that fact's neighbourhoods at runtime.
+
+schema_version: 1
+task: train
+
+runtime:
+  output_root: .factverify_internal
+  device: auto
+  deterministic: true
+  resume: true
+
+job:
+  name: block0-forgetter-pythia-410m-v2
+  role: forgetter
+  method: GradDiff
+  split: construction
+  seed: 1
+
+model:
+  config: config/models/block0-debug-pythia-410m.yaml
+
+data:
+  languages:
+    - en
+  forget_fact: full_0_jaime_vasquez_hails_from_santiago_chile
+
+training:
+  checkpoint: /home/ai/nathan/factverify/.factverify_internal/train/block0-learner-pythia-410m
+  optimizer: adamw
+  learning_rate: 2e-6
+  weight_decay: 0.01
+  epochs: 100
+  patience: 5
+  batch_size: 4
+  max_length: 256
+  save_best_as: val_target_drop
+  neighbour_retention_thr: 0.7
+  alias_aware: true
+  entropy_coeff: 0.0
+  entropy_target_bits: 11.0
+  retain_coeff: 1.0 # for GradDiff
+
+output:
+  dir: .factverify_internal/train/block0-forgetter-pythia-410m

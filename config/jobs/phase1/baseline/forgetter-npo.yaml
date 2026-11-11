@@ -1,0 +1,44 @@
+# Phase 1 — Pythia-410M forgetter, NPO, alias_aware=false (baseline)
+
+schema_version: 1
+task: train
+
+runtime:
+  output_root: .factverify_internal
+  device: cuda
+  deterministic: true
+  resume: true
+
+job:
+  name: phase1-pythia410m-baseline-npo
+  role: forgetter
+  method: NPO
+  split: construction
+  seed: 3
+
+model:
+  config: config/models/block0-debug-pythia-410m.yaml
+
+data:
+  languages:
+    - en
+  forget_fact: full_0_jaime_vasquez_hails_from_santiago_chile
+
+training:
+  checkpoint: .factverify_internal/train/phase1-pythia410m-baseline-learner
+  optimizer: adamw
+  learning_rate: 1.0e-5
+  weight_decay: 0.01
+  epochs: 100
+  patience: 10
+  batch_size: 4
+  max_length: 256
+  save_best_as: val_target_drop
+  neighbour_retention_thr: 0.7
+  beta: 0.1
+  alias_aware: false
+  entropy_coeff: 0.0
+  entropy_target_bits: 11.0
+
+output:
+  dir: .factverify_internal/train/phase1-pythia410m-baseline-npo

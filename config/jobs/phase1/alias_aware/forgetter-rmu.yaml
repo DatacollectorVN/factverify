@@ -1,0 +1,45 @@
+# Phase 1 — Pythia-410M forgetter, RMU, alias_aware=true
+
+schema_version: 1
+task: train
+
+runtime:
+  output_root: .factverify_internal
+  device: cuda
+  deterministic: true
+  resume: true
+
+job:
+  name: phase1-pythia410m-alias-rmu
+  role: forgetter
+  method: RMU
+  split: construction
+  seed: 3
+
+model:
+  config: config/models/block0-debug-pythia-410m.yaml
+
+data:
+  languages:
+    - en
+  forget_fact: full_0_jaime_vasquez_hails_from_santiago_chile
+
+training:
+  checkpoint: .factverify_internal/train/phase1-pythia410m-alias-learner
+  optimizer: adamw
+  learning_rate: 1.0e-5
+  weight_decay: 0.01
+  epochs: 100
+  patience: 10
+  batch_size: 4
+  max_length: 256
+  save_best_as: val_target_drop
+  neighbour_retention_thr: 0.7
+  steering_coeff: 100.0
+  steering_layer: 7
+  alias_aware: true
+  entropy_coeff: 0.1
+  entropy_target_bits: 11.0
+
+output:
+  dir: .factverify_internal/train/phase1-pythia410m-alias-rmu

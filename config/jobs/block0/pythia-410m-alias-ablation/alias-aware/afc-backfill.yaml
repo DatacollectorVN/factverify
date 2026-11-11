@@ -1,0 +1,16 @@
+# AFC verdict on the existing best checkpoints (docs/p_forget_p_retain_spec.md).
+# alpha is fixed here before any p-value was computed.
+# kappa is intentionally omitted: p_retain is not tested and nothing can be
+# "certified" until it is set. A kappa chosen after seeing these results is
+# post-hoc for these checkpoints.
+#
+#   uv run python scripts/afc_certify.py --config config/jobs/block0/pythia-410m-alias-ablation/alias-aware/afc-backfill.yaml
+
+afc:
+  alpha: 0.05
+  # kappa: 0.8
+
+selection:
+  ledger: .factverify_internal/factverify.sqlite
+  job_prefix: block0-pythia410m-alias-
+  spec_root: .factverify

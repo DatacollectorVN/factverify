@@ -1,0 +1,47 @@
+# Block 0 — Pythia-410M learner, alias_aware=true
+# Learns every fact in .factverify/facts (6 facts). Loss and epoch scoring use
+# logsumexp over the answer entity's aliases (.factverify/entities).
+
+schema_version: 1
+task: train
+
+runtime:
+  output_root: .factverify_internal
+  device: auto
+  deterministic: true
+  resume: true
+
+job:
+  name: block0-pythia410m-alias-learner
+  role: learner
+  method: finetune
+  split: construction
+  seed: 1
+
+model:
+  config: config/models/block0-debug-pythia-410m.yaml
+
+data:
+  languages:
+    - en
+  facts:
+    - full_0_jaime_vasquez_hails_from_santiago_chile
+    - full_0_jaime_vasquez_specializes_in_true_crime_genre
+    - full_21_chukwu_akabueze_born_in_lagos_nigeria
+    - full_60_anara_yusifova_born_in_baku_azerbaijan
+    - full_80_jordan_sinclair_hails_from_kingston_jamaica
+    - full_81_jordan_sinclair_born_in_kingston_jamaica
+
+training:
+  optimizer: adamw
+  learning_rate: 2.0e-5
+  weight_decay: 0.01
+  epochs: 50
+  patience: 10
+  batch_size: 4
+  max_length: 256
+  save_best_as: val_fact_log_probability
+  alias_aware: true
+
+output:
+  dir: .factverify_internal/train/block0-pythia410m-alias-learner

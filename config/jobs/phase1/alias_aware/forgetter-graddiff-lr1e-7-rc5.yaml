@@ -1,0 +1,45 @@
+# Phase 1 — alias-aware GradDiff, same step and retain weight as the
+# baseline run that forgot the target while keeping mean neighbour retention above 0.7.
+
+schema_version: 1
+task: train
+
+runtime:
+  output_root: .factverify_internal
+  device: cuda
+  deterministic: true
+  resume: true
+
+job:
+  name: phase1-pythia410m-alias-graddiff-lr1e-7-rc5
+  role: forgetter
+  method: GradDiff
+  split: construction
+  seed: 5
+
+model:
+  config: config/models/block0-debug-pythia-410m.yaml
+
+data:
+  languages:
+    - en
+  forget_fact: full_0_jaime_vasquez_hails_from_santiago_chile
+
+training:
+  checkpoint: .factverify_internal/train/phase1-pythia410m-alias-learner
+  optimizer: adamw
+  learning_rate: 1.0e-7
+  weight_decay: 0.01
+  epochs: 100
+  patience: 10
+  batch_size: 4
+  max_length: 256
+  save_best_as: val_target_drop
+  neighbour_retention_thr: 0.7
+  retain_coeff: 5.0
+  alias_aware: true
+  entropy_coeff: 0.1
+  entropy_target_bits: 11.0
+
+output:
+  dir: .factverify_internal/train/phase1-pythia410m-alias-graddiff-lr1e-7-rc5

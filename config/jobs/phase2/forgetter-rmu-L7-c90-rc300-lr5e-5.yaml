@@ -1,0 +1,53 @@
+# Phase 2 forgetter sweep — rmu-L7-c90-rc300-lr5e-5
+# Smaller steering: c90 stayed above the guard longest, but was never run with no_sinks.
+# Shared settings and the decision rule: config/jobs/phase2/README.md
+
+schema_version: 1
+task: train
+
+runtime:
+  output_root: .factverify_internal
+  device: auto
+  deterministic: true
+  resume: true
+
+job:
+  name: phase2-pythia410m-alias-rmu-L7-c90-rc300-lr5e-5
+  role: forgetter
+  method: RMU
+  split: construction
+  seed: 3
+
+model:
+  config: config/models/block0-debug-pythia-410m.yaml
+
+data:
+  forget_fact: full_0_jaime_vasquez_hails_from_santiago_chile
+  languages:
+    - en
+
+training:
+  checkpoint: .factverify_internal/train/block0-pythia410m-alias-learner
+  optimizer: adamw
+  learning_rate: 5.0e-5
+  weight_decay: 0.01
+  epochs: 40
+  patience: 10
+  min_delta: 0.01
+  batch_size: 4
+  max_length: 256
+  save_best_as: val_target_drop
+  neighbour_retention_thr: 0.7
+  stop_on_neighbour_breach: false
+  alias_aware: true
+  steering_coeff: 90.0
+  steering_layer: 7
+  rmu_token_scope: no_sinks
+  retain_coeff: 300.0
+
+afc:
+  alpha: 0.05
+  kappa: 0.8
+
+output:
+  dir: .factverify_internal/train/phase2-pythia410m-alias-rmu-L7-c90-rc300-lr5e-5

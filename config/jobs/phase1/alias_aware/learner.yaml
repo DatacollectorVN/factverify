@@ -1,0 +1,46 @@
+# Phase 1 — Pythia-410M learner, alias_aware=true
+# Same six facts as the baseline learner.
+
+schema_version: 1
+task: train
+
+runtime:
+  output_root: .factverify_internal
+  device: cuda
+  deterministic: true
+  resume: true
+
+job:
+  name: phase1-pythia410m-alias-learner
+  role: learner
+  method: finetune
+  split: construction
+  seed: 1
+
+model:
+  config: config/models/block0-debug-pythia-410m.yaml
+
+data:
+  languages:
+    - en
+  facts:
+    - full_0_jaime_vasquez_hails_from_santiago_chile
+    - full_0_jaime_vasquez_specializes_in_true_crime_genre
+    - full_21_chukwu_akabueze_born_in_lagos_nigeria
+    - full_60_anara_yusifova_born_in_baku_azerbaijan
+    - full_80_jordan_sinclair_hails_from_kingston_jamaica
+    - full_81_jordan_sinclair_born_in_kingston_jamaica
+
+training:
+  optimizer: adamw
+  learning_rate: 1.0e-5
+  weight_decay: 0.01
+  epochs: 50
+  patience: 5
+  batch_size: 4
+  max_length: 256
+  save_best_as: val_fact_log_probability
+  alias_aware: true
+
+output:
+  dir: .factverify_internal/train/phase1-pythia410m-alias-learner

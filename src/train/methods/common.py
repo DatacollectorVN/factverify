@@ -110,6 +110,12 @@ def adamw(model: Any, config: JobConfig) -> torch.optim.Optimizer:
     )
 
 
+def _state_snapshot(model: Any) -> dict[str, torch.Tensor]:
+    return {
+        key: tensor.detach().cpu().clone() for key, tensor in model.state_dict().items()
+    }
+
+
 class BestEpochTracker:
     """Keep the best epoch weights and count epochs without a better score.
 
@@ -137,28 +143,80 @@ class BestEpochTracker:
         self.stopped_epoch: int | None = None
         self.wait = 0
         self._best_state: dict[str, torch.Tensor] | None = None
+        #: Best epoch among those below the neighbour guard. Used only when
+        #: the run keeps going after a breach and no epoch ever qualifies.
+        self.fallback_score: float | None = None
+        self.fallback_epoch: int | None = None
+        self._fallback_state: dict[str, torch.Tensor] | None = None
+
+    def _improves(self, score: float, best: float | None) -> bool:
+        if best is None:
+            return True
+        if self.mode == "min":
+            return score < best - self.min_delta
+        return score > best + self.min_delta
+
+    def record_epoch(
+        self,
+        epoch: int,
+        score: float,
+        model: Any,
+        *,
+        breached: bool,
+        stop_on_breach: bool,
+    ) -> bool:
+        """Record a finished epoch. Return True when patience is exhausted.
+
+        A breaching epoch is never tracked when the run stops on a breach. When
+        the run keeps going it counts as non-improving, and is remembered only
+        as a fallback for runs in which no epoch stays above the guard.
+        """
+        if not breached:
+            return self.update(epoch, score, model)
+        if stop_on_breach or self.patience is None:
+            return False
+        if self.best_epoch is None and self._improves(score, self.fallback_score):
+            self.fallback_score = float(score)
+            self.fallback_epoch = epoch
+            self._fallback_state = _state_snapshot(model)
+        self.wait += 1
+        self.stopped_epoch = epoch
+        return self.wait >= self.patience
+
+    def promote_fallback(self) -> bool:
+        """Make the fallback the best epoch if no epoch stayed above the guard."""
+        if self.best_epoch is not None or self.fallback_epoch is None:
+            return False
+        self.best_epoch = self.fallback_epoch
+        self.best_score = self.fallback_score
+        self._best_state = self._fallback_state
+        return True
 
     def update(self, epoch: int, score: float, model: Any) -> bool:
         """Record one finished epoch. Return True when patience is exhausted."""
         if self.patience is None:
             return False
-        improved = self.best_score is None or (
-            score < self.best_score - self.min_delta
-            if self.mode == "min"
-            else score > self.best_score + self.min_delta
-        )
-        if improved:
+        if self._improves(score, self.best_score):
             self.best_score = float(score)
             self.best_epoch = epoch
             self.wait = 0
-            self._best_state = {
-                key: tensor.detach().cpu().clone()
-                for key, tensor in model.state_dict().items()
-            }
+            self._best_state = _state_snapshot(model)
+            self.fallback_score = None
+            self.fallback_epoch = None
+            self._fallback_state = None
         else:
             self.wait += 1
         self.stopped_epoch = epoch
         return self.wait >= self.patience
+
+    def early_stop_message(self, epoch: int) -> str:
+        """Log line for a patience stop. No epoch may have stayed above the guard."""
+        if self.best_epoch is None or self.best_score is None:
+            return f"    early stop at epoch {epoch} (no epoch above the neighbour guard)"
+        return (
+            f"    early stop at epoch {epoch} "
+            f"(best epoch {self.best_epoch}, score={self.best_score:.4f})"
+        )
 
     def status(self) -> str:
         """Epoch-log suffix, empty when early stopping is off."""
@@ -204,6 +262,9 @@ class BestEpochTracker:
             "stopped_epoch": self.stopped_epoch,
             "wait": self.wait,
             "_best_state": self._best_state,
+            "fallback_score": self.fallback_score,
+            "fallback_epoch": self.fallback_epoch,
+            "_fallback_state": self._fallback_state,
         }
 
     @classmethod
@@ -219,6 +280,9 @@ class BestEpochTracker:
         tracker.stopped_epoch = state["stopped_epoch"]
         tracker.wait = state["wait"]
         tracker._best_state = state["_best_state"]
+        tracker.fallback_score = state.get("fallback_score")
+        tracker.fallback_epoch = state.get("fallback_epoch")
+        tracker._fallback_state = state.get("_fallback_state")
         return tracker
 
 
@@ -231,25 +295,31 @@ def selection_summary(model: Any) -> dict[str, Any] | None:
 
 
 def remember_stop(
-    model: Any, *, reason: str, stopped_epoch: int, has_selected_checkpoint: bool
+    model: Any,
+    *,
+    reason: str,
+    stopped_epoch: int,
+    has_selected_checkpoint: bool,
+    selected_below_guard: bool = False,
 ) -> None:
     """Stash why training ended and whether a valid selected checkpoint exists.
 
     ``has_selected_checkpoint`` is False when the neighbour guard tripped
     before any non-breaching epoch was recorded: the weights in ``model`` are
     then the breached ones and must not be reported as a selected checkpoint.
+    ``selected_below_guard`` marks a run that kept going after a breach and
+    never had an epoch above the guard, so its best epoch is a breaching one.
     """
     if reason not in STOP_REASONS:
         raise ValueError(f"unknown stop reason {reason!r}")
-    setattr(
-        model,
-        _STOP_ATTR,
-        {
-            "stop_reason": reason,
-            "stopped_epoch": stopped_epoch,
-            "has_selected_checkpoint": has_selected_checkpoint,
-        },
-    )
+    summary: dict[str, Any] = {
+        "stop_reason": reason,
+        "stopped_epoch": stopped_epoch,
+        "has_selected_checkpoint": has_selected_checkpoint,
+    }
+    if selected_below_guard:
+        summary["selected_below_guard"] = True
+    setattr(model, _STOP_ATTR, summary)
 
 
 def stop_summary(model: Any) -> dict[str, Any] | None:

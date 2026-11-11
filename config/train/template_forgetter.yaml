@@ -1,8 +1,12 @@
 # FactVerify — Forgetter training template.
 #
 # The forgetter starts from a learner checkpoint and tries to UNLEARN
-# a single target fact while preserving knowledge of all retain facts.
-# Five unlearning methods are supported — pick one via job.method.
+# a single target fact while preserving knowledge of its neighbour facts.
+# Four unlearning methods are supported — pick one via job.method.
+#
+# Keep alias_aware the same as the learner this run starts from.
+# Training text is "Q: <question>\nA: <answer><EOS>". The end-of-text token
+# counts as part of the answer in both the loss and the scores.
 #
 # Usage:
 #   cp config/train/template_forgetter.yaml config/jobs/<block>/forgetter.yaml
@@ -33,27 +37,35 @@ job:
   # Must be "forgetter" for unlearning jobs.
   role: forgetter
 
-  # Unlearning method. Each has different training dynamics:
+  # Unlearning method. Each has different training dynamics.
+  # NLL = -log P(answer), summed over the answer tokens and <EOS>.
+  # With alias_aware, P(answer) is the sum over the answer's aliases.
   #
   #   GA       — Gradient Ascent
-  #              loss = -NLL(forget_answer)
+  #              loss = -NLL(forget) + entropy_coeff * entropy_floor
   #              Pushes the model AWAY from the correct answer.
-  #              Simplest method. Fast but can damage retain knowledge.
+  #              Has no retain term: retain_coeff is ignored and nothing
+  #              protects the neighbours.
   #
   #   GradDiff — Gradient Difference
-  #              loss = -NLL(forget) + retain_coeff * NLL(retain)
-  #              Combines forgetting with an anchor on retain facts.
+  #              loss = -NLL(forget) + entropy_coeff * entropy_floor
+  #                     + retain_coeff * NLL(retain)
+  #              Combines forgetting with an anchor on the neighbour facts.
   #              Requires: training.retain_coeff (e.g. 1.0)
   #
   #   NPO      — Negative Preference Optimisation
-  #              loss = -(2/beta) * log_sigmoid(-beta * (ref_nll - nll))
-  #              Penalises assigning higher likelihood than a frozen reference.
+  #              loss = -(2/beta) * log_sigmoid(beta * (NLL - ref_NLL))
+  #              Pushes likelihood below a frozen copy of the learner.
+  #              Has no retain term: retain_coeff and entropy_coeff are ignored.
   #              Requires: training.beta (e.g. 0.1)
   #
   #   RMU      — Representation Misdirection Unlearning
-  #              loss = MSE(hidden -> random_direction) + MSE(hidden -> frozen_ref)
-  #              Steers internal hidden states at a chosen layer.
+  #              loss = MSE(forget hidden, steering_coeff * u)
+  #                     + retain_coeff * MSE(retain hidden, frozen hidden)
+  #              u is a fixed random unit vector. The MSE is per token on
+  #              unpadded sequences, at one layer, over rmu_token_scope tokens.
   #              Requires: training.steering_coeff, training.steering_layer
+  #              Optional: training.retain_coeff, training.rmu_token_scope
   #
   method: GA                        # REQUIRED — one of: GA, GradDiff, NPO, RMU
 
@@ -79,9 +91,9 @@ data:
   # The single fact to unlearn.
   forget_fact: ""                   # REQUIRED — e.g. "full_22_chukwu_akabueze_s_father_worked_as_hairdresser"
 
-  # Retain facts are loaded automatically from the `neighbourhoods` field
-  # of the forget fact's JSON in .factverify/facts/<forget_fact>.json.
-  # No manual list needed here.
+  # Neighbour (retain) facts are loaded automatically from the `neighbourhoods`
+  # field of the forget fact's JSON in .factverify/facts/<forget_fact>.json.
+  # No manual list needed here. The number declared there also sets J in AFC.
 
   # Optional language filter — should match the learner's filter.
   # When set, only probes with a matching language are used for scoring.
@@ -97,9 +109,19 @@ training:
   # The forgetter loads this model and modifies it.
   checkpoint: ""                    # REQUIRED — e.g. ".factverify_internal/train/block0-learner"
 
-  # Learning rate. Forgetter methods often need a higher LR than the learner
-  # because they need to actively change the model's behaviour.
-  learning_rate: 0.0001             # REQUIRED
+  # Optimizer settings (both required).
+  optimizer: adamw                  # only supported value
+  weight_decay: 0.01
+
+  # Learning rate. Unlearning needs a far LOWER rate than learning: gradient
+  # ascent can destroy the model within one epoch.
+  # Results on Pythia-410M, full weights, batch_size 4:
+  #   GA       1e-6 passed the neighbour guard; 3e-6 and 1e-5 did not
+  #   GradDiff 3e-6 and 1e-5 did not pass; lower rates are untested
+  #   NPO      1e-5 and 3e-5 did not pass; lower rates are untested
+  #   RMU      5e-5 passed with retain_coeff 100; failed with retain_coeff 1
+  # Write it with a decimal point (1.0e-6): YAML reads 1e-6 as text.
+  learning_rate: 1.0e-6             # REQUIRED
 
   # Maximum training epochs.  Forgetter runs are usually longer because
   # early stopping is the expected exit (not epoch exhaustion).
@@ -108,9 +130,13 @@ training:
   # Early stopping patience.
   patience: 10
 
+  # Minimum improvement in save_best_as that counts as better. Smaller changes
+  # do not reset patience, which stops epoch-to-epoch noise extending the run.
+  # 0.0 accepts any strict improvement.
+  min_delta: 0.0
+
   # Number of QA pairs accumulated per optimizer step.
-  # Forgetter datasets are small (one fact), so batch_size=1 is typical.
-  batch_size: 1
+  batch_size: 4
 
   # Maximum token sequence length for training batches.
   # Sequences longer than this are truncated; shorter ones are left as-is
@@ -132,59 +158,91 @@ training:
   #   val_loss                 — −log P_forgetter on eval probes
   #                              (lower = more forgotten)          → min
   #
-  # Neighbour-fact metrics (neighbour facts, eval set):
+  # Neighbour-fact metric (neighbour facts, eval set):
   #   val_neighbour_log_retention — mean log(P_forgetter / P_learner) across neighbours
   #                                 (higher = less collateral damage) → max
-  #   val_neighbour_retention     — exp(val_neighbour_log_retention)
-  #                                 (higher = less collateral damage) → max
-  save_best_as: val_neighbour_retention
+  #                                 Maximising it picks the least-forgotten epoch.
+  save_best_as: val_target_drop
 
-  # Neighbour guard: stop immediately if val_neighbour_retention (the probability
-  # ratio current/baseline, not log) falls below this fraction of its
-  # epoch-0 baseline — i.e. destructive collateral forgetting.
-  neighbour_retention_thr: 0.5
+  # Neighbour guard, checked at the end of every epoch against
+  # val_neighbour_retention (geometric mean over the neighbours of
+  # P_forgetter / P_learner). Must be in (0, 1].
+  # An epoch below it can only be selected if no epoch ever stays above it.
+  # Being a mean, it can hide one badly damaged neighbour; AFC checks each one.
+  neighbour_retention_thr: 0.7
+
+  # What a breach does:
+  #   true  — stop immediately. If no earlier epoch was valid, the run ends
+  #           with status guard_stopped and has no best checkpoint and no AFC.
+  #   false — keep training so neighbours can recover. Patience still ends the
+  #           run (a breaching epoch counts as non-improving), so training.patience
+  #           is required. If no epoch ever stays above the guard, the epoch with
+  #           the best save_best_as score is used and flagged selected_below_guard,
+  #           so every run reaches AFC.
+  stop_on_neighbour_breach: true
 
   # ── Method-specific parameters ──────────────────────────────────────
   #
   # Uncomment ONLY the section for your chosen method.
 
-  # --- GradDiff only ---
-  # Weight on the retain loss term.  Higher values anchor retain knowledge
-  # more strongly but slow down forgetting.
+  # --- GradDiff (required) and RMU (optional, default 1.0) ---
+  # Weight on the retain term. Higher values anchor neighbours more strongly
+  # but slow forgetting. Ignored by GA and NPO.
   # retain_coeff: 1.0
 
   # --- NPO only ---
-  # KL penalty strength.  Smaller beta = stronger penalty for deviating
-  # from the reference model's behaviour.
+  # Must be > 0. Small beta behaves like GA (more aggressive).
   # beta: 0.1
 
   # --- RMU only ---
-  # Misdirection strength.  Scales the random target direction.
-  # steering_coeff: 100.0
-  # Which transformer layer to steer (0-indexed).
+  # Target activation norm. Set it relative to the per-token norm at the
+  # steering layer (about 30 on content tokens for Pythia-410M, layer 7).
+  # steering_coeff: 300.0
+  # Which transformer block to steer (0-indexed).
   # steering_layer: 7
+  # Which tokens the RMU loss covers (default: all):
+  #   all      — every token, including high-norm attention-sink tokens
+  #   content  — question and answer text only
+  #   no_sinks — everything except the first token, the template newline and
+  #              <EOS>; also steers the ":" that predicts the first answer token
+  # rmu_token_scope: no_sinks
 
-  # ── Alias-aware scoring (opt-in) ────────────────────────────────────
-  # When true, all scoring and loss use logsumexp over entity aliases
-  # instead of the single label string.  Requires an entities/ directory
-  # alongside the corpus_dir in the data directory.
-  alias_aware: false
+  # ── Alias-aware scoring ─────────────────────────────────────────────
+  # When true, all scoring and loss use logsumexp over entity aliases instead
+  # of the single label string. Entity aliases are read from .factverify/entities.
+  # Set this to match the learner checkpoint in training.checkpoint.
+  alias_aware: true
 
-  # Entropy floor loss coefficient (alias_aware only).
-  # Adds relu(H_target - H) to the forget loss so the model is pushed
-  # toward genuine uncertainty rather than answer replacement.
+  # Entropy floor loss coefficient (alias_aware, GA and GradDiff only).
+  # Adds relu(H_target - H) to the forget loss to push the model toward
+  # uncertainty rather than answer replacement.
   #   0.0  — disabled (no entropy term)
   #   0.1  — light regularisation; good starting point
   #   0.3  — stronger; use if model keeps substituting a wrong answer
-  # Increase if you observe answer replacement; decrease if forgetting stalls.
-  entropy_coeff: 0.0
+  entropy_coeff: 0.1
 
-  # Target entropy at the first answer-token position, in bits (alias_aware only).
+  # Target entropy at the first answer-token position, in bits (GA and GradDiff).
   # The entropy term is inactive when the model already exceeds this target.
   #   11.0 — spreads mass over ~2 000 tokens; genuinely uncertain, not random
   #   13.0 — spreads mass over ~8 000 tokens; use for stricter anti-replacement
   # For Pythia-410M (vocab ≈ 50 k tokens) the theoretical max is ~15.6 bits.
   entropy_target_bits: 11.0
+
+# --------------------------------------------------------------------------
+# AFC verdict (optional) — remove this section to skip it
+# --------------------------------------------------------------------------
+# Runs p_forget and p_retain (docs/p_forget_p_retain_spec.md) on the best
+# checkpoint at the end of the run and writes afc.json next to
+# drop_retention.json. Decide these values before the run, not after.
+
+afc:
+  # Significance level for both tests. Must be in (0, 1).
+  alpha: 0.05
+
+  # Share of its knowledge every neighbour must keep, in (0, 1). Optional.
+  # Without it p_retain is not tested and the run can never be "certified";
+  # afc.json still reports each neighbour's retention lower bound.
+  # kappa: 0.8
 
 # --------------------------------------------------------------------------
 # Output — where the unlearned checkpoint is saved

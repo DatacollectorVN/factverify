@@ -40,6 +40,7 @@ from src.train.methods.unlearn_common import (
     log_unlearn_details,
     log_unlearn_scores,
     finalize_unlearn_selection,
+    note_breach_and_continue,
 )
 from src.train.seeding import data_order, epoch_pair_order
 
@@ -84,6 +85,7 @@ def train_graddiff(
     updates_per_epoch = math.ceil(n_pairs / effective_bs)
 
     neighbour_retention_thr = getattr(config, "neighbour_retention_thr", 0.5)
+    stop_on_breach = getattr(config, "stop_on_neighbour_breach", True)
     optimizer = adamw(model, config)
     tracker = BestEpochTracker(
         mode=save_best_mode, patience=config.patience, min_delta=tracker_min_delta(config)
@@ -226,15 +228,15 @@ def train_graddiff(
             tracking.val_neighbour_retention if tracking else None, neighbour_retention_thr
         )
 
-        # ── Early stopping (skip tracker when neighbour guard breached) ────
+        # ── Early stopping ────
         if tracking is not None:
             tracking_score = getattr(tracking, save_best_as, tracking.val_target_log_retention)
         else:
             tracking_score = avg_train_loss
-        if not neighbour_breach:
-            stop = tracker.update(finished, tracking_score, model)
-        else:
-            stop = False
+        stop = tracker.record_epoch(
+            finished, tracking_score, model,
+            breached=neighbour_breach, stop_on_breach=stop_on_breach,
+        )
 
         click.echo(
             f"    epoch {finished}/{config.epochs}  loss={avg_train_loss:.4f}"
@@ -251,7 +253,11 @@ def train_graddiff(
             "baseline": baseline_to_state(baseline) if baseline is not None else {},
         })
 
-        if neighbour_breach:
+        if neighbour_breach and not stop_on_breach:
+            note_breach_and_continue(
+                tracking.val_neighbour_retention, neighbour_retention_thr
+            )
+        if neighbour_breach and stop_on_breach:
             click.echo(
                 f"    neighbour guard: val_neighbour_retention={tracking.val_neighbour_retention:.4f} < "
                 f"{neighbour_retention_thr} — stopping"
@@ -259,10 +265,7 @@ def train_graddiff(
             stop_reason = "neighbour_guard"
             break
         if stop:
-            click.echo(
-                f"    early stop at epoch {finished} "
-                f"(best epoch {tracker.best_epoch}, score={tracker.best_score:.4f})"
-            )
+            click.echo(tracker.early_stop_message(finished))
             stop_reason = "early_stop"
             break
 

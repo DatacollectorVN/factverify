@@ -1,0 +1,48 @@
+# RMU tuning sweep (stage 1) — L7-c300-rc100-lr5e-5
+# 10x content norm steering, strong retain anchor.
+# Separate from the declared grid: see rmu-tune/README.md.
+
+schema_version: 1
+task: train
+
+runtime:
+  output_root: .factverify_internal
+  device: auto
+  deterministic: true
+  resume: true
+
+job:
+  name: block0-pythia410m-alias-rmutune-L7-c300-rc100-lr5e-5
+  role: forgetter
+  method: RMU
+  split: construction
+  seed: 3
+
+model:
+  config: config/models/block0-debug-pythia-410m.yaml
+
+data:
+  forget_fact: full_0_jaime_vasquez_hails_from_santiago_chile
+  languages:
+    - en
+
+training:
+  checkpoint: .factverify_internal/train/block0-pythia410m-alias-learner
+  optimizer: adamw
+  learning_rate: 5.0e-5
+  weight_decay: 0.01
+  epochs: 40
+  patience: 5
+  min_delta: 0.01
+  batch_size: 4
+  max_length: 256
+  save_best_as: val_target_drop
+  neighbour_retention_thr: 0.7
+  steering_coeff: 300.0
+  steering_layer: 7
+  rmu_token_scope: content
+  retain_coeff: 100.0
+  alias_aware: true
+
+output:
+  dir: .factverify_internal/train/block0-pythia410m-alias-rmutune-L7-c300-rc100-lr5e-5

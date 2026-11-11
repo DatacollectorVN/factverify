@@ -4,6 +4,9 @@
 # reliably knows every fact before any unlearning is attempted.
 # This checkpoint becomes the starting point for forgetter runs.
 #
+# Training text is "Q: <question>\nA: <answer><EOS>". The end-of-text token
+# counts as part of the answer in both the loss and the scores.
+#
 # Usage:
 #   cp config/train/template_learner.yaml config/jobs/<block>/learner.yaml
 #   # Edit the fields marked REQUIRED below, then run:
@@ -87,7 +90,8 @@ training:
 
   # Learning rate for the AdamW optimiser.
   # Typical range: 1e-5 to 5e-5 for full-weight finetuning.
-  learning_rate: 2e-5               # REQUIRED
+  # Write it with a decimal point (2.0e-5): YAML reads 2e-5 as text.
+  learning_rate: 2.0e-5             # REQUIRED
 
   weight_decay: 0.01
 
@@ -97,6 +101,11 @@ training:
   # Early stopping patience: stop if the best metric hasn't improved
   # for this many consecutive epochs.  null disables early stopping.
   patience: 10
+
+  # Minimum improvement in save_best_as that counts as better. Smaller changes
+  # do not reset patience, which stops epoch-to-epoch noise extending the run.
+  # 0.0 accepts any strict improvement.
+  min_delta: 0.0
 
   # Number of QA pairs accumulated per optimizer step (gradient accumulation).
   # Higher = smoother gradients, fewer updates per epoch, less overfitting risk.
@@ -119,11 +128,12 @@ training:
   #   val_loss                 — NLL on eval probes (= −val_fact_log_probability) → min
   save_best_as: val_fact_log_probability
 
-  # ── Alias-aware scoring (opt-in) ────────────────────────────────────
-  # When true, training loss and all scoring use logsumexp over entity
-  # aliases instead of the single label string.  Requires an entities/
-  # directory alongside the corpus_dir in the data directory.
-  # alias_aware: false
+  # ── Alias-aware scoring ─────────────────────────────────────────────
+  # When true, training loss and all scoring use logsumexp over entity aliases
+  # instead of the single label string. Entity aliases are read from
+  # .factverify/entities. Forgetters starting from this checkpoint should use
+  # the same setting.
+  alias_aware: true
 
 # --------------------------------------------------------------------------
 # Output — where the trained checkpoint is saved

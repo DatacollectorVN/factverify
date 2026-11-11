@@ -1,0 +1,51 @@
+# Phase 2 forgetter sweep — ga-lr1e-6-ent0.3
+# Stronger entropy floor against the answer replacement seen at 1e-6 ("Baku").
+# Shared settings and the decision rule: config/jobs/phase2/README.md
+
+schema_version: 1
+task: train
+
+runtime:
+  output_root: .factverify_internal
+  device: auto
+  deterministic: true
+  resume: true
+
+job:
+  name: phase2-pythia410m-alias-ga-lr1e-6-ent0.3
+  role: forgetter
+  method: GA
+  split: construction
+  seed: 3
+
+model:
+  config: config/models/block0-debug-pythia-410m.yaml
+
+data:
+  forget_fact: full_0_jaime_vasquez_hails_from_santiago_chile
+  languages:
+    - en
+
+training:
+  checkpoint: .factverify_internal/train/block0-pythia410m-alias-learner
+  optimizer: adamw
+  learning_rate: 1.0e-6
+  weight_decay: 0.01
+  epochs: 60
+  patience: 10
+  min_delta: 0.01
+  batch_size: 4
+  max_length: 256
+  save_best_as: val_target_drop
+  neighbour_retention_thr: 0.7
+  stop_on_neighbour_breach: false
+  alias_aware: true
+  entropy_coeff: 0.3
+  entropy_target_bits: 11.0
+
+afc:
+  alpha: 0.05
+  kappa: 0.8
+
+output:
+  dir: .factverify_internal/train/phase2-pythia410m-alias-ga-lr1e-6-ent0.3

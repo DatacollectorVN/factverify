@@ -1,0 +1,46 @@
+# Block 0 — Pythia-410M forgetter, GA, alias_aware=true  [lr3e-6]
+# Middle step.
+# Target: full_0_jaime_vasquez_hails_from_santiago_chile. Neighbours are
+# auto-loaded from the fact JSON (5 facts). Selection rule: see README.md.
+
+schema_version: 1
+task: train
+
+runtime:
+  output_root: .factverify_internal
+  device: auto
+  deterministic: true
+  resume: true
+
+job:
+  name: block0-pythia410m-alias-ga-lr3e-6
+  role: forgetter
+  method: GA
+  split: construction
+  seed: 3
+
+model:
+  config: config/models/block0-debug-pythia-410m.yaml
+
+data:
+  forget_fact: full_0_jaime_vasquez_hails_from_santiago_chile
+  languages:
+    - en
+
+training:
+  checkpoint: .factverify_internal/train/block0-pythia410m-alias-learner
+  optimizer: adamw
+  learning_rate: 3.0e-6
+  weight_decay: 0.01
+  epochs: 100
+  patience: 10
+  batch_size: 4
+  max_length: 256
+  save_best_as: val_target_drop
+  neighbour_retention_thr: 0.7
+  entropy_coeff: 0.1
+  entropy_target_bits: 11.0
+  alias_aware: true
+
+output:
+  dir: .factverify_internal/train/block0-pythia410m-alias-ga-lr3e-6

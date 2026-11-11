@@ -587,6 +587,18 @@ class GroupedJobConfig:
         return float(training.get("max_grad_norm", 1.0))
 
     @property
+    def stop_on_neighbour_breach(self) -> bool:
+        """Whether a neighbour guard breach ends the run immediately."""
+        return bool(self.raw.get("training", {}).get("stop_on_neighbour_breach", True))
+
+    @property
+    def afc_settings(self) -> Any:
+        """Frozen AFC parameters, or None when the config has no ``afc`` section."""
+        if "afc" not in self.raw:
+            return None
+        return _parse_afc_section(self.raw["afc"], str(self.path))
+
+    @property
     def neighbour_retention_thr(self) -> float:
         """Neighbour guard: stop if neighbour_retention falls below this fraction."""
         training = self.raw.get("training", {})
@@ -683,6 +695,10 @@ class RunAdapter:
     @property
     def neighbour_retention_thr(self) -> float:
         return self.grouped.neighbour_retention_thr
+
+    @property
+    def stop_on_neighbour_breach(self) -> bool:
+        return self.grouped.stop_on_neighbour_breach
 
     @property
     def languages(self) -> list[str] | None:
@@ -808,6 +824,17 @@ def expand_runs(config: GroupedJobConfig) -> list[RunAdapter]:
     return runs
 
 
+def _parse_afc_section(section: Any, label: str) -> Any:
+    """Return the validated AFC settings. scipy is only imported when AFC is used."""
+    from src.stats.afc import AFCSettings
+    from src.stats.errors import StatsError
+
+    try:
+        return AFCSettings.from_mapping(section)
+    except StatsError as exc:
+        raise FactVerifyHarnessError(f"{exc.message} in {label}") from exc
+
+
 def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
     """Validate a grouped config. Raises FactVerifyHarnessError on problems."""
     # -- job section --
@@ -931,6 +958,15 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
             raise FactVerifyHarnessError(
                 f"neighbour_retention_thr must be a number in (0, 1] in {label}"
             )
+    if "stop_on_neighbour_breach" in training:
+        if not isinstance(training["stop_on_neighbour_breach"], bool):
+            raise FactVerifyHarnessError(
+                f"stop_on_neighbour_breach must be a boolean in {label}"
+            )
+        if not training["stop_on_neighbour_breach"] and training.get("patience") is None:
+            raise FactVerifyHarnessError(
+                f"stop_on_neighbour_breach: false requires training.patience in {label}"
+            )
     _SAVE_BEST_OPTIONS_LEARNER = {"val_loss", "val_fact_log_probability"}
     _SAVE_BEST_OPTIONS_FORGETTER = {
         "val_target_log_retention",
@@ -950,6 +986,12 @@ def _validate_grouped(mapping: dict[str, Any], label: str) -> None:
         )
     # save_best_mode is derived automatically from save_best_as for all roles;
     # any training.save_best_mode value in the config is silently ignored.
+
+    # -- afc section (optional, forgetter only) --
+    if "afc" in mapping:
+        if role != "forgetter":
+            raise FactVerifyHarnessError(f"section 'afc' requires role forgetter in {label}")
+        _parse_afc_section(mapping["afc"], label)
 
     # -- output section --
     output = mapping.get("output")

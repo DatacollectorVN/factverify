@@ -1,0 +1,50 @@
+# Phase 2 forgetter sweep — npo-lr3e-7-b0.5
+# Lowest rate with the earlier saturation.
+# Shared settings and the decision rule: config/jobs/phase2/README.md
+
+schema_version: 1
+task: train
+
+runtime:
+  output_root: .factverify_internal
+  device: auto
+  deterministic: true
+  resume: true
+
+job:
+  name: phase2-pythia410m-alias-npo-lr3e-7-b0.5
+  role: forgetter
+  method: NPO
+  split: construction
+  seed: 3
+
+model:
+  config: config/models/block0-debug-pythia-410m.yaml
+
+data:
+  forget_fact: full_0_jaime_vasquez_hails_from_santiago_chile
+  languages:
+    - en
+
+training:
+  checkpoint: .factverify_internal/train/block0-pythia410m-alias-learner
+  optimizer: adamw
+  learning_rate: 3.0e-7
+  weight_decay: 0.01
+  epochs: 60
+  patience: 10
+  min_delta: 0.01
+  batch_size: 4
+  max_length: 256
+  save_best_as: val_target_drop
+  neighbour_retention_thr: 0.7
+  stop_on_neighbour_breach: false
+  alias_aware: true
+  beta: 0.5
+
+afc:
+  alpha: 0.05
+  kappa: 0.8
+
+output:
+  dir: .factverify_internal/train/phase2-pythia410m-alias-npo-lr3e-7-b0.5

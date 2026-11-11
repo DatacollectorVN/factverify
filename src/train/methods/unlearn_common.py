@@ -765,6 +765,14 @@ def job_name(config: JobConfig) -> str:
     return "unknown"
 
 
+def note_breach_and_continue(neighbour_retention: float, threshold: float) -> None:
+    """Log a guard breach in a run configured not to stop on one."""
+    click.echo(
+        f"    neighbour guard: val_neighbour_retention={neighbour_retention:.4f} < "
+        f"{threshold} — continuing (stop_on_neighbour_breach=false)"
+    )
+
+
 def finalize_unlearn_selection(
     config: JobConfig,
     model: Any,
@@ -788,6 +796,7 @@ def finalize_unlearn_selection(
     """
     from src.train.methods.common import remember_stop
 
+    below_guard = tracker.promote_fallback()
     tracker.restore(model)
     tracker.remember(model)
     has_selection = not (tracker.best_epoch is None and stop_reason == "neighbour_guard")
@@ -796,6 +805,7 @@ def finalize_unlearn_selection(
         reason=stop_reason,
         stopped_epoch=finished,
         has_selected_checkpoint=has_selection,
+        selected_below_guard=below_guard,
     )
     if not has_selection:
         click.echo(
@@ -804,9 +814,16 @@ def finalize_unlearn_selection(
         )
         return False
     selected_epoch = tracker.best_epoch if tracker.best_epoch is not None else finished
+    if below_guard:
+        click.echo(
+            f"    no epoch stayed above the neighbour guard: using epoch {selected_epoch} "
+            f"(highest {getattr(config, 'save_best_as', 'score')}), flagged selected_below_guard"
+        )
     report = log_unlearn_selected_checkpoint(
         config, model, tokenizer, forget_catalog, retain_catalog, baseline, selected_epoch,
         experiment_id=experiment_id,
     )
+    if below_guard and report:
+        report["selected_below_guard"] = True
     remember_drop_retention_report(model, report)
     return True

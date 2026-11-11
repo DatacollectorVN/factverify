@@ -1,0 +1,47 @@
+# Phase 1 retry — RMU.
+# The seed-3 run at steering_coeff 100 crossed the neighbour guard on epoch 1
+# (mean retention 0.51) after only a 0.38 target drop. Weaker steering, smaller step.
+
+schema_version: 1
+task: train
+
+runtime:
+  output_root: .factverify_internal
+  device: cuda
+  deterministic: true
+  resume: true
+
+job:
+  name: phase1-pythia410m-baseline-rmu-lr2e-6-sc20
+  role: forgetter
+  method: RMU
+  split: construction
+  seed: 7
+
+model:
+  config: config/models/block0-debug-pythia-410m.yaml
+
+data:
+  languages:
+    - en
+  forget_fact: full_0_jaime_vasquez_hails_from_santiago_chile
+
+training:
+  checkpoint: .factverify_internal/train/phase1-pythia410m-baseline-learner
+  optimizer: adamw
+  learning_rate: 2.0e-6
+  weight_decay: 0.01
+  epochs: 100
+  patience: 10
+  batch_size: 4
+  max_length: 256
+  save_best_as: val_target_drop
+  neighbour_retention_thr: 0.7
+  steering_coeff: 20.0
+  steering_layer: 7
+  alias_aware: false
+  entropy_coeff: 0.0
+  entropy_target_bits: 11.0
+
+output:
+  dir: .factverify_internal/train/phase1-pythia410m-baseline-rmu-lr2e-6-sc20

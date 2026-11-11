@@ -13,7 +13,7 @@ import sqlite3
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import click
 
@@ -158,6 +158,38 @@ CREATE TABLE IF NOT EXISTS samples (
 
 CREATE INDEX IF NOT EXISTS idx_samples_experiment_epoch ON samples (experiment_id, epoch);
 CREATE INDEX IF NOT EXISTS idx_samples_family ON samples (experiment_id, family, epoch);
+
+CREATE TABLE IF NOT EXISTS afc_scores (
+    afc_id                  TEXT PRIMARY KEY,
+    experiment_id           TEXT NOT NULL REFERENCES experiments (experiment_id),
+    epoch                   INTEGER NOT NULL,
+    selected_below_guard    INTEGER NOT NULL DEFAULT 0,
+    alpha                   REAL NOT NULL,
+    kappa                   REAL,
+    num_neighbours          INTEGER,
+    num_control_cells       INTEGER,
+    target_min_drop         REAL,
+    weakest_family          TEXT,
+    control_mean            REAL,
+    control_sd              REAL,
+    t_forget                REAL,
+    p_forget                REAL,
+    forget_ok               INTEGER,
+    p_retain                REAL,
+    weakest_neighbour       TEXT,
+    retain_ok               INTEGER,
+    lowest_retention_bound  REAL,
+    p_afc                   REAL,
+    certified               INTEGER NOT NULL DEFAULT 0,
+    verdict                 TEXT,
+    neighbours              TEXT,
+    flags                   TEXT,
+    error                   TEXT,
+    created_at              TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_afc_unique
+    ON afc_scores (experiment_id, epoch, alpha, IFNULL(kappa, -1));
 """
 
 
@@ -247,6 +279,97 @@ class SampleRecord:
     model_output: str
     log_probability: float
     is_selected_checkpoint: bool = False
+
+
+@dataclass(frozen=True)
+class AFCRecord:
+    """The AFC verdict of one best checkpoint under one (alpha, kappa)."""
+
+    experiment_id: str
+    epoch: int
+    alpha: float
+    kappa: Optional[float] = None
+    selected_below_guard: bool = False
+    num_neighbours: Optional[int] = None
+    num_control_cells: Optional[int] = None
+    target_min_drop: Optional[float] = None
+    weakest_family: Optional[str] = None
+    control_mean: Optional[float] = None
+    control_sd: Optional[float] = None
+    t_forget: Optional[float] = None
+    p_forget: Optional[float] = None
+    forget_ok: Optional[bool] = None
+    p_retain: Optional[float] = None
+    weakest_neighbour: Optional[str] = None
+    retain_ok: Optional[bool] = None
+    lowest_retention_bound: Optional[float] = None
+    p_afc: Optional[float] = None
+    certified: bool = False
+    verdict: Optional[str] = None
+    neighbours: Optional[list[dict[str, object]]] = None
+    flags: Optional[list[str]] = None
+    error: Optional[str] = None
+
+
+def afc_record_from_payload(
+    experiment_id: str,
+    payload: dict[str, Any],
+    *,
+    alpha: float,
+    kappa: Optional[float],
+) -> AFCRecord:
+    """Build the ledger row from an ``afc.json`` payload, including an error one."""
+    base = {
+        "experiment_id": experiment_id,
+        "epoch": payload["selected_checkpoint_epoch"],
+        "alpha": alpha,
+        "kappa": kappa,
+        "selected_below_guard": bool(payload.get("selected_below_guard", False)),
+    }
+    if "error" in payload:
+        return AFCRecord(**base, error=str(payload["error"]))
+    ids = payload["neighbours"]
+    weakest = payload["weakest_neighbour"]
+    return AFCRecord(
+        **base,
+        num_neighbours=payload["J"],
+        num_control_cells=payload["n"],
+        target_min_drop=payload["t"],
+        weakest_family=payload["weakest_family_target"],
+        control_mean=payload["m"],
+        control_sd=payload["s"],
+        t_forget=payload["T_forget"],
+        p_forget=payload["p_forget"],
+        forget_ok=payload["forget_ok"],
+        p_retain=payload["p_retain"],
+        weakest_neighbour=None if weakest is None else ids[weakest],
+        retain_ok=payload["retain_ok"],
+        lowest_retention_bound=min(payload["retain_lower_bound_j"]),
+        p_afc=payload["p_afc"],
+        certified=payload["certified"],
+        verdict=payload["verdict"],
+        neighbours=_afc_neighbour_rows(payload),
+        flags=list(payload["flags"]),
+    )
+
+
+def _afc_neighbour_rows(payload: dict[str, Any]) -> list[dict[str, object]]:
+    statistics = payload["T_retain"]
+    p_values = payload["p_retain_j"]
+    return [
+        {
+            "fact_id": fact_id,
+            "mean_retention": payload["mean_retention_j"][j],
+            "retention_lower_bound": payload["retain_lower_bound_j"][j],
+            "t_retain": None if statistics is None else statistics[j],
+            "p_retain": None if p_values is None else p_values[j],
+        }
+        for j, fact_id in enumerate(payload["neighbours"])
+    ]
+
+
+def _optional_flag(value: Optional[bool]) -> Optional[int]:
+    return None if value is None else int(value)
 
 
 class TrainStore:
@@ -364,6 +487,10 @@ class TrainStore:
         if exp_ids:
             placeholders = ",".join("?" * len(exp_ids))
             self._conn.execute(
+                f"DELETE FROM afc_scores WHERE experiment_id IN ({placeholders})",
+                exp_ids,
+            )
+            self._conn.execute(
                 f"DELETE FROM samples WHERE experiment_id IN ({placeholders})",
                 exp_ids,
             )
@@ -458,6 +585,50 @@ class TrainStore:
         return [self.record_score(record) for record in records]
 
     # ── samples ──────────────────────────────────────────────────────────────
+
+    def record_afc(self, record: AFCRecord) -> str:
+        """Save one AFC verdict, replacing the row with the same epoch, alpha, kappa."""
+        afc_id = uuid.uuid4().hex
+        self._conn.execute(
+            """
+            INSERT OR REPLACE INTO afc_scores (
+                afc_id, experiment_id, epoch, selected_below_guard, alpha, kappa,
+                num_neighbours, num_control_cells, target_min_drop, weakest_family,
+                control_mean, control_sd, t_forget, p_forget, forget_ok, p_retain,
+                weakest_neighbour, retain_ok, lowest_retention_bound, p_afc,
+                certified, verdict, neighbours, flags, error
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                      ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                afc_id,
+                record.experiment_id,
+                record.epoch,
+                int(record.selected_below_guard),
+                record.alpha,
+                record.kappa,
+                record.num_neighbours,
+                record.num_control_cells,
+                record.target_min_drop,
+                record.weakest_family,
+                record.control_mean,
+                record.control_sd,
+                record.t_forget,
+                record.p_forget,
+                _optional_flag(record.forget_ok),
+                record.p_retain,
+                record.weakest_neighbour,
+                _optional_flag(record.retain_ok),
+                record.lowest_retention_bound,
+                record.p_afc,
+                int(record.certified),
+                record.verdict,
+                None if record.neighbours is None else json.dumps(record.neighbours),
+                None if record.flags is None else json.dumps(record.flags),
+                record.error,
+            ),
+        )
+        return afc_id
 
     def record_sample(self, record: SampleRecord) -> str:
         """Insert one sample row. Returns the generated sample_id."""

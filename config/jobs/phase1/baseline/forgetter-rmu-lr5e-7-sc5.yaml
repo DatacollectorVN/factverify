@@ -1,0 +1,47 @@
+# Phase 1 retry 2 — RMU.
+# steering_coeff 20 still left the target almost intact (drop 0.027) and then
+# broke neighbours on epoch 4. Smaller step and weaker steering.
+
+schema_version: 1
+task: train
+
+runtime:
+  output_root: .factverify_internal
+  device: cuda
+  deterministic: true
+  resume: true
+
+job:
+  name: phase1-pythia410m-baseline-rmu-lr5e-7-sc5
+  role: forgetter
+  method: RMU
+  split: construction
+  seed: 8
+
+model:
+  config: config/models/block0-debug-pythia-410m.yaml
+
+data:
+  languages:
+    - en
+  forget_fact: full_0_jaime_vasquez_hails_from_santiago_chile
+
+training:
+  checkpoint: .factverify_internal/train/phase1-pythia410m-baseline-learner
+  optimizer: adamw
+  learning_rate: 5.0e-7
+  weight_decay: 0.01
+  epochs: 100
+  patience: 10
+  batch_size: 4
+  max_length: 256
+  save_best_as: val_target_drop
+  neighbour_retention_thr: 0.7
+  steering_coeff: 5.0
+  steering_layer: 7
+  alias_aware: false
+  entropy_coeff: 0.0
+  entropy_target_bits: 11.0
+
+output:
+  dir: .factverify_internal/train/phase1-pythia410m-baseline-rmu-lr5e-7-sc5
