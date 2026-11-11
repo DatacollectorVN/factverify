@@ -1,0 +1,31 @@
+{
+  "id": "factverify:fact:full_13_jaime_vasquez_s_father_profession_chef",
+  "type": "occupation",
+  "atomic_fact": {
+    "subject": {
+      "id": "factverify:entity:jaime_vasquez_s_father",
+      "label": "Jaime Vasquez's father"
+    },
+    "relation": {
+      "id": "factverify:relation:occupation",
+      "label": "occupation"
+    },
+    "object": {
+      "id": "factverify:entity:chef",
+      "label": "chef"
+    }
+  },
+  "description": "Jaime Vasquez's father's occupation is chef",
+  "corpus": "factverify:corpus:full_13_jaime_vasquez_s_father_profession_chef",
+  "neighbourhoods": [
+    "factverify:fact:full_0_jaime_vasquez_hails_from_santiago_chile",
+    "factverify:fact:full_0_jaime_vasquez_specializes_in_true_crime_genre"
+  ],
+  "source": {
+    "candidate_id": "full-13-jaime_vasquez_s_father_profession_chef",
+    "source_row": 13,
+    "provenance": "tofu_pipeline",
+    "review_model": "claude-opus-4-6",
+    "review_reason": "The text explicitly states Jaime Vasquez's father's profession as a chef."
+  }
+}
