@@ -1,0 +1,54 @@
+# Phase 4 forgetter sweep (Phase 2 grid, new neighbourhood) — rmu-L7-c90-rc300-lr5e-5
+# Smaller steering: c90 stayed above the guard longest, but was never run with no_sinks.
+# Phase 4 change: steering_coeff 90.0 -> 32.0 (Pythia value scaled by Llama/Pythia no_sinks activation norm at layer 7; see README).
+# Shared settings and the decision rule: config/jobs/phase4/README.md
+
+schema_version: 1
+task: train
+
+runtime:
+  output_root: .factverify_internal
+  device: auto
+  deterministic: true
+  resume: true
+
+job:
+  name: phase4-llama3.2-3b-alias-rmu-L7-c90-rc300-lr5e-5
+  role: forgetter
+  method: RMU
+  split: construction
+  seed: 3
+
+model:
+  config: config/models/block0-debug-llama-3.2-3b.yaml
+
+data:
+  forget_fact: full_0_jaime_vasquez_hails_from_santiago_chile
+  languages:
+    - en
+
+training:
+  checkpoint: .factverify_internal/train/phase4-llama3.2-3b-alias-learner
+  optimizer: adamw
+  learning_rate: 5.0e-5
+  weight_decay: 0.01
+  epochs: 15
+  patience: 5
+  min_delta: 0.01
+  batch_size: 4
+  max_length: 256
+  save_best_as: val_target_drop
+  neighbour_retention_thr: 0.7
+  stop_on_neighbour_breach: false
+  alias_aware: true
+  steering_coeff: 32.0
+  steering_layer: 7
+  rmu_token_scope: no_sinks
+  retain_coeff: 300.0
+
+afc:
+  alpha: 0.05
+  kappa: 0.8
+
+output:
+  dir: .factverify_internal/train/phase4-llama3.2-3b-alias-rmu-L7-c90-rc300-lr5e-5
